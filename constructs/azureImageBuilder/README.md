@@ -4,5 +4,6 @@ This construct consists of several components in different places. You can use t
 
 - Construct Templates, Scripts & Parameters: Folder `constructs\azureImageBuilder`
 - Azure DevOps Pipelines: Folder  `.azuredevops\azureImageBuilder`
+- [CARML](https://aka.ms/CARML) modules: Folder `CARML0.4`
 
 Further, please refer to the Wiki for information on how to apply the construct.

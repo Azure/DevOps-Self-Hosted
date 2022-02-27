@@ -1,14 +1,17 @@
-# Project
+# ![AzureIcon] DevOps Self-Hosted Constructs Repository
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## Description
 
-As the maintainer of this project, please make a few updates:
+This repository provides you with several constructs (i.e. templates & pipelines) to deploy solutions around self-hosted agents for DevOps environments. 
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+In some instances you can combine the constructs to, for example, build an image for self-hosted Azure DevOps scale set agents. Furthermore, constructs may be based on the [CARML](https://aka.ms/CARML) library to simplify deployments.
+
+Currently the repository contains the following constructs:
+
+| Construct | Description | Path | 
+| - | - | - |
+| Azure Image Builder | This construct provides a packages solution to create custom images using the Azure Image Builder service with an Azure Compute Gallery, including guidelines to operate it. | `constructs\azureImageBuilder` |
+| Azure DevOps Scale Set | This construct provides a packaged solution to deploy the infrastructure for self-hosted Azure DevOps scale sets, including guidelines to maintain it. | `constructs\azureDevOpsScaleSet` |
 
 ## Contributing
 
