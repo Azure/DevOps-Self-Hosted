@@ -1,4 +1,4 @@
-# ![AzureIcon] DevOps Self-Hosted Constructs Repository
+# DevOps Self-Hosted Constructs Repository
 
 ## Description
 
