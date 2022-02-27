@@ -84,8 +84,9 @@ The file comes with out-of-the box parameters that you can use aside from a few 
   }
   ```
 - Make sure the scaling is configured as `'manual'` (as Azure DevOps will control the scaling)
-- Furthermore, for security reasons, the virtual Machine Scale Set module has `encryptionAtHost` enabled by default. This feature must be enabled on the subscription prior to the deployment using the command
+- Furthermore, for security reasons, the virtual Machine Scale Set module has [`encryptionAtHost`](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disks-enable-host-based-encryption-powershell) enabled by default. This feature must be enabled on the subscription prior to the deployment using the command:
   ```powershell
+  # Mat take up to 20 minutes to complete
   Register-AzProviderFeature -FeatureName "EncryptionAtHost" -ProviderNamespace "Microsoft.Compute"
   ```
   However, you can also opt-out by by setting the `vmssParam` parameter `encryptionAtHost` to `false` (in both the parameter file & template).
