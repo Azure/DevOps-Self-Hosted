@@ -20,9 +20,9 @@ variables:
   poolName_dev: ''   # Use this for self-hosted agents
   poolName_prd: ''   # Use this for self-hosted agents
 
-  serviceConnection_sbx: 'CARML-CSU-Tenant-Connection'
-  serviceConnection_dev: 'CARML-CSU-Tenant-Connection'
-  serviceConnection_prd: 'CARML-CSU-Tenant-Connection'
+  serviceConnection_sbx: 'sbxConnection'
+  serviceConnection_dev: 'devConnection'
+  serviceConnection_prd: 'prdConnection'
 #endregion
 
 #region specific
