@@ -84,6 +84,11 @@ The file comes with out-of-the box parameters that you can use aside from a few 
   }
   ```
 - Make sure the scaling is configured as `'manual'` (as Azure DevOps will control the scaling)
+- Furthermore, for security reasons, the virtual Machine Scale Set module has `encryptionAtHost` enabled by default. This feature must be enabled on the subscription prior to the deployment using the command
+  ```powershell
+  Register-AzProviderFeature -FeatureName "EncryptionAtHost" -ProviderNamespace "Microsoft.Compute"
+  ```
+  However, you can also opt-out by by setting the `vmssParam` parameter `encryptionAtHost` to `false` (in both the parameter file & template).
 - Also note, that you will have different parameter sets for the virtual machine scale set parameters, depending on the OS. For example, for windows, the solution currently requires you to use the `vmssAdminPassword` parameter specified on the bottom of the parameter file, while for Linux you can use a public key instead
 
 The parameter file was created with Linux in mind. However, it also contains examples on how the same implementation would look like for Windows. Examples are always commented and can be used to replace the currently not commented values.
