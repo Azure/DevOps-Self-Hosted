@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        // Resource Group parameters
+        "rgParam": {
+            "value": {
+                "name": "agents-vmss-rg"
+            }
+        },
+        // Managed Identity parameters
+        "msiParam": {
+            "value": {
+                "name": "aibMsi"
+            }
+        },
+        // Managed Identity Role Assignment parameters - do not change
+        "msiRoleAssignmentParam": {
+            "value": {
+                "roleDefinitionIdOrName": "Contributor"
+            }
+        },
+        // Storage Account parameters
+        "saParam": {
+            "value": {
+                "name": "shaibstorage",
+                "blobServices": {
+                    "containers": [
+                        {
+                            "name": "aibscripts",
+                            "publicAccess": "None"
+                        }
+                    ]
+                }
+            }
+        },
+        // Azure Compute Gallery parameters
+        "acgParam": {
+            "value": {
+                "name": "aibgallery",
+                "images": [
+                    {
+                        "name": "linux-sid",
+                        "osType": "Linux",
+                        "publisher": "devops",
+                        "offer": "devops_linux",
+                        "sku": "devops_linux_az"
+                    }
+                ]
+                // Windows Example
+                // "images": [
+                //     {
+                //         "name": "windows-sid",
+                //         "osType": "Windows",
+                //         "publisher": "devops",
+                //         "offer": "devops_windows",
+                //         "sku": "devops_windows_az"
+                //     }
+                // ]
+            }
+        }
+    }
+}

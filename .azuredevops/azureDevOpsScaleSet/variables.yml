@@ -1,0 +1,34 @@
+#######################################################################
+##                                NOTE                               ##
+## ------------------------------------------------------------------##
+## - These variables are used to configure the pipeline and provide  ##
+##   variables to pipeline scripts                                   ##
+## - Parameters used for resource deployments are located in the     ##
+##   parameter files in the '.\Parameters' folder                    ##
+#######################################################################
+
+variables:
+#############
+## GENERAL ##
+#############
+#region shared
+  vmImage_sbx: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_dev: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_prd: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  
+  poolName_sbx: ''   # Use this for self-hosted agents
+  poolName_dev: ''   # Use this for self-hosted agents
+  poolName_prd: ''   # Use this for self-hosted agents
+
+  serviceConnection_sbx: 'CARML-CSU-Tenant-Connection'
+  serviceConnection_dev: 'CARML-CSU-Tenant-Connection'
+  serviceConnection_prd: 'CARML-CSU-Tenant-Connection'
+#endregion
+
+#region specific
+  templatesPath: 'constructs/azureDevOpsScaleSet/templates'
+  parametersPath: 'constructs/azureDevOpsScaleSet/parameters'
+  orchestrationFunctionsPath: 'constructs/azureDevOpsScaleSet/scripts'
+  sharedOrchestrationFunctionsPath: 'sharedScripts'
+  location: westeurope
+#endregion

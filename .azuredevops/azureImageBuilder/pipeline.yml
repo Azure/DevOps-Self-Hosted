@@ -1,0 +1,68 @@
+name: 'ScaleSet Image Deployment'
+
+parameters:
+- name: startEnvironment
+  displayName: Environment to start from
+  type: string
+  default: sbx
+  values:
+  - sbx
+  - dev
+  - prd
+- name: deploymentsToPerform
+  displayName: Scope of deployment
+  type: string
+  default: Only storage & image
+  values:
+  - All
+  - Only removal
+  - Only infrastructure
+  - Only storage & image
+  - Only image
+- name: waitForImageBuild
+  displayName: Wait for image build
+  type: boolean
+  default: false
+- name: removeImageTemplateResources
+  displayName: Remove previous Image Template Resource Groups
+  type: boolean
+  default: true
+
+variables:
+- template: variables.yml
+
+trigger: none
+
+stages:
+- stage: SBX_Deployments
+  displayName: Deploy to SBX
+  condition: and(succeeded(), eq('${{ parameters.startEnvironment }}', 'sbx'))
+  jobs:
+  - template: .templates/pipeline.image.jobs.yml
+    parameters:
+      environment: 'sbx'
+      deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+      waitForImageBuild: '${{ parameters.waitForImageBuild }}'
+      removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
+
+- stage: DEV_Deployments
+  displayName: Deploy to DEV
+  condition: and(succeeded(), in('${{ parameters.startEnvironment }}', 'sbx', 'dev'))
+  jobs:
+  - template: .templates/pipeline.image.jobs.yml
+    parameters:
+      environment: 'dev'
+      deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+      waitForImageBuild: '${{ parameters.waitForImageBuild }}'
+      removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
+
+- stage: PRD_Deployments
+  displayName: Deploy to PRD
+  condition: and(succeeded(),in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd'))
+  jobs:
+  - template: .templates/pipeline.image.jobs.yml
+    parameters:
+      environment: 'prd'
+      deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+      waitForImageBuild: '${{ parameters.waitForImageBuild }}'
+      removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
