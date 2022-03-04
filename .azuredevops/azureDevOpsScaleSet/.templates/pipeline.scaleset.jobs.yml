@@ -100,7 +100,7 @@ jobs:
                 pwsh: true
                 script: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerScaleSet' 'Register-ElasticPool.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   # Get scale set properties
                   $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
