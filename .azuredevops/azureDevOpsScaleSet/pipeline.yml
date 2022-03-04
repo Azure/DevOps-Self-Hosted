@@ -34,6 +34,7 @@ stages:
         parameters:
           environment: 'sbx'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+          setAgentPool: '${{ parameters.setAgentPool }}'
 
   - stage: DEV_Deployments
     displayName: Deploy to DEV
@@ -43,6 +44,7 @@ stages:
         parameters:
           environment: 'dev'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+          setAgentPool: '${{ parameters.setAgentPool }}'
 
   - stage: PRD_Deployments
     displayName: Deploy to PRD
@@ -52,3 +54,4 @@ stages:
         parameters:
           environment: 'prd'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
+          setAgentPool: '${{ parameters.setAgentPool }}'
