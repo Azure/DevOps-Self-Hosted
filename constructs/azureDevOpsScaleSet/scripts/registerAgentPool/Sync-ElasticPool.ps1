@@ -62,20 +62,26 @@ function Sync-ElasticPool {
 
         if (-not ($vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets')) {
             throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)
+        } else {
+            Write-Verbose ('Found virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName) -Verbose
         }
 
         if (-not ($foundProject = Get-Project -Organization $Organization -Project $project)) {
             throw ('Unable to find Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization)
+        } else {
+            Write-Verbose ('Found Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization) -Verbose
         }
 
         $serviceEndpoints = Get-Endpoint -Organization $Organization -Project $project
         if (-not ($serviceEndpoint = $serviceEndpoints | Where-Object { $_.name -eq $serviceConnectionName })) {
             throw ('Unable to find Azure DevOps service connection [{0}] in project [{1}|{2}]' -f $serviceConnectionName, $Organization, $Project)
+        } else {
+            Write-Verbose ('Found Azure DevOps service connect [{0}] in project [{1}] of organization [{2}]' -f $serviceConnectionName, $project, $Organization) -Verbose
         }
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
         if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.resourceId })) {
-            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName)
+            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName) -Verbose
             $inputObject = @{
                 Organization          = $Organization
                 ProjectId             = $foundProject.id
@@ -93,7 +99,7 @@ function Sync-ElasticPool {
                 New-ElasticPool @inputObject
             }
         } else {
-            Write-Verbose 'Agent pool already registered, updating.'
+            Write-Verbose 'Agent pool already registered, updating.' -Verbose
             $inputObject = @{
                 Organization        = $Organization
                 ScaleSetPoolId      = $elasticPool.Id
