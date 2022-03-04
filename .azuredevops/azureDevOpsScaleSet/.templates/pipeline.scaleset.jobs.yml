@@ -123,3 +123,5 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Sync-ElasticPool @functionInput
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
