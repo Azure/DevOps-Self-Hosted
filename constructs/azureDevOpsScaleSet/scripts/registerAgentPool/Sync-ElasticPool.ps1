@@ -52,12 +52,18 @@ function Sync-ElasticPool {
 
     process {
 
-        $vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets'
+        if (-not ($vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets')) {
+            throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)
+        }
 
-        $foundProject = Get-Project -Organization $Organization -Project $project
+        if (-not ($foundProject = Get-Project -Organization $Organization -Project $project)) {
+            throw ('Unable to find Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization)
+        }
 
         $serviceEndpoints = Get-Endpoint -Organization $Organization -Project $project
-        $serviceEndpoint = $serviceEndpoints | Where-Object { $_.name -eq $serviceConnectionName }
+        if (-not ($serviceEndpoint = $serviceEndpoints | Where-Object { $_.name -eq $serviceConnectionName })) {
+            throw ('Unable to find Azure DevOps service connection [{0}] in project [{1}|{2}]' -f $serviceConnectionName, $Organization, $Project)
+        }
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
         if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.resourceId })) {
