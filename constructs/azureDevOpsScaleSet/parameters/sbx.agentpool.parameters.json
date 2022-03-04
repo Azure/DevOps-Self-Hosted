@@ -1,0 +1,15 @@
+{
+    "Organization": "alsehr",
+    "Project": "Module Playground",
+    "ServiceConnectionName": "ModulePlaygroundPrivate",
+    "AgentPoolProperties": {
+        "ScaleSetPoolName": "moduleplayground-scaleset",
+        "ScaleSetResourceId": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset",
+        "recycleAfterEachUse": false,
+        "maxSavedNodeCount": 0,
+        "maxCapacity": 10,
+        "desiredIdle": 1,
+        "timeToLiveMinutes": 15,
+        "agentInteractiveUI": false
+    }
+}

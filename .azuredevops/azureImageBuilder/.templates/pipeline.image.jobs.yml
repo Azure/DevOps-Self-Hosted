@@ -1,216 +1,216 @@
 parameters:
-- name:  environment
-  default:
-- name:  deploymentsToPerform
-  default:
-- name:  waitForImageBuild
-  default:
-- name:  removeImageTemplateResources
-  default: true
+  - name: environment
+    default:
+  - name: deploymentsToPerform
+    default:
+  - name: waitForImageBuild
+    default:
+  - name: removeImageTemplateResources
+    default: true
 
 jobs:
-- deployment: cleanup_job
-  displayName: Remove previous Image Template resources
-  environment: ${{ parameters.environment }}
-  timeoutInMinutes: 120
-  condition: |
-    and(
-      succeeded(),
-      eq('${{ parameters.removeImageTemplateResources }}', 'true')
-    )
-  pool:
-    vmImage: '$(vmImage_${{ parameters.environment }})'
-    name: '$(poolName_${{ parameters.environment }})'
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-          - checkout: self
-          - task: AzurePowerShell@4
-            displayName: 'Remove previous image template resources'
-            name: Remove_ImageTemplates_Task
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: |
-                Write-Verbose "Load function" -Verbose
-                .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
+  - deployment: cleanup_job
+    displayName: Remove previous Image Template resources
+    environment: ${{ parameters.environment }}
+    timeoutInMinutes: 120
+    condition: |
+      and(
+        succeeded(),
+        eq('${{ parameters.removeImageTemplateResources }}', 'true')
+      )
+    pool:
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: AzurePowerShell@4
+              displayName: 'Remove previous image template resources'
+              name: Remove_ImageTemplates_Task
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
-                $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
+                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
 
-                $functionInput = @{
-                  resourcegroupName = $parameters.rgParam.value.name
-                  imageTemplateName =  $parameters.itParam.value.name
-                }
-                  
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  $functionInput = @{
+                    resourcegroupName = $parameters.rgParam.value.name
+                    imageTemplateName =  $parameters.itParam.value.name
+                  }
 
-                Remove-ImageTemplate @functionInput -Verbose
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
-- deployment: deploy_job
-  displayName: Deploy Resources
-  environment: ${{ parameters.environment }}
-  condition: in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
-  timeoutInMinutes: 120
-  pool:
-    vmImage: '$(vmImage_${{ parameters.environment }})'
-    name: '$(poolName_${{ parameters.environment }})'
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-          - checkout: self
-          - task: AzurePowerShell@4
-            displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-            condition: |
-              and(
-                succeeded(),
-                in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
-              )
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: |
-                # Load used functions
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-                # ----------------- #
-                # INVOKE DEPLOYMENT #
-                # ----------------- #
-                $functionInput = @{
-                  templateFilePath  = Join-Path '$(templatesPath)' 'imageInfra.deploy.bicep'
-                  parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
-                  location          = '$(location)'
-                  subscriptionId    = (Get-AzContext).Subscription.Id
-                }
+                  Remove-ImageTemplate @functionInput -Verbose
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
+  - deployment: deploy_job
+    displayName: Deploy Resources
+    environment: ${{ parameters.environment }}
+    condition: in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
+    timeoutInMinutes: 120
+    pool:
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: AzurePowerShell@4
+              displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
+              condition: |
+                and(
+                  succeeded(),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
+                )
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
 
-                # Inject control parmaeters from pipeline
-                $functionInput['additionalParameters'] = @{
-                  deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
-                }
+                  # ----------------- #
+                  # INVOKE DEPLOYMENT #
+                  # ----------------- #
+                  $functionInput = @{
+                    templateFilePath  = Join-Path '$(templatesPath)' 'imageInfra.deploy.bicep'
+                    parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
+                    location          = '$(location)'
+                    subscriptionId    = (Get-AzContext).Subscription.Id
+                  }
 
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  # Inject control parmaeters from pipeline
+                  $functionInput['additionalParameters'] = @{
+                    deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
+                  }
 
-                # Validate deployment
-                Test-TemplateWithParameterFile @functionInput
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-                # Invoke deployment
-                New-ModuleDeployment @functionInput -Verbose
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
+                  # Validate deployment
+                  Test-TemplateWithParameterFile @functionInput
 
-          - task: AzurePowerShell@4
-            displayName: "Trigger Storage Account post-deployment"
-            condition: |
-              and(
-                succeeded(),
-                in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
-              )
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: | 
-                Write-Verbose "Load function" -Verbose
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
+                  # Invoke deployment
+                  New-ModuleDeployment @functionInput -Verbose
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
 
-                $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
-                $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+            - task: AzurePowerShell@4
+              displayName: 'Trigger Storage Account post-deployment'
+              condition: |
+                and(
+                  succeeded(),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
+                )
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  Write-Verbose "Load function" -Verbose
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                $functionInput = @{      
-                  storageAccountName = $parameters.saParam.value.name
-                }
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
+                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
 
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  $functionInput = @{
+                    storageAccountName = $parameters.saParam.value.name
+                  }
 
-                Invoke-StorageAccountPostDeployment @functionInput -Verbose
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-          - task: AzurePowerShell@4
-            displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-            condition: |
-              and(
-                succeeded(),
-                in('${{ parameters.deploymentsToPerform }}', 'All', 'Only storage & image', 'Only image')
-              )
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: |
-                # Load used functions
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Set-SasKeysInFile.ps1')
+                  Invoke-StorageAccountPostDeployment @functionInput -Verbose
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
 
-                # ----------------- #
-                # INVOKE DEPLOYMENT #
-                # ----------------- #
-                $parameterFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
-                $functionInput = @{
-                  templateFilePath  = Join-Path '$(templatesPath)' 'imageTemplate.deploy.bicep'
-                  parameterFilePath = $parameterFilePath
-                  location          = '$(location)'
-                  subscriptionId    = (Get-AzContext).Subscription.Id
-                }
+            - task: AzurePowerShell@4
+              displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
+              condition: |
+                and(
+                  succeeded(),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only storage & image', 'Only image')
+                )
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Set-SasKeysInFile.ps1')
 
-                # Inject control parmaeters from pipeline
-                $functionInput['additionalParameters'] = @{
-                  deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
-                }
+                  # ----------------- #
+                  # INVOKE DEPLOYMENT #
+                  # ----------------- #
+                  $parameterFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
+                  $functionInput = @{
+                    templateFilePath  = Join-Path '$(templatesPath)' 'imageTemplate.deploy.bicep'
+                    parameterFilePath = $parameterFilePath
+                    location          = '$(location)'
+                    subscriptionId    = (Get-AzContext).Subscription.Id
+                  }
 
-                # Set SAS keys for storage references
-                Set-SasKeysInFile -filePath $parameterFilePath -Verbose
+                  # Inject control parmaeters from pipeline
+                  $functionInput['additionalParameters'] = @{
+                    deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
+                  }
 
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  # Set SAS keys for storage references
+                  Set-SasKeysInFile -filePath $parameterFilePath -Verbose
 
-                # Validate deployment
-                Test-TemplateWithParameterFile @functionInput
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-                # Invoke deployment
-                $res = New-ModuleDeployment @functionInput -Verbose
+                  # Validate deployment
+                  Test-TemplateWithParameterFile @functionInput
 
-                Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
+                  # Invoke deployment
+                  $res = New-ModuleDeployment @functionInput -Verbose
 
-                foreach ($outputKey in $res.deploymentOutput.Keys) {
-                  Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
-                }
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
+                  Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
 
-          - task: AzurePowerShell@4
-            displayName: "Wait for image build"
-            condition: |
-              and(
-                succeeded(),
-                eq('${{ parameters.waitForImageBuild }}', 'true'),
-                in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
-              )
-            name: PostDeploy_ImageTemplates_Task
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: |
-                Write-Verbose "Load function" -Verbose
-                . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
+                  foreach ($outputKey in $res.deploymentOutput.Keys) {
+                    Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
+                  }
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
 
-                $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
-                $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+            - task: AzurePowerShell@4
+              displayName: 'Wait for image build'
+              condition: |
+                and(
+                  succeeded(),
+                  eq('${{ parameters.waitForImageBuild }}', 'true'),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
+                )
+              name: PostDeploy_ImageTemplates_Task
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  Write-Verbose "Load function" -Verbose
+                  . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                $functionInput = @{
-                  ResourceGroupName = $parameters.rgParam.value.name
-                  ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
-                }
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
+                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
 
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  $functionInput = @{
+                    ResourceGroupName = $parameters.rgParam.value.name
+                    ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
+                  }
 
-                Wait-ForImageBuild @functionInput -Verbose
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Wait-ForImageBuild @functionInput -Verbose
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion

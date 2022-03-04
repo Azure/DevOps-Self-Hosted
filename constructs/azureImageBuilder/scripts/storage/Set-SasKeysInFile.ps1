@@ -10,7 +10,7 @@ function Set-SasKeysInFile {
 		Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
 		# Install required modules
-		$currentVerbosePreference = $VerbosePreference 
+		$currentVerbosePreference = $VerbosePreference
         $VerbosePreference = 'SilentlyContinue'
         $requiredModules = @(
             'Az.ResourceGraph'
@@ -27,12 +27,12 @@ function Set-SasKeysInFile {
             }
         }
 
-        $VerbosePreference = $currentVerbosePreference 
+        $VerbosePreference = $currentVerbosePreference
 	}
 
 	process {
 		$parameterFileContent = Get-Content -Path $filePath
-		$saslines = $parameterFileContent | Where-Object { $_ -like "*<SAS>*" } | ForEach-Object { $_.Trim() } 
+		$saslines = $parameterFileContent | Where-Object { $_ -like "*<SAS>*" } | ForEach-Object { $_.Trim() }
 
 		Write-Verbose ("Found [{0}] lines with sas tokens (<SAS>) to replace" -f $saslines.Count)
 
@@ -60,7 +60,7 @@ function Set-SasKeysInFile {
 
 			$parameterFileContent = $parameterFileContent.Replace($line, $newString)
 		}
-		
+
 		if ($PSCmdlet.ShouldProcess("File in path [$filePath]", "Overwrite")) {
 			Set-Content -Path $filePath -Value $parameterFileContent -Force
 		}

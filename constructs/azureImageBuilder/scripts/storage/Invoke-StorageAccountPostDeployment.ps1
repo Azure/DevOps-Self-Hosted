@@ -48,7 +48,7 @@ function Invoke-StorageAccountPostDeployment {
 
     Write-Verbose "Getting storage account context."
     $saResource = Get-AzResource -Name $StorageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
-            
+
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $StorageAccountName -ErrorAction Stop
     $ctx = $storageAccount.Context
 
@@ -65,13 +65,13 @@ function Invoke-StorageAccountPostDeployment {
         try {
             $pathToContentToUpload = Join-Path $contentDirectory $sourcePath
             Write-Verbose "Processing content in path: '$pathToContentToUpload'"
-    
+
             Write-Verbose "Testing local path"
             If (-Not (Test-Path -Path $pathToContentToUpload)) {
                 throw "Testing local paths FAILED: Cannot find content path to upload '$pathToContentToUpload'"
             }
             Write-Verbose "Testing paths: SUCCEEDED"
-    
+
             Write-Verbose "Getting files to be uploaded..."
             $scriptsToUpload = Get-ChildItem -Path $pathToContentToUpload -ErrorAction Stop
             Write-Verbose "Files to be uploaded:"
@@ -80,7 +80,7 @@ function Invoke-StorageAccountPostDeployment {
             Write-Verbose "Testing blob container"
             Get-AzStorageContainer -Name $targetBlob -Context $ctx -ErrorAction Stop
             Write-Verbose "Testing blob container SUCCEEDED"
-    
+
             if ($PSCmdlet.ShouldProcess("Files to the '$targetBlob' container", "Upload")) {
                 $scriptsToUpload | Set-AzStorageBlobContent -Container $targetBlob -Context $ctx -Force -ErrorAction 'Stop' | Out-Null
             }

@@ -123,11 +123,11 @@ function Install-CustomModule {
     $foundModules = Find-Module @moduleImportInputObject
     foreach ($foundModule in $foundModules) {
 
-        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable 
+        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable
         if ($localModuleVersions -and $localModuleVersions.Version -contains $foundModule.Version ) {
             LogInfo("Module [{0}] already installed with latest version [{1}]" -f $foundModule.Name, $foundModule.Version)
             continue
-        }      
+        }
         if ($module.ExcludeModules -and $module.excludeModules.contains($foundModule.Name)) {
             LogInfo("Module {0} is configured to be ignored." -f $foundModule.Name)
             continue
@@ -197,14 +197,14 @@ if ([String]::IsNullOrEmpty($TFVersion)) {
     $latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasicParsing | ConvertFrom-Json).name.Replace('v', '')
     LogInfo("Fetched latest available version: [$TFVersion]")
     $TFVersion = $latestTerraformVersion
-} 
+}
 
 LogInfo("Using version: [$TFVersion]")
 sudo apt-get install unzip
 wget ('https://releases.hashicorp.com/terraform/{0}/terraform_{0}_linux_amd64.zip' -f $TFVersion)
 unzip ('terraform_{0}_linux_amd64.zip' -f $TFVersion )
 sudo mv terraform /usr/local/bin/
-terraform --version 
+terraform --version
 LogInfo("Install Terraform end")
 
 #######################

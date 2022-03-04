@@ -42,7 +42,7 @@ function Remove-ImageTemplate {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Install required modules
-        $currentVerbosePreference = $VerbosePreference 
+        $currentVerbosePreference = $VerbosePreference
         $VerbosePreference = 'SilentlyContinue'
         $requiredModules = @(
             'Az.Resources',
@@ -59,14 +59,14 @@ function Remove-ImageTemplate {
                 Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
             }
         }
-        $VerbosePreference = $currentVerbosePreference 
+        $VerbosePreference = $currentVerbosePreference
 
         # Load helper
         . (Join-Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
     }
 
     process {
-        [array] $imageTemplateResources = (Search-AzGraph -Query "Resources | where name startswith '$imageTemplateName'") 
+        [array] $imageTemplateResources = (Search-AzGraph -Query "Resources | where name startswith '$imageTemplateName'")
         [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -templateResourceGroup $_.ResourceGroup -templateName $_.name) -notIn @('running', 'new') }
         Write-Verbose ("Found [{0}] image templates to remove." -f $filteredTemplateResource.Count)
         if ($imageTemplateResources.Count -gt $filteredTemplateResource.Count) {
@@ -75,11 +75,11 @@ function Remove-ImageTemplate {
 
         foreach ($imageTemplateResource in $filteredTemplateResource) {
             if ($PSCmdlet.ShouldProcess('Image template [{0}]' -f $imageTemplateResource.Name, "Remove")) {
-                $null = Remove-AzResource -ResourceId $imageTemplateResource.id -Force 
+                $null = Remove-AzResource -ResourceId $imageTemplateResource.id -Force
                 Write-Verbose ('Remove image template [{0}]' -f $imageTemplateResource.id) -Verbose
             }
         }
-    } 
+    }
 
     end {
         Write-Debug ('{0} exited' -f $MyInvocation.MyCommand)

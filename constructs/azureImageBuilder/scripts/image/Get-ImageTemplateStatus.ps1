@@ -29,7 +29,7 @@ function Get-ImageTemplateStatus {
     $context = Get-AzContext
     $subscriptionId = $context.Subscription.Id
 
-    $path = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.VirtualMachineImages/imageTemplates/{2}?api-version=2020-02-14" -f $subscriptionId, $templateResourceGroup, $templateName
+    $path = '/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.VirtualMachineImages/imageTemplates/{2}?api-version=2020-02-14' -f $subscriptionId, $templateResourceGroup, $templateName
     $requestInputObject = @{
         Method = 'GET'
         Path   = $path

@@ -8,24 +8,24 @@
 #######################################################################
 
 variables:
-#############
-## GENERAL ##
-#############
-#region shared
+  #############
+  ## GENERAL ##
+  #############
+  #region shared
   vmImage_sbx: 'ubuntu-latest' # Use this for microsoft-hosted agents
   vmImage_dev: 'ubuntu-latest' # Use this for microsoft-hosted agents
   vmImage_prd: 'ubuntu-latest' # Use this for microsoft-hosted agents
-  
-  poolName_sbx: ''   # Use this for self-hosted agents
-  poolName_dev: ''   # Use this for self-hosted agents
-  poolName_prd: ''   # Use this for self-hosted agents
+
+  poolName_sbx: '' # Use this for self-hosted agents
+  poolName_dev: '' # Use this for self-hosted agents
+  poolName_prd: '' # Use this for self-hosted agents
 
   serviceConnection_sbx: 'sbxConnection'
   serviceConnection_dev: 'devConnection'
   serviceConnection_prd: 'prdConnection'
-#endregion
+  #endregion
 
-#region specific
+  #region specific
   templatesPath: 'constructs/azureDevOpsScaleSet/templates'
   parametersPath: 'constructs/azureDevOpsScaleSet/parameters'
   orchestrationFunctionsPath: 'constructs/azureDevOpsScaleSet/scripts'

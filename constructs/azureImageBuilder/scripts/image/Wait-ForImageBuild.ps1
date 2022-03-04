@@ -12,7 +12,7 @@ Required. The resource group the image template was deployed into.
 Required. The name of the image template to query to build status for. E.g. 'lin_it-2022-02-20-16-17-38'
 
 .EXAMPLE
-Wait-ForImageBuild -ResourceGroupName 'agents-vmss-rg' -ImageTemplateName 'lin_it-2022-02-20-16-17-38'  
+Wait-ForImageBuild -ResourceGroupName 'agents-vmss-rg' -ImageTemplateName 'lin_it-2022-02-20-16-17-38'
 
 Check the current build status of image template 'lin_it-2022-02-20-16-17-38' that was deployed into resource group 'agents-vmss-rg'
 #>

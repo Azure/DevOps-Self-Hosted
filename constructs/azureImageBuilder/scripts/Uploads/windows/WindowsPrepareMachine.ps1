@@ -1,14 +1,14 @@
 #region Functions
 function LogInfo($message) {
-    Log "Info" $message
+    Log 'Info' $message
 }
 
 function LogError($message) {
-    Log "Error" $message
+    Log 'Error' $message
 }
 
 function LogWarning($message) {
-    Log "Warning" $message
+    Log 'Warning' $message
 }
 
 function Log {
@@ -36,11 +36,11 @@ function Log {
         [string] $message
     )
 
-    $date = get-date
+    $date = Get-Date
     $content = "[$date]`t$category`t`t$message`n"
     Write-Verbose $Content -Verbose
 
-    $FilePath = Join-Path $env:TEMP "log.log"
+    $FilePath = Join-Path $env:TEMP 'log.log'
     if (-not (Test-Path $FilePath)) {
         Write-Verbose "Log file not found, create new in path: [$FilePath]" -Verbose
         $null = New-Item -ItemType 'File' -Path $FilePath -Force
@@ -74,8 +74,7 @@ function Install-CustomModule {
     if (Get-Module $Module -ErrorAction SilentlyContinue) {
         try {
             Remove-Module $Module -Force
-        }
-        catch {
+        } catch {
             LogError("Unable to remove module $($Module.Name)  : $($_.Exception) found, $($_.ScriptStackTrace)")
         }
     }
@@ -93,22 +92,21 @@ function Install-CustomModule {
 
         $localModuleVersions = Get-Module $foundModule.Name -ListAvailable
         if ($localModuleVersions -and $localModuleVersions.Version -contains $foundModule.Version ) {
-            LogInfo("Module [{0}] already installed with latest version [{1}]" -f $foundModule.Name, $foundModule.Version)
+            LogInfo('Module [{0}] already installed with latest version [{1}]' -f $foundModule.Name, $foundModule.Version)
             continue
         }
         if ($module.ExcludeModules -and $module.excludeModules.contains($foundModule.Name)) {
-            LogInfo("Module {0} is configured to be ignored." -f $foundModule.Name)
+            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name)
             continue
         }
 
-        LogInfo("Install module [{0}] with version [{1}]" -f $foundModule.Name, $foundModule.Version)
-        if ($PSCmdlet.ShouldProcess("Module [{0}]" -f $foundModule.Name, "Install")) {
+        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version)
+        if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
             $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
             if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
-                LogInfo("Module [{0}] is installed with version [{1}]" -f $installed.Name, $installed.Version)
-            }
-            else {
-                LogError("Installation of module [{0}] failed" -f $foundModule.Name)
+                LogInfo('Module [{0}] is installed with version [{1}]' -f $installed.Name, $installed.Version)
+            } else {
+                LogError('Installation of module [{0}] failed' -f $foundModule.Name)
             }
         }
     }
@@ -120,20 +118,19 @@ function Set-PowerShellOutputRedirectionBugFix {
     if ($poshMajorVerion -lt 4) {
         try {
             # http://www.leeholmes.com/blog/2008/07/30/workaround-the-os-handles-position-is-not-what-filestream-expected/ plus comments
-            $bindingFlags = [Reflection.BindingFlags] "Instance,NonPublic,GetField"
-            $objectRef = $host.GetType().GetField("externalHostRef", $bindingFlags).GetValue($host)
-            $bindingFlags = [Reflection.BindingFlags] "Instance,NonPublic,GetProperty"
-            $consoleHost = $objectRef.GetType().GetProperty("Value", $bindingFlags).GetValue($objectRef, @())
-            [void] $consoleHost.GetType().GetProperty("IsStandardOutputRedirected", $bindingFlags).GetValue($consoleHost, @())
-            $bindingFlags = [Reflection.BindingFlags] "Instance,NonPublic,GetField"
-            $field = $consoleHost.GetType().GetField("standardOutputWriter", $bindingFlags)
+            $bindingFlags = [Reflection.BindingFlags] 'Instance,NonPublic,GetField'
+            $objectRef = $host.GetType().GetField('externalHostRef', $bindingFlags).GetValue($host)
+            $bindingFlags = [Reflection.BindingFlags] 'Instance,NonPublic,GetProperty'
+            $consoleHost = $objectRef.GetType().GetProperty('Value', $bindingFlags).GetValue($objectRef, @())
+            [void] $consoleHost.GetType().GetProperty('IsStandardOutputRedirected', $bindingFlags).GetValue($consoleHost, @())
+            $bindingFlags = [Reflection.BindingFlags] 'Instance,NonPublic,GetField'
+            $field = $consoleHost.GetType().GetField('standardOutputWriter', $bindingFlags)
             $field.SetValue($consoleHost, [Console]::Out)
-            [void] $consoleHost.GetType().GetProperty("IsStandardErrorRedirected", $bindingFlags).GetValue($consoleHost, @())
-            $field2 = $consoleHost.GetType().GetField("standardErrorWriter", $bindingFlags)
+            [void] $consoleHost.GetType().GetProperty('IsStandardErrorRedirected', $bindingFlags).GetValue($consoleHost, @())
+            $field2 = $consoleHost.GetType().GetField('standardErrorWriter', $bindingFlags)
             $field2.SetValue($consoleHost, [Console]::Error)
-        }
-        catch {
-            LogInfo( "Unable to apply redirection fix.")
+        } catch {
+            LogInfo( 'Unable to apply redirection fix.')
         }
     }
 }
@@ -143,7 +140,7 @@ function Get-Downloader {
         [string]$url
     )
 
-    $downloader = new-object System.Net.WebClient
+    $downloader = New-Object System.Net.WebClient
 
     $defaultCreds = [System.Net.CredentialCache]::DefaultCredentials
     if ($null -ne $defaultCreds) {
@@ -151,10 +148,9 @@ function Get-Downloader {
     }
 
     if ($env:chocolateyIgnoreProxy -eq 'true') {
-        Write-Debug "Explicitly bypassing proxy due to user environment variable"
+        Write-Debug 'Explicitly bypassing proxy due to user environment variable'
         $downloader.Proxy = [System.Net.GlobalProxySelection]::GetEmptyWebProxy()
-    }
-    else {
+    } else {
         # check if a proxy is required
         $explicitProxy = $env:chocolateyProxyLocation
         $explicitProxyUser = $env:chocolateyProxyUser
@@ -170,13 +166,12 @@ function Get-Downloader {
             Write-Debug "Using explicit proxy server '$explicitProxy'."
             $downloader.Proxy = $proxy
 
-        }
-        elseif (-not $downloader.Proxy.IsBypassed($url)) {
+        } elseif (-not $downloader.Proxy.IsBypassed($url)) {
             # system proxy (pass through)
             $creds = $defaultCreds
             if ($null -eq $creds) {
-                Write-Debug "Default credentials were null. Attempting backup method"
-                $cred = get-credential
+                Write-Debug 'Default credentials were null. Attempting backup method'
+                $cred = Get-Credential
                 $creds = $cred.GetNetworkCredential();
             }
 
@@ -222,30 +217,29 @@ function Set-SecurityProtocol {
         # exist in .NET 4.0, even though they are addressable if .NET 4.5+ is
         # installed (.NET 4.5 is an in-place upgrade).
         [System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
-    }
-    catch {
+    } catch {
         LogInfo( 'Unable to set PowerShell to use TLS 1.2 and TLS 1.1 due to old .NET Framework installed. If you see underlying connection closed or trust errors, you may need to do one or more of the following: (1) upgrade to .NET Framework 4.5+ and PowerShell v3, (2) specify internal Chocolatey package location (set $env:chocolateyDownloadUrl prior to install or host the package internally), (3) use the Download + PowerShell method of install. See https://chocolatey.org/install for all install options.')
     }
 }
 
 function Install-Choco {
 
-    LogInfo( "Install choco")
+    LogInfo( 'Install choco')
 
-    LogInfo( "Invoke install.ps1 content")
+    LogInfo( 'Invoke install.ps1 content')
     if ($null -eq $env:TEMP) {
         $env:TEMP = Join-Path $env:SystemDrive 'temp'
     }
-    $chocTempDir = Join-Path $env:TEMP "chocolatey"
-    $tempDir = Join-Path $chocTempDir "chocInstall"
+    $chocTempDir = Join-Path $env:TEMP 'chocolatey'
+    $tempDir = Join-Path $chocTempDir 'chocInstall'
     if (-not [System.IO.Directory]::Exists($tempDir)) { [void][System.IO.Directory]::CreateDirectory($tempDir) }
-    $file = Join-Path $tempDir "chocolatey.zip"
+    $file = Join-Path $tempDir 'chocolatey.zip'
 
     Set-PowerShellOutputRedirectionBugFix
 
     Set-SecurityProtocol
 
-    LogInfo( "Getting latest version of the Chocolatey package for download.")
+    LogInfo( 'Getting latest version of the Chocolatey package for download.')
     $url = 'https://chocolatey.org/api/v2/Packages()?$filter=((Id%20eq%20%27chocolatey%27)%20and%20(not%20IsPrerelease))%20and%20IsLatestVersion'
     [xml]$result = Get-DownloadString $url
     $url = $result.feed.entry.content.src
@@ -261,9 +255,8 @@ function Install-Choco {
     if ($env:chocolateyUseWindowsCompression -eq 'true') {
         LogInfo( 'Using built-in compression to unzip')
         $unzipMethod = 'builtin'
-    }
-    elseif (-Not (Test-Path ($7zaExe))) {
-        LogInfo( "Downloading 7-Zip commandline tool prior to extraction.")
+    } elseif (-Not (Test-Path ($7zaExe))) {
+        LogInfo( 'Downloading 7-Zip commandline tool prior to extraction.')
         # download 7zip
         Get-DownloadedFile 'https://chocolatey.org/7za.exe' "$7zaExe"
     }
@@ -271,7 +264,7 @@ function Install-Choco {
     # unzip the package
     LogInfo("Extracting $file to $tempDir...")
     if ($unzipMethod -eq '7zip') {
-        LogInfo("Unzip with 7zip")
+        LogInfo('Unzip with 7zip')
         $params = "x -o`"$tempDir`" -bd -y `"$file`""
         # use more robust Process as compared to Start-Process -Wait (which doesn't
         # wait for the process to finish in PowerShell v3)
@@ -287,7 +280,7 @@ function Install-Choco {
         $process.Dispose()
         $errorMessage = "Unable to unzip package using 7zip. Perhaps try setting `$env:chocolateyUseWindowsCompression = 'true' and call install again. Error:"
         switch ($exitCode) {
-            0 { LogInfo("Processed zip"); break }
+            0 { LogInfo('Processed zip'); break }
             1 { throw "$errorMessage Some files could not be extracted" }
             2 { throw "$errorMessage 7-Zip encountered a fatal error while extracting the files" }
             7 { throw "$errorMessage 7-Zip command line error" }
@@ -295,34 +288,31 @@ function Install-Choco {
             255 { throw "$errorMessage Extraction cancelled by the user" }
             default { throw "$errorMessage 7-Zip signalled an unknown error (code $exitCode)" }
         }
-    }
-    else {
-        LogInfo("Unzip without 7zip")
+    } else {
+        LogInfo('Unzip without 7zip')
         if ($PSVersionTable.PSVersion.Major -lt 5) {
             try {
-                $shellApplication = new-object -com shell.application
+                $shellApplication = New-Object -com shell.application
                 $zipPackage = $shellApplication.NameSpace($file)
                 $destinationFolder = $shellApplication.NameSpace($tempDir)
                 $destinationFolder.CopyHere($zipPackage.Items(), 0x10)
-            }
-            catch {
+            } catch {
                 throw "Unable to unzip package using built-in compression. Set `$env:chocolateyUseWindowsCompression = 'false' and call install again to use 7zip to unzip. Error: `n $_"
             }
-        }
-        else {
+        } else {
             Expand-Archive -Path "$file" -DestinationPath "$tempDir" -Force
         }
     }
 
     # Call chocolatey install
-    LogInfo( "Installing chocolatey on this machine")
-    $toolsFolder = Join-Path $tempDir "tools"
-    $chocInstallPS1 = Join-Path $toolsFolder "chocolateyInstall.ps1"
+    LogInfo( 'Installing chocolatey on this machine')
+    $toolsFolder = Join-Path $tempDir 'tools'
+    $chocInstallPS1 = Join-Path $toolsFolder 'chocolateyInstall.ps1'
 
     & $chocInstallPS1
 
     LogInfo( 'Ensuring chocolatey commands are on the path')
-    $chocInstallVariableName = "ChocolateyInstall"
+    $chocInstallVariableName = 'ChocolateyInstall'
     $chocoPath = [Environment]::GetEnvironmentVariable($chocInstallVariableName)
     if ($null -eq $chocoPath -or $chocoPath -eq '') {
         $chocoPath = "$env:ALLUSERSPROFILE\Chocolatey"
@@ -357,21 +347,20 @@ function Uninstall-AzureRM {
 
     #>
 
-    LogInfo("Remove Modules from context start")
-    Get-Module "AzureRM.*" | Remove-Module
-    LogInfo("Remaining AzureRM modules: {0}" -f ((Get-Module "AzureRM.*").Name -join " | "))
-    LogInfo("Remove Modules from context end")
+    LogInfo('Remove Modules from context start')
+    Get-Module 'AzureRM.*' | Remove-Module
+    LogInfo('Remaining AzureRM modules: {0}' -f ((Get-Module 'AzureRM.*').Name -join ' | '))
+    LogInfo('Remove Modules from context end')
 
     # Uninstalling Azure PowerShell Modules
     try {
-        $programName = "Microsoft Azure PowerShell"
+        $programName = 'Microsoft Azure PowerShell'
         $retry = $false
         try {
             LogInfo("Remove Program $programName")
             Remove-Program -Like "$programName*"
             LogInfo("Removed Program $programName")
-        }
-        catch {
+        } catch {
             LogWarning("'$($programName) msiexec removal failed, retry uninstall")
             $retry = $true
         }
@@ -382,66 +371,61 @@ function Uninstall-AzureRM {
                 if ($app) {
                     LogInfo("Found $($app.Name), try uninstall ")
                     $app.Uninstall()
-                }
-                else {
+                } else {
                     LogWarning("'$($programName) not found")
                 }
-            }
-            catch {
+            } catch {
                 LogError("'$($programName) uninstall failed")
             }
         }
 
-    }
-    catch {
+    } catch {
         LogError("Unable to remove Microsoft Azure PowerShell: $($_.Exception) found, $($_.ScriptStackTrace)")
     }
 
     # Uninstall AzureRm Module
     try {
-        Get-Module "AzureRm.*" -ListAvailable | Uninstall-Module -Force
-    }
-    catch {
+        Get-Module 'AzureRm.*' -ListAvailable | Uninstall-Module -Force
+    } catch {
         LogError("Unable to remove AzureRM Module: $($_.Exception) found, $($_.ScriptStackTrace)")
     }
 
     try {
-        $AzureRMModuleFolder = "C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager"
+        $AzureRMModuleFolder = 'C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager'
         Remove-Item $AzureRMModuleFolder -Force -Recurse
         LogInfo("Removed $AzureRMModuleFolder")
-    }
-    catch {
+    } catch {
         LogError("Unable to remove $AzureRMModuleFolder")
     }
 
-    LogInfo("Remaining installed AzureRMModule: {0}" -f ((Get-Module "AzureRM.*" -ListAvailable).Name -join " | "))
+    LogInfo('Remaining installed AzureRMModule: {0}' -f ((Get-Module 'AzureRM.*' -ListAvailable).Name -join ' | '))
 }
 #endregion
 
-$StartTime = get-date
+$StartTime = Get-Date
 
-LogInfo( "Set Execution Policy")
+LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 #######################
 ##   Install Choco    #
 #######################
-LogInfo("Install-Choco start")
+LogInfo('Install-Choco start')
 $null = Install-Choco
-LogInfo("Install-Choco end")
+LogInfo('Install-Choco end')
 
 ##########################
 ##   Install Azure CLI   #
 ##########################
-LogInfo("Install azure cli start")
+LogInfo('Install azure cli start')
 $null = choco install azure-cli -y -v
-LogInfo("Install azure cli end")
+LogInfo('Install azure cli end')
 
 ###############################
 ##   Install Extensions CLI   #
 ###############################
 
-LogInfo("Install cli exentions start")
+LogInfo('Install cli exentions start')
 $Extensions = @(
     'azure-devops'
 )
@@ -451,58 +435,58 @@ foreach ($extension in $Extensions) {
         az extension add --name $extension
     }
 }
-LogInfo("Install cli exentions end")
+LogInfo('Install cli exentions end')
 
 ##########################
 ##   Install Az Bicep    #
 ##########################
-LogInfo("Install az bicep exention start")
+LogInfo('Install az bicep exention start')
 az bicep install
-LogInfo("Install az bicep exention end")
+LogInfo('Install az bicep exention end')
 
 #########################
 ##   Install Kubectl    #
 #########################
-LogInfo("Install kubectl start")
+LogInfo('Install kubectl start')
 $null = choco install kubernetes-cli -y -v
-LogInfo("Install kubectl end")
+LogInfo('Install kubectl end')
 
 #################################
 ##   Install PowerShell Core    #
 #################################
-LogInfo("Install powershell core start")
+LogInfo('Install powershell core start')
 $null = choco install powershell-core -y -v
-LogInfo("Install powershell core end")
+LogInfo('Install powershell core end')
 
 ###########################
 ##   Install Terraform   ##
 ###########################
-LogInfo("Install Terraform start")
+LogInfo('Install Terraform start')
 $null = choco install terraform -y -v
-LogInfo("Install Terraform end")
+LogInfo('Install Terraform end')
 
 #######################
 ##   Install Nuget   ##
 #######################
-LogInfo("Update Package Provider Nuget start")
+LogInfo('Update Package Provider Nuget start')
 $null = Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-LogInfo("Update Package Provider Nuget end")
+LogInfo('Update Package Provider Nuget end')
 
 #######################
 ##   Install AzCopy   #
 #######################
-LogInfo("Install az copy start")
-Invoke-WebRequest -Uri "https://aka.ms/downloadazcopy-v10-windows" -OutFile "AzCopy.zip" -UseBasicParsing
-Expand-Archive "./AzCopy.zip" "./AzCopy" -Force
-Get-ChildItem "./AzCopy/*/azcopy.exe" | Move-Item -Destination "C:\Users\thmaure\AzCopy\AzCopy.exe"
-$userenv = [System.Environment]::GetEnvironmentVariable("Path", "User")
-[System.Environment]::SetEnvironmentVariable("PATH", $userenv + ";C:\Users\thmaure\AzCopy", "User")
-LogInfo("Install az copy end")
+LogInfo('Install az copy start')
+Invoke-WebRequest -Uri 'https://aka.ms/downloadazcopy-v10-windows' -OutFile 'AzCopy.zip' -UseBasicParsing
+Expand-Archive './AzCopy.zip' './AzCopy' -Force
+Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\thmaure\AzCopy\AzCopy.exe'
+$userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+[System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\thmaure\AzCopy', 'User')
+LogInfo('Install az copy end')
 
 ###########################
 ##   Install BICEP CLI   ##
 ###########################
-LogInfo("Install BICEP start")
+LogInfo('Install BICEP start')
 
 # Fetch the latest Bicep CLI binary
 curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
@@ -510,68 +494,68 @@ curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-li
 chmod +x ./bicep
 # Add bicep to your PATH (requires admin)
 sudo mv ./bicep /usr/local/bin/bicep
-LogInfo("Install BICEP end")
+LogInfo('Install BICEP end')
 
 ###############################
 ##   Install PowerShellGet   ##
 ###############################
-LogInfo("Install latest PowerShellGet start")
-$null = Install-Module "PowerShellGet" -Force
-LogInfo("Install latest PowerShellGet end")
+LogInfo('Install latest PowerShellGet start')
+$null = Install-Module 'PowerShellGet' -Force
+LogInfo('Install latest PowerShellGet end')
 
-LogInfo("Import PowerShellGet start")
+LogInfo('Import PowerShellGet start')
 $null = Import-PackageProvider PowerShellGet -Force
-LogInfo("Import PowerShellGet end")
+LogInfo('Import PowerShellGet end')
 
 ####################################
 ##   Install PowerShell Modules   ##
 ####################################
 $Modules = @(
-    @{ Name = "Pester" },
-    @{ Name = "PSScriptAnalyzer" },
-    @{ Name = "powershell-yaml" },
-    @{ Name = "Azure.*"; ExcludeModules = @('Azure.Storage') }, # Azure.Storage has AzureRM dependency
-    @{ Name = "Logging" },
-    @{ Name = "PoshRSJob" },
-    @{ Name = "ThreadJob" },
-    @{ Name = "JWTDetails" },
-    @{ Name = "OMSIngestionAPI" },
-    @{ Name = "Az" },
-    @{ Name = "AzureAD" },
-    @{ Name = "ImportExcel" }
+    @{ Name = 'Pester' },
+    @{ Name = 'PSScriptAnalyzer' },
+    @{ Name = 'powershell-yaml' },
+    @{ Name = 'Azure.*'; ExcludeModules = @('Azure.Storage') }, # Azure.Storage has AzureRM dependency
+    @{ Name = 'Logging' },
+    @{ Name = 'PoshRSJob' },
+    @{ Name = 'ThreadJob' },
+    @{ Name = 'JWTDetails' },
+    @{ Name = 'OMSIngestionAPI' },
+    @{ Name = 'Az' },
+    @{ Name = 'AzureAD' },
+    @{ Name = 'ImportExcel' }
 )
 $count = 0
-LogInfo("Try installing:")
+LogInfo('Try installing:')
 $modules | ForEach-Object {
-    LogInfo("- [{0}]. [{1}]" -f $count, $_.Name)
+    LogInfo('- [{0}]. [{1}]' -f $count, $_.Name)
     $count++
 }
 
-LogInfo("Install-CustomModule start")
+LogInfo('Install-CustomModule start')
 $count = 0
 Foreach ($Module in $Modules) {
-    LogInfo("=====================")
-    LogInfo("HANDLING MODULE [{0}] [{1}/{2}]" -f $Module.Name, $count, $Modules.Count)
-    LogInfo("=====================")
+    LogInfo('=====================')
+    LogInfo('HANDLING MODULE [{0}] [{1}/{2}]' -f $Module.Name, $count, $Modules.Count)
+    LogInfo('=====================')
     # Installing New Modules and Removing Old
     $null = Install-CustomModule -Module $Module # $ModuleSavePath
     $count++
 }
-LogInfo("Install-CustomModule end")
+LogInfo('Install-CustomModule end')
 
 #########################################
 ##   Post Installation Configuration   ##
 #########################################
 if (Get-Module AzureRm* -ListAvailable) {
-    LogInfo("Un-install ARM start")
-    Uninstall-AzureRM
-    LogInfo("Un-install ARM end")
+    LogInfo('Un-install ARM start')
+    Uninstall-AzureRm
+    LogInfo('Un-install ARM end')
 }
 
-$elapsedTime = (get-date) - $StartTime
-$totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+$elapsedTime = (Get-Date) - $StartTime
+$totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo("Exiting WindowsPrepareMachine.ps1")
+LogInfo('Exiting WindowsPrepareMachine.ps1')
 
 return 0;
 #endregion
