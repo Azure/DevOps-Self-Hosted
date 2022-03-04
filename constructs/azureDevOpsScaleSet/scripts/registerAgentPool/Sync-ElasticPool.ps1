@@ -2,7 +2,7 @@ function Sync-ElasticPool {
 
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string] $PAT,
 
         [Parameter(Mandatory = $true)]
