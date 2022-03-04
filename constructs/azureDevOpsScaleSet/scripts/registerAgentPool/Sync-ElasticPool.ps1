@@ -3,6 +3,9 @@ function Sync-ElasticPool {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory = $true)]
+        [string] $PAT,
+
+        [Parameter(Mandatory = $true)]
         [string] $Organization,
 
         [Parameter(Mandatory = $true)]
@@ -51,6 +54,11 @@ function Sync-ElasticPool {
     }
 
     process {
+
+        if (-not [String]::IsNullOrEmpty($PAT)) {
+            Write-Verbose 'Login to AzureDevOps via PAT token' -Verbose
+            $env:AZURE_DEVOPS_EXT_PAT = $PAT
+        }
 
         if (-not ($vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets')) {
             throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)

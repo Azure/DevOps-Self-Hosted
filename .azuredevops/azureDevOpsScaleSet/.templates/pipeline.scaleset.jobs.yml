@@ -111,6 +111,7 @@ jobs:
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{
+                    PAT                   = '$(System.AccessToken)'
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
