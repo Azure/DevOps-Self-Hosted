@@ -12,9 +12,9 @@ Mandatory. The organization that contains the project to search in
 Mandatory. The project to search in
 
 .EXAMPLE
-Get-ElasticPool -Organization 'contoso' -project 'myProject'
+Get-ElasticPool -Organization 'contoso' -Project 'myProject'
 
-Get all elastic poools registered in project [contoso|myProject]
+Get all elastic pools registered in project [contoso|myProject]
 #>
 function Get-ElasticPool {
 

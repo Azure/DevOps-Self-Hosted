@@ -1,3 +1,21 @@
+<#
+.SYNOPSIS
+Get a list of all Azure DevOps endpoints (service connections) in the given project
+
+.DESCRIPTION
+Get a list of all Azure DevOps endpoints (service connections) in the given project
+
+.PARAMETER Organization
+Mandatory. The organization that contains the project to search in
+
+.PARAMETER Project
+Mandatory. The project to search in
+
+.EXAMPLE
+Get-Endpoint -Organization 'contoso' -Project 'myProject'
+
+Get all endpoints registered in project [contoso|myProject]
+#>
 function Get-Endpoint {
 
     [CmdletBinding()]

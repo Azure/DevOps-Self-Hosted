@@ -1,3 +1,21 @@
+<#
+.SYNOPSIS
+Find a Azure DevOps project in the given organization
+
+.DESCRIPTION
+Find a Azure DevOps project in the given organization
+
+.PARAMETER Organization
+Mandatory. The organization that contains the project
+
+.PARAMETER Project
+Mandatory. The project to search for inside the organization
+
+.EXAMPLE
+Get-Project -Organization 'contoso' -Project 'myProject'
+
+Search for project 'myProject' in organization 'contoso'
+#>
 function Get-Project {
 
     [CmdletBinding()]
