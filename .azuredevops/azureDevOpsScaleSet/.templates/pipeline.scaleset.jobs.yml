@@ -97,14 +97,21 @@ jobs:
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerScaleSet' 'Register-ElasticPool.ps1')
 
+                  # Get scale set properties
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
+                  $vmssParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+
+                  # Get agent  pool properties
                   $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
-                  $parameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+                  $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
                   $inputObject = @{
-                    Organization          = $parameterFileContent.Organization
-                    Project               = $parameterFileContent.Project
-                    ServiceConnectionName = $parameterFileContent.ServiceConnectionName
-                    AgentPoolProperties   = $parameterFileContent.AgentPoolProperties
+                    Organization          = $agentPoolParameterFileContent.Organization
+                    Project               = $agentPoolParameterFileContent.Project
+                    ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
+                    VMSSName              = $vmssParameterFileContent.parameters.vmssParam.value.name
+                    VMSSResourceGroupName = $vmssParameterFileContent.parameters.rgParam.value.name
+                    AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
                   }
 
                   Write-Verbose "Invoke task with" -Verbose

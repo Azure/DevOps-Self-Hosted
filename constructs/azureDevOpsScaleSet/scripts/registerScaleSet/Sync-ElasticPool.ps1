@@ -9,6 +9,12 @@ function Sync-ElasticPool {
         [string] $Project,
 
         [Parameter(Mandatory = $true)]
+        [string] $VMSSName,
+
+        [Parameter(Mandatory = $true)]
+        [string] $VMSSResourceGroupName,
+
+        [Parameter(Mandatory = $true)]
         [string] $ServiceConnectionName,
 
         [Parameter(Mandatory = $true)]
@@ -27,20 +33,23 @@ function Sync-ElasticPool {
     }
 
     process {
+
+        $vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets'
+
         $foundProject = Get-Project -Organization $Organization -Project $project
 
         $serviceEndpoints = Get-Endpoint -Organization $Organization -Project $project
         $serviceEndpoint = $serviceEndpoints | Where-Object { $_.name -eq $serviceConnectionName }
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
-        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $AgentPoolProperties.scaleSetResourceId })) {
-            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $AgentPoolProperties.scaleSetResourceId.Split('/')[-1], $AgentPoolProperties.scaleSetResourceId.Split('/')[4])
+        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.resourceId })) {
+            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName)
             $inputObject = @{
                 Organization          = $Organization
                 ProjectId             = $foundProject.id
                 PoolName              = $ScaleSetPoolName
                 ServiceEndpointId     = $serviceEndpoint.id
-                ScaleSetResourceID    = $scaleSetResourceId
+                ScaleSetResourceID    = $vmss.ResourceId
                 AuthorizeAllPipelines = $AgentPoolProperties.AuthorizeAllPipelines
                 MaxCapacity           = $AgentPoolProperties.MaxCapacity
                 DesiredIdle           = $AgentPoolProperties.DesiredIdle
@@ -56,7 +65,7 @@ function Sync-ElasticPool {
             $inputObject = @{
                 Organization        = $Organization
                 ScaleSetPoolId      = $elasticPool.Id
-                ScaleSetResourceID  = $scaleSetResourceId
+                ScaleSetResourceID  = $vmss.ResourceId
                 MaxCapacity         = $AgentPoolProperties.MaxCapacity
                 DesiredIdle         = $AgentPoolProperties.DesiredIdle
                 RecycleAfterEachUse = $AgentPoolProperties.RecycleAfterEachUse
