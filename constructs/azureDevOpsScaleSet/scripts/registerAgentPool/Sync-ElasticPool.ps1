@@ -24,6 +24,24 @@ function Sync-ElasticPool {
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
+        # Install required modules
+        $currentVerbosePreference = $VerbosePreference
+        $VerbosePreference = 'SilentlyContinue'
+        $requiredModules = @(
+            'Az.Resources'
+        )
+        foreach ($moduleName in $requiredModules) {
+            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
+                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
+                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
+                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
+                }
+            } else {
+                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
+            }
+        }
+        $VerbosePreference = $currentVerbosePreference
+
         # Load helper
         . (Join-Path $PSScriptRoot 'Get-Project.ps1')
         . (Join-Path $PSScriptRoot 'Get-Endpoint.ps1')

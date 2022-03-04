@@ -110,7 +110,7 @@ jobs:
                   $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
-                  $inputObject = @{
+                  $functionInput = @{
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
@@ -122,4 +122,4 @@ jobs:
                   Write-Verbose "Invoke task with" -Verbose
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-                  Sync-ElasticPool @inputObject
+                  Sync-ElasticPool @functionInput
