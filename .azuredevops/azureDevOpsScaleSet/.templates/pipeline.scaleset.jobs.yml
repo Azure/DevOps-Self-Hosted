@@ -27,7 +27,6 @@ jobs:
             #---------------------
             - task: AzurePowerShell@4
               displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-              name: deploy_task
               condition: |
                 and(
                   succeeded(),
@@ -88,17 +87,18 @@ jobs:
                   New-ModuleDeployment @functionInput -Verbose
                 errorActionPreference: stop
                 azurePowerShellVersion: LatestVersion
-            - task: PowerShell@2
-              displayName: Register scale set
+
+            - task: AzurePowerShell@4
+              displayName: 'Register scale set'
               condition: |
                 and(
                   succeeded(),
                   eq('${{ parameters.setAgentPool }}', 'true')
                 )
               inputs:
-                targetType: inline
-                pwsh: true
-                script: |
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
