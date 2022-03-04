@@ -28,6 +28,11 @@ jobs:
             - task: AzurePowerShell@4
               displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               name: deploy_task
+              condition: |
+                and(
+                  succeeded(),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only Scale Set')
+                )
               inputs:
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 ScriptType: InlineScript
