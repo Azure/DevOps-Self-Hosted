@@ -44,7 +44,7 @@ function Invoke-RESTCommand {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
-        . (Join-Path $PSScriptRoot 'Get-ConfigValue.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-ConfigValue.ps1')
     }
 
     process {
@@ -69,12 +69,12 @@ function Invoke-RESTCommand {
                 $header = @{}
             }
             if (-not [String]::IsNullOrEmpty($env:AZURE_DEVOPS_EXT_PAT)) {
-                $inputObject += "--skip-authorization-header"
+                $inputObject += '--skip-authorization-header'
 
                 # The token cannot be used as is, but must be prased to base64.
                 # The authentication could have a 'user' prior to the PAT, but as it's not required we only need the ':' separator
-                $encodedToken = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes((":{0}" -f $env:AZURE_DEVOPS_EXT_PAT)))
-                $header["Authorization"] = "Basic $encodedToken"
+                $encodedToken = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes((':{0}' -f $env:AZURE_DEVOPS_EXT_PAT)))
+                $header['Authorization'] = "Basic $encodedToken"
             }
             $compressedHeader = ConvertTo-Json $header -Depth 10 -Compress
             if ($compressedHeader.length -gt 2) {
@@ -88,8 +88,7 @@ function Invoke-RESTCommand {
             # -------
             try {
                 $rawResponse = az rest @inputObject -o json 2>&1
-            }
-            catch {
+            } catch {
                 $rawResponse = $_
             }
 
@@ -106,22 +105,19 @@ function Invoke-RESTCommand {
             if ($rawResponse) {
                 if (Test-Json ($rawResponse | Out-String) -ErrorAction 'SilentlyContinue') {
                     return (($rawResponse | Out-String) | ConvertFrom-Json)
-                }
-                else {
+                } else {
                     return $rawResponse
                 }
             }
-        }
-        catch {
+        } catch {
             throw $_
-        }
-        finally {
+        } finally {
             # Remove temp files
             if ((-not [String]::IsNullOrEmpty($tmpPathHeader)) -and (Test-Path $tmpPathHeader)) {
-                Remove-item -Path $tmpPathHeader -Force
+                Remove-Item -Path $tmpPathHeader -Force
             }
             if ((-not [String]::IsNullOrEmpty($tmpPath)) -and (Test-Path $tmpPath)) {
-                Remove-item -Path $tmpPath -Force
+                Remove-Item -Path $tmpPath -Force
             }
         }
     }

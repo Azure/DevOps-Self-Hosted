@@ -114,6 +114,7 @@ Deploy the deploy.json of the ResourceGroup module without a parameter file in l
 function New-DeploymentWithParameterFile {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType('System.Collections.Hashtable')]
     param (
         [Parameter(Mandatory)]
         [string] $templateFilePath,
@@ -150,7 +151,7 @@ function New-DeploymentWithParameterFile {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
-        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
+        . (Join-Path -Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {

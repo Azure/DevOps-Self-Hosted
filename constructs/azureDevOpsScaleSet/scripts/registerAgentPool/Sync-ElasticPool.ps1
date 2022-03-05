@@ -128,11 +128,11 @@ function Sync-ElasticPool {
         $VerbosePreference = $currentVerbosePreference
 
         # Load helper
-        . (Join-Path $PSScriptRoot 'Get-Project.ps1')
-        . (Join-Path $PSScriptRoot 'Get-Endpoint.ps1')
-        . (Join-Path $PSScriptRoot 'Get-ElasticPool.ps1')
-        . (Join-Path $PSScriptRoot 'New-ElasticPool.ps1')
-        . (Join-Path $PSScriptRoot 'Set-ElasticPool.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-Project.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-Endpoint.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-ElasticPool.ps1')
+        . (Join-Path -Path $PSScriptRoot 'New-ElasticPool.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Set-ElasticPool.ps1')
     }
 
     process {

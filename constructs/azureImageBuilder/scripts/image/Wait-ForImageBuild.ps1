@@ -28,17 +28,17 @@ function Wait-ForImageBuild {
     )
 
     begin {
-        Write-Debug ("[{0} entered]" -f $MyInvocation.MyCommand)
+        Write-Debug ('[{0} entered]' -f $MyInvocation.MyCommand)
 
         # Load helper
-        . (Join-Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
     }
 
     process {
         $currentRetry = 1
         $maximumRetries = 720
         $timeToWait = 15
-        $maxTimeCalc = "{0:hh\:mm\:ss}" -f [timespan]::fromseconds($maximumRetries*$timeToWait)
+        $maxTimeCalc = '{0:hh\:mm\:ss}' -f [timespan]::fromseconds($maximumRetries * $timeToWait)
 
         do {
             $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $ResourceGroupName -templateName $ImageTemplateName
@@ -50,9 +50,9 @@ function Wait-ForImageBuild {
                 break
             }
 
-            $currTimeCalc = "{0:hh\:mm\:ss}" -f [timespan]::fromseconds($currentRetry*$timeToWait)
+            $currTimeCalc = '{0:hh\:mm\:ss}' -f [timespan]::fromseconds($currentRetry * $timeToWait)
 
-            Write-Verbose ("[{0}] Waiting 15 seconds [{1}|{2}]" -f (Get-Date -Format 'HH:mm:ss'), $currTimeCalc, $maxTimeCalc) -Verbose
+            Write-Verbose ('[{0}] Waiting 15 seconds [{1}|{2}]' -f (Get-Date -Format 'HH:mm:ss'), $currTimeCalc, $maxTimeCalc) -Verbose
             $currentRetry++
             Start-Sleep $timeToWait
         } while ($currentRetry -le $maximumRetries)
@@ -64,6 +64,6 @@ function Wait-ForImageBuild {
     }
 
     end {
-        Write-Debug ("[{0} existed]" -f $MyInvocation.MyCommand)
+        Write-Debug ('[{0} existed]' -f $MyInvocation.MyCommand)
     }
 }

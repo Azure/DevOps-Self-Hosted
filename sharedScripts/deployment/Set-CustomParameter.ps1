@@ -42,7 +42,7 @@ function Set-CustomParameter {
     )
 
     begin {
-        Write-Debug ("[{0} entered]" -f $MyInvocation.MyCommand)
+        Write-Debug ('[{0} entered]' -f $MyInvocation.MyCommand)
     }
 
     process {
@@ -56,30 +56,27 @@ function Set-CustomParameter {
                     $currentValue = Invoke-Expression "`$paramFileContent.parameters.$path"
                     $targetValue = $currentValue.Replace($valueItem.ReplaceToken, $valueItem.Value)
                     Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
-                }
-                elseif ($valueItem.AddToArray) {
+                } elseif ($valueItem.AddToArray) {
                     $currentValue = Invoke-Expression "`$paramFileContent.parameters.$path"
                     $targetValue = $currentValue += $valueItem.Value
                     Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
-                }
-                else {
+                } else {
                     $targetValue = $valueItem.Value
                     Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
                 }
-            }
-            catch {
-                Write-Error ("Exception caught. Please doublecheck if the property path [{0}] is valid" -f $valueItem.Path)
+            } catch {
+                Write-Error ('Exception caught. Please doublecheck if the property path [{0}] is valid' -f $valueItem.Path)
                 throw $_
             }
         }
 
-        if ($PSCmdlet.ShouldProcess(("Paramter file [{0}]" -f (Split-Path $parameterFilePath -Leaf)), "Overwrite")) {
-            ConvertTo-Json $paramFileContent -Depth 15 | Out-File -FilePath $parameterFilePath
-            Write-Verbose "Custom parameters added to file"
+        if ($PSCmdlet.ShouldProcess(('Paramter file [{0}]' -f (Split-Path $parameterFilePath -Leaf)), 'Overwrite')) {
+            ConvertTo-Json $paramFileContent -Depth $jsonDepth | Out-File -FilePath $parameterFilePath
+            Write-Verbose 'Custom parameters added to file'
         }
     }
 
     end {
-        Write-Debug ("[{0} existed]" -f $MyInvocation.MyCommand)
+        Write-Debug ('[{0} existed]' -f $MyInvocation.MyCommand)
     }
 }
