@@ -20,7 +20,7 @@ parameters:
   - name: setAgentPool
     displayName: Add/Update agent pool
     type: boolean
-    default: true
+    default: false
 variables:
   - template: variables.yml
 
