@@ -9,7 +9,10 @@ function Set-ElasticPool {
         [string] $ScaleSetPoolId,
 
         [Parameter(Mandatory = $true)]
-        [string] $ScaleSetResourceID,
+        [string] $VMSSResourceID,
+
+        [Parameter(Mandatory = $true)]
+        [string] $VMSSOSType,
 
         [Parameter(Mandatory = $false)]
         [string] $MaxCapacity = 10,
@@ -47,6 +50,7 @@ function Set-ElasticPool {
             desiredIdle         = $DesiredIdle
             timeToLiveMinutes   = $TimeToLiveMinutes
             agentInteractiveUI  = $AgentInteractiveUI
+            osType              = $VMSSOSType
         }
 
         $restInfo = Get-ConfigValue -token 'RESTElasticPoolUpdate'
@@ -55,12 +59,12 @@ function Set-ElasticPool {
             uri    = '"{0}"' -f ($restInfo.uri -f [uri]::EscapeDataString($Organization), $ScaleSetPoolId)
             body   = ConvertTo-Json $body -Depth 10 -Compress
         }
-        if ($PSCmdlet.ShouldProcess(('REST command to update scale set agent pool for scale set [{0}]' -f $ScaleSetResourceID), 'Invoke')) {
+        if ($PSCmdlet.ShouldProcess(('REST command to update scale set agent pool for scale set [{0}]' -f $VMSSResourceID), 'Invoke')) {
 
             $response = Invoke-RESTCommand @restInputObject
 
             if (-not [String]::IsNullOrEmpty($response.errorCode)) {
-                Write-Error ('Failed to update scale set agent pool with id [{1}] for virtual machine scale set [{1}] because of [{2} - {3}]' -f $ScaleSetPoolId, $ScaleSetResourceID.Split('/')[-1], $response.typeKey, $response.message)
+                Write-Error ('Failed to update scale set agent pool with id [{1}] for virtual machine scale set [{1}] because of [{2} - {3}]' -f $ScaleSetPoolId, $VMSSResourceID.Split('/')[-1], $response.typeKey, $response.message)
                 return
             }
 

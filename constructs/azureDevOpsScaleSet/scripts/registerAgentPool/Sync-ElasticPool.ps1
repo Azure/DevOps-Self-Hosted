@@ -31,7 +31,7 @@ function Sync-ElasticPool {
         $currentVerbosePreference = $VerbosePreference
         $VerbosePreference = 'SilentlyContinue'
         $requiredModules = @(
-            'Az.Resources'
+            'Az.Compute'
         )
         foreach ($moduleName in $requiredModules) {
             if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
@@ -60,7 +60,7 @@ function Sync-ElasticPool {
             $env:AZURE_DEVOPS_EXT_PAT = $PAT
         }
 
-        if (-not ($vmss = Get-AzResource -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachineScaleSets')) {
+        if (-not ($vmss = Get-AzVmss -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName)) {
             throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)
         } else {
             Write-Verbose ('Found virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName) -Verbose
@@ -80,14 +80,15 @@ function Sync-ElasticPool {
         }
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
-        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.resourceId })) {
+        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.Id })) {
             Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName) -Verbose
             $inputObject = @{
-                Organization       = $Organization
-                ProjectId          = $foundProject.id
-                PoolName           = $AgentPoolProperties.ScaleSetPoolName
-                ServiceEndpointId  = $serviceEndpoint.id
-                ScaleSetResourceID = $vmss.ResourceId
+                Organization      = $Organization
+                ProjectId         = $foundProject.id
+                PoolName          = $AgentPoolProperties.ScaleSetPoolName
+                ServiceEndpointId = $serviceEndpoint.id
+                VMSSResourceID    = $vmss.Id
+                VMSSOSType        = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
             }
             if ($AgentPoolProperties.ContainsKey('AuthorizeAllPipelines')) { $inputObject['AuthorizeAllPipelines'] = $AgentPoolProperties.AuthorizeAllPipelines }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
@@ -103,9 +104,10 @@ function Sync-ElasticPool {
         } else {
             Write-Verbose ('Agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName) -Verbose
             $inputObject = @{
-                Organization       = $Organization
-                ScaleSetPoolId     = $elasticPool.poolId
-                ScaleSetResourceID = $vmss.ResourceId
+                Organization   = $Organization
+                ScaleSetPoolId = $elasticPool.poolId
+                VMSSResourceID = $vmss.Id
+                VMSSOSType     = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
             }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
             if ($AgentPoolProperties.ContainsKey('DesiredIdle')) { $inputObject['DesiredIdle'] = $AgentPoolProperties.DesiredIdle }
