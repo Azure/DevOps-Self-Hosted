@@ -6,7 +6,7 @@ Get the config object matching the given token
 Get the config object matching the given token from the REST.json file
 
 .PARAMETER token
-Parameter description
+Mandatory. The token to search for.
 
 .EXAMPLE
 Get-ConfigValue -token 'myToken'
