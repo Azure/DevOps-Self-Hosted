@@ -21,6 +21,9 @@ function Set-ElasticPool {
         [string] $RecycleAfterEachUse = $false,
 
         [Parameter(Mandatory = $false)]
+        [string] $AgentInteractiveUI = $false,
+
+        [Parameter(Mandatory = $false)]
         [string] $MaxSavedNodeCount = 0,
 
         [Parameter(Mandatory = $false)]
@@ -43,6 +46,7 @@ function Set-ElasticPool {
             maxCapacity         = $MaxCapacity
             desiredIdle         = $DesiredIdle
             timeToLiveMinutes   = $TimeToLiveMinutes
+            agentInteractiveUI  = $AgentInteractiveUI
         }
 
         $restInfo = Get-ConfigValue -token 'RESTElasticPoolUpdate'
@@ -56,11 +60,11 @@ function Set-ElasticPool {
             $response = Invoke-RESTCommand @restInputObject
 
             if (-not [String]::IsNullOrEmpty($response.errorCode)) {
-                Write-Error ('Failed to update scale set agent pool because of [{0} - {1}]' -f $response.typeKey, $response.message)
+                Write-Error ('Failed to update scale set agent pool with id [{1}] for virtual machine scale set [{1}] because of [{2} - {3}]' -f $ScaleSetPoolId, $ScaleSetResourceID.Split('/')[-1], $response.typeKey, $response.message)
                 return
             }
 
-            Write-Verbose ('Successfully updated scale set agent pool [{0}]' -f $response.agentpool.name) -Verbose
+            Write-Verbose ('Successfully updated scale set agent pool with ID [{0}] for virtual machine scale set [{1}]' -f $reponse.poolId, $response.azureId.Split('/')[-1]) -Verbose
         }
     }
 

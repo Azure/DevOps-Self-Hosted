@@ -83,33 +83,37 @@ function Sync-ElasticPool {
         if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.resourceId })) {
             Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName) -Verbose
             $inputObject = @{
-                Organization          = $Organization
-                ProjectId             = $foundProject.id
-                PoolName              = $AgentPoolProperties.ScaleSetPoolName
-                ServiceEndpointId     = $serviceEndpoint.id
-                ScaleSetResourceID    = $vmss.ResourceId
-                AuthorizeAllPipelines = $AgentPoolProperties.AuthorizeAllPipelines
-                MaxCapacity           = $AgentPoolProperties.MaxCapacity
-                DesiredIdle           = $AgentPoolProperties.DesiredIdle
-                RecycleAfterEachUse   = $AgentPoolProperties.RecycleAfterEachUse
-                MaxSavedNodeCount     = $AgentPoolProperties.MaxSavedNodeCount
-                TimeToLiveMinutes     = $AgentPoolProperties.TimeToLiveMinutes
+                Organization       = $Organization
+                ProjectId          = $foundProject.id
+                PoolName           = $AgentPoolProperties.ScaleSetPoolName
+                ServiceEndpointId  = $serviceEndpoint.id
+                ScaleSetResourceID = $vmss.ResourceId
             }
+            if ($AgentPoolProperties.ContainsKey('AuthorizeAllPipelines')) { $inputObject['AuthorizeAllPipelines'] = $AgentPoolProperties.AuthorizeAllPipelines }
+            if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
+            if ($AgentPoolProperties.ContainsKey('DesiredIdle')) { $inputObject['DesiredIdle'] = $AgentPoolProperties.DesiredIdle }
+            if ($AgentPoolProperties.ContainsKey('RecycleAfterEachUse')) { $inputObject['RecycleAfterEachUse'] = $AgentPoolProperties.RecycleAfterEachUse }
+            if ($AgentPoolProperties.ContainsKey('MaxSavedNodeCount')) { $inputObject['MaxSavedNodeCount'] = $AgentPoolProperties.MaxSavedNodeCount }
+            if ($AgentPoolProperties.ContainsKey('TimeToLiveMinutes')) { $inputObject['TimeToLiveMinutes'] = $AgentPoolProperties.TimeToLiveMinutes }
+            if ($AgentPoolProperties.ContainsKey('AgentInteractiveUI')) { $inputObject['AgentInteractiveUI'] = $AgentPoolProperties.AgentInteractiveUI }
+
             if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $AgentPoolProperties.ScaleSetPoolName), 'Create')) {
                 New-ElasticPool @inputObject
             }
         } else {
-            Write-Verbose 'Agent pool already registered, updating.' -Verbose
+            Write-Verbose ('Agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName) -Verbose
             $inputObject = @{
-                Organization        = $Organization
-                ScaleSetPoolId      = $elasticPool.Id
-                ScaleSetResourceID  = $vmss.ResourceId
-                MaxCapacity         = $AgentPoolProperties.MaxCapacity
-                DesiredIdle         = $AgentPoolProperties.DesiredIdle
-                RecycleAfterEachUse = $AgentPoolProperties.RecycleAfterEachUse
-                MaxSavedNodeCount   = $AgentPoolProperties.MaxSavedNodeCount
-                TimeToLiveMinutes   = $AgentPoolProperties.TimeToLiveMinutes
+                Organization       = $Organization
+                ScaleSetPoolId     = $elasticPool.poolId
+                ScaleSetResourceID = $vmss.ResourceId
             }
+            if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
+            if ($AgentPoolProperties.ContainsKey('DesiredIdle')) { $inputObject['DesiredIdle'] = $AgentPoolProperties.DesiredIdle }
+            if ($AgentPoolProperties.ContainsKey('RecycleAfterEachUse')) { $inputObject['RecycleAfterEachUse'] = $AgentPoolProperties.RecycleAfterEachUse }
+            if ($AgentPoolProperties.ContainsKey('MaxSavedNodeCount')) { $inputObject['MaxSavedNodeCount'] = $AgentPoolProperties.MaxSavedNodeCount }
+            if ($AgentPoolProperties.ContainsKey('TimeToLiveMinutes')) { $inputObject['TimeToLiveMinutes'] = $AgentPoolProperties.TimeToLiveMinutes }
+            if ($AgentPoolProperties.ContainsKey('AgentInteractiveUI')) { $inputObject['AgentInteractiveUI'] = $AgentPoolProperties.AgentInteractiveUI }
+
             if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $AgentPoolProperties.ScaleSetPoolName), 'Update')) {
                 Set-ElasticPool @inputObject
             }

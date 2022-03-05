@@ -30,6 +30,9 @@ function New-ElasticPool {
         [string] $RecycleAfterEachUse = $false,
 
         [Parameter(Mandatory = $false)]
+        [string] $AgentInteractiveUI = $false,
+
+        [Parameter(Mandatory = $false)]
         [string] $MaxSavedNodeCount = 0,
 
         [Parameter(Mandatory = $false)]
@@ -55,6 +58,7 @@ function New-ElasticPool {
             recycleAfterEachUse  = $RecycleAfterEachUse
             maxSavedNodeCount    = $MaxSavedNodeCount
             timeToLiveMinutes    = $TimeToLiveMinutes
+            agentInteractiveUI   = $AgentInteractiveUI
         }
 
         $restInfo = Get-ConfigValue -token 'RESTElasticPoolCreate'
@@ -72,7 +76,7 @@ function New-ElasticPool {
                 return
             }
 
-            Write-Verbose ('Successfully created scale set agent pool [{0}]' -f $response.agentpool.name) -Verbose
+            Write-Verbose ('Successfully created scale set agent pool [{0}] with id [{1}]' -f $response.agentpool.name, $response.agentpool.id) -Verbose
         }
     }
 
