@@ -1,3 +1,46 @@
+<#
+.SYNOPSIS
+Update an existing Azure DevOps elastic pool (virtual machine scale set agent pool)
+
+.DESCRIPTION
+Update an existing Azure DevOps elastic pool (virtual machine scale set agent pool)
+
+.PARAMETER Organization
+Mandatory. The organization to update the agent pool in
+
+.PARAMETER ProjectId
+Mandatory. The project to update the agent pool in
+
+.PARAMETER VMSSResourceID
+Mandatory. The resource ID of the virtual machine scale set to update
+
+.PARAMETER VMSSOSType
+Parameter description
+
+.PARAMETER MaxCapacity
+Parameter description
+
+.PARAMETER DesiredIdle
+Parameter description
+
+.PARAMETER RecycleAfterEachUse
+Parameter description
+
+.PARAMETER AgentInteractiveUI
+Parameter description
+
+.PARAMETER MaxSavedNodeCount
+Parameter description
+
+.PARAMETER TimeToLiveMinutes
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Set-ElasticPool {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -6,7 +49,7 @@ function Set-ElasticPool {
         [string] $Organization,
 
         [Parameter(Mandatory = $true)]
-        [string] $ScaleSetPoolId,
+        [int] $ScaleSetPoolId,
 
         [Parameter(Mandatory = $true)]
         [string] $VMSSResourceID,
@@ -15,22 +58,22 @@ function Set-ElasticPool {
         [string] $VMSSOSType,
 
         [Parameter(Mandatory = $false)]
-        [string] $MaxCapacity = 10,
+        [int] $MaxCapacity = 10,
 
         [Parameter(Mandatory = $false)]
-        [string] $DesiredIdle = 1,
+        [int] $DesiredIdle = 1,
 
         [Parameter(Mandatory = $false)]
-        [string] $RecycleAfterEachUse = $false,
+        [bool] $RecycleAfterEachUse = $false,
 
         [Parameter(Mandatory = $false)]
-        [string] $AgentInteractiveUI = $false,
+        [bool] $AgentInteractiveUI = $false,
 
         [Parameter(Mandatory = $false)]
-        [string] $MaxSavedNodeCount = 0,
+        [int] $MaxSavedNodeCount = 0,
 
         [Parameter(Mandatory = $false)]
-        [string] $TimeToLiveMinutes = 15
+        [int] $TimeToLiveMinutes = 15
     )
 
     begin {
@@ -50,6 +93,7 @@ function Set-ElasticPool {
             desiredIdle         = $DesiredIdle
             timeToLiveMinutes   = $TimeToLiveMinutes
             agentInteractiveUI  = $AgentInteractiveUI
+            azureId             = $VMSSResourceID
             osType              = $VMSSOSType
         }
 

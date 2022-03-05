@@ -80,25 +80,25 @@ function New-ElasticPool {
         [string] $VMSSOSType,
 
         [Parameter(Mandatory = $false)]
-        [string] $AuthorizeAllPipelines = $true,
+        [bool] $AuthorizeAllPipelines = $true,
 
         [Parameter(Mandatory = $false)]
-        [string] $MaxCapacity = 10,
+        [int] $MaxCapacity = 10,
 
         [Parameter(Mandatory = $false)]
-        [string] $DesiredIdle = 1,
+        [int] $DesiredIdle = 1,
 
         [Parameter(Mandatory = $false)]
-        [string] $RecycleAfterEachUse = $false,
+        [bool] $RecycleAfterEachUse = $false,
 
         [Parameter(Mandatory = $false)]
-        [string] $AgentInteractiveUI = $false,
+        [bool] $AgentInteractiveUI = $false,
 
         [Parameter(Mandatory = $false)]
-        [string] $MaxSavedNodeCount = 0,
+        [int] $MaxSavedNodeCount = 0,
 
         [Parameter(Mandatory = $false)]
-        [string] $TimeToLiveMinutes = 15
+        [int] $TimeToLiveMinutes = 15
     )
 
     begin {
