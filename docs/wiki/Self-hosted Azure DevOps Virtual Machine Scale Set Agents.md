@@ -1,22 +1,22 @@
-This sections gives you an overview on how to use the Virtual Machine Scale Set pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Virtual Machine Scale Sets](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/scale-set-agents?view=azure-devops). 
+This sections gives you an overview on how to use the Virtual Machine Scale Set pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Virtual Machine Scale Sets](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/scale-set-agents?view=azure-devops).
 
 ### _Navigation_
 - [Overview](#overview)
   - [Advantages](#Advantages)
 - [Process](#process)
-  - [Initial configuration](#initial-configuration)  
+  - [Initial configuration](#initial-configuration)
   - [Deployment](#deployment)
-    - [First deployment](#first-deployment) 
+    - [First deployment](#first-deployment)
     - [Consecutive deployments](#consecutive-deployments)
 - [Additional considerations](#additional-considerations)
   - [Restricted cross-VNET communication](#restricted-cross-vnet-communication)
 
-# Overview 
+# Overview
 
 ## Advantages
 > Compared to a classic single build host (with multiple agents installed) or a set of permanent deployed containers / virtual machines
 - Each pipeline job can use a dedicated new host (if configured accordingly)
-- Saving money 
+- Saving money
   - As the Virtual Machine Scale Set can be configured to e.g. scale in to 0 and spin up a new VM only if a job is scheduled
   - As a single agent is installed on a new instance. Hence virtual machines can be deployed using a SKU with less compute power
 
@@ -45,7 +45,7 @@ This section explains how to deploy & maintain the scale set construct.
 
 Before you start configuring anything you should take note of the following design considerations:
 
-- When deciding for Linux vs. Windows as the instance's underlying OS, note that Linux machines tend to deploy faster than Windows machines and don't required a license 
+- When deciding for Linux vs. Windows as the instance's underlying OS, note that Linux machines tend to deploy faster than Windows machines and don't required a license
 - When registering a ScaleSet for the first time in Azure DevOps, it may take some time for the agents to appear. Azure DevOps first removes the existing instances from the ScaleSet and then deploys new instances with the Azure DevOps agent installed
 - When configuring the ScaleSet behavior in Azure DevOps, take into account that it may take a few minutes for new agents to appear when scaling up
 
@@ -68,7 +68,7 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 
 ### Parameters
 
-You have one parameter file to configure: `scaleset.parameters.json`
+You configure one primary parameter file: `scaleset.parameters.json`.
 
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
@@ -112,8 +112,78 @@ As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find
 >   tags: rgParam.tags
 > }
 > ```
+</details>
+
+<p>
+
+<details>
+
+<summary>1.1 (Optional) Configure the agent pool parameters & environment</summary>
+
+Depending on whether you want to register the agent pool later in the process automatically (via the pipeline), or manually (via the UI), you may also need to configure parameter file `agentpool.parameters.json`. If configured, the file is used to automatically register the deployed virtual machine scale set as an agent pool in an Azure DevOps project. This however requires you to perform two steps:
+
+<details>
+<summary>1.1.1 Configure the parameter file</summary>
+
+   As the parameter file is not used in a template deployment, it has a slightly different format.
+
+   ```json
+   {
+      "Project": "<Project>",
+      "Organization": "<>",
+      "ServiceConnectionName": "<ServiceConnectionName>",
+      "AgentPoolProperties": { <AgentPoolPoperties> }
+   }
+   ```
+
+   Use the following table to correctly configure the values to you needs:
+
+   | Parameter | Default Value | Description |
+   | - | - | - |
+   | `Project` | | The name of the Azure DevOps project to register/update the agent pool in |
+   | `Organization` | | The name of the Azure DevOps organization that contains the project to register/update the agent pool in |
+   | `ServiceConnectionName` | | he name of the service connection with access to the subscription containing the virtual machine scale set to register with  |
+   | `AgentPoolProperties.ScaleSetPoolName` | | The name of the agent pool the register in the Azure DevOps project |
+   | `AgentPoolProperties.RecycleAfterEachUse` | `false` | Discard node after each job completes |
+   | `AgentPoolProperties.MaxSavedNodeCount` | `0` | Keep nodes in the pool on failure for investigation |
+   | `AgentPoolProperties.MaxCapacity` | `10` | Maximum number of nodes that will exist in the elastic pool |
+   | `AgentPoolProperties.DesiredIdle` | `1` | Number of agents to have ready waiting for jobs |
+   | `AgentPoolProperties.TimeToLiveMinutes` | `15` | The minimum time in minutes to keep idle agents alive |
+   | `AgentPoolProperties.AgentInteractiveUI` | `false` | Set whether agents should be configured to run with interactive UI |
+   | `AgentPoolProperties.AuthorizeAllPipelines` | `true` | Setting to determine if all pipelines are authorized to use this agent pool by default |
 
 </details>
+
+<details>
+<summary>1.1.2 Configure the Azure DevOps environment to enable the pipeline to read & register the resources</summary>
+
+   As the pipeline leverages the `$(System.AccessToken)` to interact with the environment and its principal `Project Collection Build Service (<Organization>)` does not have the required permissions by default, you have to set two permissions in the project scope to enable the automatic agent pool registration:
+
+   - Enable the build service to list service connections
+
+      1. Navigate to the Azure DevOps's `Project settings`
+      1. In the left menu, select `Service connections` in the `Pipelines` section
+      1. Next to the `New service conncection` button on the top right of the view, select the three `...` and further choose `Security`
+      1. Now, select the `+ Add` button on the top of the security menu
+      1. Finally, in the opening popup, add the `Project Collection Build Service (<Organization>)` user with role `User` and select `Add`
+
+         <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="500">
+
+   - Enable the build service to create agent pools
+
+      1. Navigate to the Azure DevOps's `Project settings`
+      1. In the left menu, select `Agent pools` in the `Pipelines` section
+      1. Select the `Security` button on the top right
+      1. Now, select the `+ Add` button on the top of the security menu
+      1. Finally, in the opening popup, add the `Project Collection Build Service (<Organization>)` user with role `Creator` and select `Add`
+
+         <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="400">
+
+</details>
+
+</details>
+
+<p>
 
 <details>
 <summary>2. Register the pipeline</summary>
@@ -130,10 +200,10 @@ To do so, you have to perform the following steps:
 1. Further select `New pipeline` on the top right
 
    <img src="./media/shared/devOpsPipelineInitNew.png" alt="Select new pipeline" height="100">
- 
+
 1. Next, select the location of you pipeline file. If you host the repository in GitHub, select `GitHub`, or for example `Azure Repos Git` if you host the code in Azure DevOps's own git.
 
-1. In the opening `Select` step, select your repository 
+1. In the opening `Select` step, select your repository
 
 1. In the opening `Configure` step, select `Existing Azure Ppelines YAML`
 
@@ -150,7 +220,7 @@ To do so, you have to perform the following steps:
 
 ## Deployment
 
-The creation of the scale set alongside its resources is handled by the `.azuredevops\azureDevOpsScaleSet\pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment. However, to use the scale set for your agents you need to perform an additional manual step afterwards.
+The creation of the scale set alongside its resources is handled by the `.azuredevops\azureDevOpsScaleSet\pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment. However, depending on whether you optionally configured the agent-pool parameter file & environment in the [parameters](#parameters) section, you may or may not need to perform an additional manual step afterwards to use the scale set for your agents.
 
 Also, when triggering the pipeline you have several configuration options to chose from:
 
@@ -174,15 +244,17 @@ Navigate to the pipeline described & registered before and set the `Scope of the
 </details>
 
 <details>
-<summary>2. Register the Virtual Machine Scale Set in Azure DevOps</summary>
+<summary>2. (Optionally) Manually register the Virtual Machine Scale Set in Azure DevOps</summary>
 
-1. Navigate to the Azure DevOps project, 
+> Note: If you configured the agent pool to be registered automatically and also executed the pipeline in this way, this step can be skipped as the agent pool will already be available.
+
+1. Navigate to the Azure DevOps project,
 1. Next, go to `Project Settings` on the bottom left
 1. Select `Agent pools` from the settings
 1. Select `Add pool` on the top right to initialize the creation of a new agent pool
    - As a `Pool type` select `Virtual Machine Scale Set` and further select the created Virtual Machine Scale Set
    - Give the pool a name
-   - You can also configure its scaling behavior, such as 
+   - You can also configure its scaling behavior, such as
      - The amount of instances at rest (can be 0)
        > We suggest at least `1`
       - The maximum number of instances the scaling can create

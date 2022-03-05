@@ -16,7 +16,7 @@ parameters:
     values:
       - All
       - Only Scale Set
-      - Only register agent pool
+      - Only Agent Pool registration
   - name: setAgentPool
     displayName: Add/Update agent pool
     type: boolean

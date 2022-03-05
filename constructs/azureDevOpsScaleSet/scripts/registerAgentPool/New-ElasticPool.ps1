@@ -24,7 +24,7 @@ Mandatory. The resource ID of the virtual machine scale set to register with
 Mandatory. The OSType of the virtual machine scale set to register with
 
 .PARAMETER AuthorizeAllPipelines
-Optional. Setting to determine if all pipelines are authorized to use this TaskAgentPool by default. Defaults to 'true'
+Optional. Setting to determine if all pipelines are authorized to use this agent pool by default. Defaults to 'true'
 
 .PARAMETER MaxCapacity
 Optional. Maximum number of nodes that will exist in the elastic pool. Defaults to '10'
