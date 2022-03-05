@@ -177,7 +177,7 @@ Depending on whether you want to register the agent pool later in the process au
       1. Now, select the `+ Add` button on the top of the security menu
       1. Finally, in the opening popup, add the `Project Collection Build Service (<Organization>)` user with role `Creator` and select `Add`
 
-         <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="400">
+         <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="350">
 
 </details>
 
@@ -220,7 +220,7 @@ To do so, you have to perform the following steps:
 
 ## Deployment
 
-The creation of the scale set alongside its resources is handled by the `.azuredevops\azureDevOpsScaleSet\pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment. However, depending on whether you optionally configured the agent-pool parameter file & environment in the [parameters](#parameters) section, you may or may not need to perform an additional manual step afterwards to use the scale set for your agents.
+The creation of the scale set alongside its resources is handled by the `.azuredevops\azureDevOpsScaleSet\pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment. However, depending on whether you optionally configured the agent-pool parameter file & environment in the [parameters](#parameters) section 'Configure the agent pool parameters & environment', you may or may not need to perform an additional manual step afterwards to use the scale set for your agents.
 
 Also, when triggering the pipeline you have several configuration options to chose from:
 
