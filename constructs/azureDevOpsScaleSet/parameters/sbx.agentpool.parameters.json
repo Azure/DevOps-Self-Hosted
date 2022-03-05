@@ -4,11 +4,12 @@
     "ServiceConnectionName": "ModulePlaygroundPrivate",
     "AgentPoolProperties": {
         "ScaleSetPoolName": "moduleplayground-scaleset",
-        "recycleAfterEachUse": false,
-        "maxSavedNodeCount": 0,
-        "maxCapacity": 10,
-        "desiredIdle": 1,
-        "timeToLiveMinutes": 15,
-        "agentInteractiveUI": false
+        "RecycleAfterEachUse": false,
+        "MaxSavedNodeCount": 0,
+        "MaxCapacity": 10,
+        "DesiredIdle": 1,
+        "TimeToLiveMinutes": 15,
+        "agentInteractiveUI": false,
+        "AuthorizeAllPipelines": true // works only on creation
     }
 }

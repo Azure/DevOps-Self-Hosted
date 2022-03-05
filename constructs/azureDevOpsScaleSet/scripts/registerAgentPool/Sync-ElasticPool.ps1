@@ -85,7 +85,7 @@ function Sync-ElasticPool {
             $inputObject = @{
                 Organization          = $Organization
                 ProjectId             = $foundProject.id
-                PoolName              = $ScaleSetPoolName
+                PoolName              = $AgentPoolProperties.ScaleSetPoolName
                 ServiceEndpointId     = $serviceEndpoint.id
                 ScaleSetResourceID    = $vmss.ResourceId
                 AuthorizeAllPipelines = $AgentPoolProperties.AuthorizeAllPipelines
@@ -95,7 +95,7 @@ function Sync-ElasticPool {
                 MaxSavedNodeCount     = $AgentPoolProperties.MaxSavedNodeCount
                 TimeToLiveMinutes     = $AgentPoolProperties.TimeToLiveMinutes
             }
-            if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $ScaleSetPoolName), 'Create')) {
+            if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $AgentPoolProperties.ScaleSetPoolName), 'Create')) {
                 New-ElasticPool @inputObject
             }
         } else {
@@ -110,7 +110,7 @@ function Sync-ElasticPool {
                 MaxSavedNodeCount   = $AgentPoolProperties.MaxSavedNodeCount
                 TimeToLiveMinutes   = $AgentPoolProperties.TimeToLiveMinutes
             }
-            if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $ScaleSetPoolName), 'Update')) {
+            if ($PSCmdlet.ShouldProcess(('Agent pool [{0}]' -f $AgentPoolProperties.ScaleSetPoolName), 'Update')) {
                 Set-ElasticPool @inputObject
             }
         }
