@@ -6,4 +6,4 @@ This construct consists of several components in different places. You can use t
 - Azure DevOps Pipelines: Folder  `.azuredevops\azureDevOpsScaleSet`
 - [CARML](https://aka.ms/CARML) modules: Folder `CARML0.4`
 
-Further, please refer to the Wiki for information on how to apply the construct.
+For further information, please refer to the Wiki for information on how to apply the construct.

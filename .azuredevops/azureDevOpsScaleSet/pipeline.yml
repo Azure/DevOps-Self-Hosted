@@ -21,6 +21,7 @@ parameters:
     displayName: Add/Update agent pool
     type: boolean
     default: false
+
 variables:
   - template: variables.yml
 
