@@ -2,13 +2,13 @@ $env:TEMP = '/tmp'
 
 #region Functions
 function LogInfo($message) {
-    Log "Info" $message
+    Log 'Info' $message
 }
 function LogError($message) {
-    Log "Error" $message
+    Log 'Error' $message
 }
 function LogWarning($message) {
-    Log "Warning" $message
+    Log 'Warning' $message
 }
 
 function Log {
@@ -36,11 +36,11 @@ function Log {
         [string] $message
     )
 
-    $date = get-date
+    $date = Get-Date
     $content = "[$date]`t$category`t`t$message`n"
     Write-Verbose $Content -Verbose
 
-    $FilePath = Join-Path $env:TEMP "log.log"
+    $FilePath = Join-Path $env:TEMP 'log.log'
     if (-not (Test-Path $FilePath)) {
         Write-Verbose "Log file not found, create new in path: [$FilePath]" -Verbose
         $null = New-Item -ItemType 'File' -Path $FilePath -Force
@@ -48,7 +48,7 @@ function Log {
     Add-Content -Path $FilePath -Value $content -ErrorAction 'Stop'
 }
 
-function Copy-FilesAndFolders {
+function Copy-FileAndFolderList {
 
     param(
         [string] $sourcePath,
@@ -58,22 +58,20 @@ function Copy-FilesAndFolders {
     $itemsFrom = Get-ChildItem $sourcePath
     foreach ($item in $itemsFrom) {
         if ($item.PSIsContainer) {
-            $subsourcePath = $sourcePath + "\" + $item.BaseName
-            $subtargetPath = $targetPath + "\" + $item.BaseName
-            $null = Copy-FilesAndFolders -sourcePath $subsourcePath -targetPath $subtargetPath
-        }
-        else {
-            $sourceItemPath = $sourcePath + "\" + $item.Name
-            $targetItemPath = $targetPath + "\" + $item.Name
+            $subsourcePath = $sourcePath + '\' + $item.BaseName
+            $subtargetPath = $targetPath + '\' + $item.BaseName
+            $null = Copy-FileAndFolderList -sourcePath $subsourcePath -targetPath $subtargetPath
+        } else {
+            $sourceItemPath = $sourcePath + '\' + $item.Name
+            $targetItemPath = $targetPath + '\' + $item.Name
             if (-not (Test-Path $targetItemPath)) {
                 # only copies non-existing files
                 if (-not (Test-Path $targetPath)) {
                     # if folder doesn't exist, creates it
-                    $null = New-Item -ItemType "directory" -Path $targetPath -Verbose
+                    $null = New-Item -ItemType 'directory' -Path $targetPath -Verbose
                 }
                 $null = Copy-Item $sourceItemPath $targetItemPath
-            }
-            else {
+            } else {
                 Write-Verbose "[$sourceItemPath] already exists" -Verbose
             }
         }
@@ -106,8 +104,7 @@ function Install-CustomModule {
     if (Get-Module $Module -ErrorAction SilentlyContinue) {
         try {
             Remove-Module $Module -Force
-        }
-        catch {
+        } catch {
             LogError("Unable to remove module $($Module.Name)  : $($_.Exception) found, $($_.ScriptStackTrace)")
         }
     }
@@ -123,24 +120,23 @@ function Install-CustomModule {
     $foundModules = Find-Module @moduleImportInputObject
     foreach ($foundModule in $foundModules) {
 
-        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable 
+        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable
         if ($localModuleVersions -and $localModuleVersions.Version -contains $foundModule.Version ) {
-            LogInfo("Module [{0}] already installed with latest version [{1}]" -f $foundModule.Name, $foundModule.Version)
+            LogInfo('Module [{0}] already installed with latest version [{1}]' -f $foundModule.Name, $foundModule.Version)
             continue
-        }      
+        }
         if ($module.ExcludeModules -and $module.excludeModules.contains($foundModule.Name)) {
-            LogInfo("Module {0} is configured to be ignored." -f $foundModule.Name)
+            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name)
             continue
         }
 
-        LogInfo("Install module [{0}] with version [{1}]" -f $foundModule.Name, $foundModule.Version)
-        if ($PSCmdlet.ShouldProcess("Module [{0}]" -f $foundModule.Name, "Install")) {
+        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version)
+        if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
             $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
-            if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
-                LogInfo("Module [{0}] is installed with version [{1}]" -f $foundModule.Name, $foundModule.Version)
-            }
-            else {
-                LogError("Installation of module [{0}] failed" -f $foundModule.Name)
+            if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable)[0]) {
+                LogInfo('Module [{0}] is installed with version [{1}]' -f $installed.Name, $installed.Version)
+            } else {
+                LogError('Installation of module [{0}] failed' -f $foundModule.Name)
             }
         }
     }
@@ -148,20 +144,20 @@ function Install-CustomModule {
 #endregion
 
 
-$StartTime = get-date
+$StartTime = Get-Date
 
 ###########################
 ##   Install Azure CLI   ##
 ###########################
-LogInfo("Install azure cli start")
+LogInfo('Install azure cli start')
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-LogInfo("Install azure cli end")
+LogInfo('Install azure cli end')
 
 ###############################
 ##   Install Extensions CLI   #
 ###############################
 
-LogInfo("Install cli exentions start")
+LogInfo('Install cli exentions start')
 $Extensions = @(
     'azure-devops'
 )
@@ -171,41 +167,41 @@ foreach ($extension in $Extensions) {
         az extension add --name $extension
     }
 }
-LogInfo("Install cli exentions end")
+LogInfo('Install cli exentions end')
 
 ##########################
 ##   Install Az Bicep    #
 ##########################
-LogInfo("Install az bicep exention start")
+LogInfo('Install az bicep exention start')
 az bicep install
-LogInfo("Install az bicep exention end")
+LogInfo('Install az bicep exention end')
 
 #########################
 ##   Install Kubectl    #
 #########################
-LogInfo("Install kubectl start")
+LogInfo('Install kubectl start')
 sudo az aks install-cli
-LogInfo("Install kubectl end")
+LogInfo('Install kubectl end')
 
 ###########################
 ##   Install Terraform   ##
 ###########################
-LogInfo("Install Terraform start")
+LogInfo('Install Terraform start')
 $TFVersion = '0.12.30' # Required for layered TF approach (01.2021)
 if ([String]::IsNullOrEmpty($TFVersion)) {
     $terraformReleasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases/latest'
     $latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasicParsing | ConvertFrom-Json).name.Replace('v', '')
     LogInfo("Fetched latest available version: [$TFVersion]")
     $TFVersion = $latestTerraformVersion
-} 
+}
 
 LogInfo("Using version: [$TFVersion]")
 sudo apt-get install unzip
 wget ('https://releases.hashicorp.com/terraform/{0}/terraform_{0}_linux_amd64.zip' -f $TFVersion)
 unzip ('terraform_{0}_linux_amd64.zip' -f $TFVersion )
 sudo mv terraform /usr/local/bin/
-terraform --version 
-LogInfo("Install Terraform end")
+terraform --version
+LogInfo('Install Terraform end')
 
 #######################
 ##   Install AzCopy   #
@@ -228,7 +224,7 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 ##   Install .NET (for Nuget)   ##
 ##################################
 # Source: https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#1804-
-LogInfo("Install dotnet (for nuget) start")
+LogInfo('Install dotnet (for nuget) start')
 $ubuntuBaseVersion = 18.04
 
 # .NET-Core Runtime
@@ -242,12 +238,12 @@ sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-g
 # .NET-Core Runtime
 sudo apt-get update
 sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-5.0
-LogInfo("Install dotnet (for nuget) end")
+LogInfo('Install dotnet (for nuget) end')
 
 ###########################
 ##   Install BICEP CLI   ##
 ###########################
-LogInfo("Install BICEP start")
+LogInfo('Install BICEP start')
 
 # Fetch the latest Bicep CLI binary
 curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
@@ -255,67 +251,67 @@ curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-li
 chmod +x ./bicep
 # Add bicep to your PATH (requires admin)
 sudo mv ./bicep /usr/local/bin/bicep
-LogInfo("Install BICEP end")
+LogInfo('Install BICEP end')
 
 ###############################
 ##   Install PowerShellGet   ##
 ###############################
-LogInfo("Install latest PowerShellGet start")
-$null = Install-Module "PowerShellGet" -Force
-LogInfo("Install latest PowerShellGet end")
+LogInfo('Install latest PowerShellGet start')
+$null = Install-Module 'PowerShellGet' -Force
+LogInfo('Install latest PowerShellGet end')
 
-LogInfo("Import PowerShellGet start")
+LogInfo('Import PowerShellGet start')
 $null = Import-PackageProvider PowerShellGet -Force
-LogInfo("Import PowerShellGet end")
+LogInfo('Import PowerShellGet end')
 
 ####################################
 ##   Install PowerShell Modules   ##
 ####################################
 $Modules = @(
-    @{ Name = "Pester"; Version = '5.1.1' },
-    @{ Name = "PSScriptAnalyzer" },
-    @{ Name = "powershell-yaml" },
-    @{ Name = "Azure.*"; ExcludeModules = @('Azure.Storage') }, # Azure.Storage has AzureRM dependency
-    @{ Name = "Logging" },
-    @{ Name = "PoshRSJob" },
-    @{ Name = "ThreadJob" },
-    @{ Name = "JWTDetails" },
-    @{ Name = "OMSIngestionAPI" },
-    @{ Name = "Az" },
-    @{ Name = "AzureAD" },
-    @{ Name = "ImportExcel" }
+    @{ Name = 'Pester'; Version = '5.1.1' },
+    @{ Name = 'PSScriptAnalyzer' },
+    @{ Name = 'powershell-yaml' },
+    @{ Name = 'Azure.*'; ExcludeModules = @('Azure.Storage') }, # Azure.Storage has AzureRM dependency
+    @{ Name = 'Logging' },
+    @{ Name = 'PoshRSJob' },
+    @{ Name = 'ThreadJob' },
+    @{ Name = 'JWTDetails' },
+    @{ Name = 'OMSIngestionAPI' },
+    @{ Name = 'Az' },
+    @{ Name = 'AzureAD' },
+    @{ Name = 'ImportExcel' }
 )
 $count = 0
-LogInfo("Try installing:")
+LogInfo('Try installing:')
 $modules | ForEach-Object {
-    LogInfo("- [{0}]. [{1}]" -f $count, $_.Name)
+    LogInfo('- [{0}]. [{1}]' -f $count, $_.Name)
     $count++
 }
 
-LogInfo("Install-CustomModule start")
+LogInfo('Install-CustomModule start')
 $count = 0
 Foreach ($Module in $Modules) {
-    LogInfo("=====================")
-    LogInfo("HANDLING MODULE [{0}] [{1}/{2}]" -f $Module.Name, $count, $Modules.Count)
-    LogInfo("=====================")
+    LogInfo('=====================')
+    LogInfo('HANDLING MODULE [{0}] [{1}/{2}]' -f $Module.Name, $count, $Modules.Count)
+    LogInfo('=====================')
     # Installing New Modules and Removing Old
     $null = Install-CustomModule -Module $Module
     $count++
 }
-LogInfo("Install-CustomModule end")
+LogInfo('Install-CustomModule end')
 
 
 #########################################
 ##   Post Installation Configuration   ##
 #########################################
 LogInfo("Copy PS modules to '/opt/microsoft/powershell/7/Modules' start")
-$null = Copy-FilesAndFolders -sourcePath '/home/packer/.local/share/powershell/Modules' -targetPath '/opt/microsoft/powershell/7/Modules'
-LogInfo("Copy PS modules end")
+$null = Copy-FileAndFolderList -sourcePath '/home/packer/.local/share/powershell/Modules' -targetPath '/opt/microsoft/powershell/7/Modules'
+LogInfo('Copy PS modules end')
 
-$elapsedTime = (get-date) - $StartTime
-$totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+$elapsedTime = (Get-Date) - $StartTime
+$totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo("Exiting LinuxPrepareMachine.ps1")
+LogInfo('Exiting LinuxPrepareMachine.ps1')
 
 return 0;
 #endregion

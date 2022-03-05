@@ -1,83 +1,128 @@
 parameters:
-- name:  environment
-  default:
-- name:  deploymentsToPerform
-  default:
-- name:  serviceConnection
-  default:
-- name:  waitForscalesetBuild
-  default:
+  - name: environment
+    default:
+  - name: deploymentsToPerform
+    default:
+  - name: serviceConnection
+    default:
+  - name: waitForscalesetBuild
+    default:
+  - name: setAgentPool
+    default:
 
 jobs:
-- deployment: deploy_job
-  displayName: Deploy Resources
-  environment: ${{ parameters.environment }}
-  timeoutInMinutes: 120
-  pool:
-    vmImage: '$(vmImage_${{ parameters.environment }})'
-    name: '$(poolName_${{ parameters.environment }})'
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-          - checkout: self
-          # [Deployment] task(s)
-          #---------------------
-          - task: AzurePowerShell@4
-            displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-            name: deploy_task
-            inputs:
-              azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-              ScriptType: InlineScript
-              inline: |
-                # Load used functions
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile.ps1')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Set-CustomParameter')
-                . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Select-Image.ps1')
+  - deployment: deploy_job
+    displayName: Deploy Resources
+    environment: ${{ parameters.environment }}
+    timeoutInMinutes: 120
+    pool:
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            # [Deployment] task(s)
+            #---------------------
+            - task: AzurePowerShell@4
+              displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
+              condition: |
+                and(
+                  succeeded(),
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only Scale Set')
+                )
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Set-CustomParameter')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Select-Image.ps1')
 
-                # Check the provide image 
-                $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
-                $parameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
-                
-                if($imageVersionReference = Select-Image -imageReference $parameterFileContent.parameters.vmssParam.value.imageReference -Verbose) {
-                  $customValueMap += @{ 
-                    path = 'vmssParam.value.imageReference.id'
-                    value = $imageVersionReference
-                  }   
-                }
+                  # Check the provide image
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
+                  $parameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
-                # Overwrite parameter file if necessary
-                if($customValueMap.Count -gt 0) {
-                  $overwriteInputObject = @{
-                    parameterFilePath = $parameterFilePath
-                    valueMap          = $customValueMap
+                  if($imageVersionReference = Select-Image -imageReference $parameterFileContent.parameters.vmssParam.value.imageReference -Verbose) {
+                    $customValueMap += @{
+                      path = 'vmssParam.value.imageReference.id'
+                      value = $imageVersionReference
+                    }
                   }
-                  Set-CustomParameter @overwriteInputObject
-                }
 
-                # ----------------- #
-                # INVOKE DEPLOYMENT #
-                # ----------------- #
-                $functionInput = @{
-                  templateFilePath  = Join-Path '$(templatesPath)' 'scaleset.deploy.bicep'
-                  parameterFilePath = $parameterFilePath
-                  location          = '$(location)'
-                  subscriptionId    = (Get-AzContext).Subscription.Id
-                }
+                  # Overwrite parameter file if necessary
+                  if($customValueMap.Count -gt 0) {
+                    $overwriteInputObject = @{
+                      parameterFilePath = $parameterFilePath
+                      valueMap          = $customValueMap
+                    }
+                    Set-CustomParameter @overwriteInputObject
+                  }
 
-                # Inject control parmaeters from pipeline
-                $functionInput['additionalParameters'] = @{
-                  deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
-                }
+                  # ----------------- #
+                  # INVOKE DEPLOYMENT #
+                  # ----------------- #
+                  $functionInput = @{
+                    templateFilePath  = Join-Path '$(templatesPath)' 'scaleset.deploy.bicep'
+                    parameterFilePath = $parameterFilePath
+                    location          = '$(location)'
+                    subscriptionId    = (Get-AzContext).Subscription.Id
+                  }
 
-                Write-Verbose "Invoke task with" -Verbose
-                Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+                  # Inject control parmaeters from pipeline
+                  $functionInput['additionalParameters'] = @{
+                    deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
+                  }
 
-                # Validate deployment
-                Test-TemplateWithParameterFile @functionInput
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-                # Invoke deployment
-                New-ModuleDeployment @functionInput -Verbose
-              errorActionPreference: stop
-              azurePowerShellVersion: LatestVersion
+                  # Validate deployment
+                  Test-TemplateWithParameterFile @functionInput
+
+                  # Invoke deployment
+                  New-ModuleDeployment @functionInput -Verbose
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion
+
+            - task: AzurePowerShell@4
+              displayName: 'Register scale set'
+              condition: |
+                and(
+                  succeeded(),
+                  eq('${{ parameters.setAgentPool }}', 'true')
+                )
+              inputs:
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                ScriptType: InlineScript
+                inline: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
+
+                  # Get scale set properties
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
+                  $vmssParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+
+                  # Get agent  pool properties
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
+                  $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+
+                  $functionInput = @{
+                    PAT                   = '$(System.AccessToken)'
+                    Organization          = $agentPoolParameterFileContent.Organization
+                    Project               = $agentPoolParameterFileContent.Project
+                    ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
+                    VMSSName              = $vmssParameterFileContent.parameters.vmssParam.value.name
+                    VMSSResourceGroupName = $vmssParameterFileContent.parameters.rgParam.value.name
+                    AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Sync-ElasticPool @functionInput
+                errorActionPreference: stop
+                azurePowerShellVersion: LatestVersion

@@ -1,0 +1,15 @@
+{
+    "Organization": "<YourOrganization>",
+    "Project": "<YourProject>",
+    "ServiceConnectionName": "<YourServiceConnection>",
+    "AgentPoolProperties": {
+        "ScaleSetPoolName": "<YourPoolName>",
+        "RecycleAfterEachUse": false,
+        "MaxSavedNodeCount": 0,
+        "MaxCapacity": 10,
+        "DesiredIdle": 1,
+        "TimeToLiveMinutes": 15,
+        "AgentInteractiveUI": false,
+        "AuthorizeAllPipelines": true
+    }
+}

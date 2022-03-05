@@ -15,7 +15,7 @@ If a replace token is specified, only this value will be replaced with the targe
 If a reploce token is NOT specified, the whole value will be replaced with the targed value
 
 .PARAMETER jsonDepth
-Optional. The depth of the json to deal with. Important for the convertion back into the json format. Defaults to 15 
+Optional. The depth of the json to deal with. Important for the convertion back into the json format. Defaults to 15
 
 .EXAMPLE
 Set-CustomParameter -parameterFilePath 'C:/parameter.json' -valueMap @( @{ Path = pathA;  Value = 'valueA'}, @{ Path = pathB; Value = 'valueB' })
@@ -42,7 +42,7 @@ function Set-CustomParameter {
     )
 
     begin {
-        Write-Debug ("[{0} entered]" -f $MyInvocation.MyCommand)
+        Write-Debug ('[{0} entered]' -f $MyInvocation.MyCommand)
     }
 
     process {
@@ -55,31 +55,28 @@ function Set-CustomParameter {
                 if ($valueItem.ReplaceToken) {
                     $currentValue = Invoke-Expression "`$paramFileContent.parameters.$path"
                     $targetValue = $currentValue.Replace($valueItem.ReplaceToken, $valueItem.Value)
-                    Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"               
-                } 
-                elseif ($valueItem.AddToArray) {
+                    Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
+                } elseif ($valueItem.AddToArray) {
                     $currentValue = Invoke-Expression "`$paramFileContent.parameters.$path"
                     $targetValue = $currentValue += $valueItem.Value
-                    Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"  
-                }
-                else {
+                    Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
+                } else {
                     $targetValue = $valueItem.Value
                     Invoke-Expression "`$paramFileContent.parameters.$path = '$targetValue'"
                 }
-            }
-            catch {
-                Write-Error ("Exception caught. Please doublecheck if the property path [{0}] is valid" -f $valueItem.Path)
+            } catch {
+                Write-Error ('Exception caught. Please doublecheck if the property path [{0}] is valid' -f $valueItem.Path)
                 throw $_
             }
         }
-        
-        if ($PSCmdlet.ShouldProcess(("Paramter file [{0}]" -f (Split-Path $parameterFilePath -Leaf)), "Overwrite")) {
-            ConvertTo-Json $paramFileContent -Depth 15 | Out-File -FilePath $parameterFilePath
-            Write-Verbose "Custom parameters added to file"
+
+        if ($PSCmdlet.ShouldProcess(('Paramter file [{0}]' -f (Split-Path $parameterFilePath -Leaf)), 'Overwrite')) {
+            ConvertTo-Json $paramFileContent -Depth $jsonDepth | Out-File -FilePath $parameterFilePath
+            Write-Verbose 'Custom parameters added to file'
         }
-    } 
+    }
 
     end {
-        Write-Debug ("[{0} existed]" -f $MyInvocation.MyCommand)       
+        Write-Debug ('[{0} existed]' -f $MyInvocation.MyCommand)
     }
 }

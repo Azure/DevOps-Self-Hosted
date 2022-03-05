@@ -101,7 +101,7 @@ module vmss '../../../CARML0.4/Microsoft.Compute/virtualMachineScaleSets/deploy.
         'Default'
       ]
     }
-    adminPassword: !empty(vmssAdminPassword) ? vmssAdminPassword : '' 
+    adminPassword: !empty(vmssAdminPassword) ? vmssAdminPassword : ''
     publicKeys:  contains(vmssParam , 'publicKeys') ? vmssParam.publicKeys : ''
     location: location
   }

@@ -36,6 +36,7 @@
                 "name": "agent-scaleset",
                 "vmNamePrefix": "vmssvm",
                 "osType": "Linux",
+                "skuCapacity": 0,
                 "imageReference": {
                     //"id": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241"
                     // Use latest

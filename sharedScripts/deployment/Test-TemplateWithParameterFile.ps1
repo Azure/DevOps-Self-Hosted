@@ -70,7 +70,7 @@ function Test-TemplateWithParameterFile {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
-        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
+        . (Join-Path -Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {

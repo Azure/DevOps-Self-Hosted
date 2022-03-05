@@ -3,7 +3,7 @@
 Evaluate the provided image reference and optionally select the latest version of a provided custom image reference
 
 .DESCRIPTION
-Evaluate the provided image reference and optionally select the latest version of a provided custom image reference. 
+Evaluate the provided image reference and optionally select the latest version of a provided custom image reference.
 - If the image reference is not custom (i.e. is a resource ID), no changes are applied.
 - If the image reference is custom and has a version provided, no changes are applied
 - If the image reference is custom and no image version was provided as part of the resource ID, the latest image version is fetched and applied
