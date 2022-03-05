@@ -230,7 +230,7 @@ Also, when triggering the pipeline you have several configuration options to cho
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured) | Set to `All` | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only execute the agent pool registration (if enabled)</li>|
+| `Scope of deployment` | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured) | Set to `All` | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only executes the agent pool registration (if enabled)</li>|
 | `Add/Update agent pool` | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'. |
 
 ### First deployment
@@ -240,7 +240,7 @@ Upon the first deployment you'll have to perform two steps to get the construct 
 <details>
 <summary>1. Deploy the Virtual Machine Scale Set</summary>
 
-Navigate to the pipeline described & registered before and set the `Scope of the deployment` to `All` upon triggering the pipeline. Once the pipeline concluded, you may continue with the next step.
+Navigate to the pipeline described & registered before, set the `Scope of the deployment` to `All` and optionally select the `Add/Update agent pool` checkbox (if configured) upon triggering the pipeline. Once the pipeline concluded, you may continue with the next step.
 
 </details>
 
