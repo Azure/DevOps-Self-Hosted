@@ -64,7 +64,7 @@ module ds '../../../CARML0.4/Microsoft.Resources/deploymentScripts/deploy.bicep'
   name: '${deployment().name}-ds'
   scope: resourceGroup(rgParam.name)
   params: {
-    name: 'triggerBuild-imageTempalte-${formattedTime}-${it.outputs.name}'
+    name: 'triggerBuild-imageTemplate-${formattedTime}-${it.outputs.name}'
     userAssignedIdentities: {
       '${msi.id}': {}
     }
