@@ -15,31 +15,36 @@ Mandatory. The project to update the agent pool in
 Mandatory. The resource ID of the virtual machine scale set to update
 
 .PARAMETER VMSSOSType
-Parameter description
+Mandatory. The OSType of the virtual machine scale set to update
 
 .PARAMETER MaxCapacity
-Parameter description
+Optional. Maximum number of nodes that will exist in the elastic pool. Defaults to '10'
 
 .PARAMETER DesiredIdle
-Parameter description
+Optional. Number of agents to have ready waiting for jobs. Defaults to '1'
 
 .PARAMETER RecycleAfterEachUse
-Parameter description
+Optional. Discard node after each job completes. Defaults to 'false'
 
 .PARAMETER AgentInteractiveUI
-Parameter description
+Optional. Set whether agents should be configured to run with interactive UI. Defaults to 'false'
 
 .PARAMETER MaxSavedNodeCount
-Parameter description
+Optional. Keep nodes in the pool on failure for investigation. Defaults to '0'
 
 .PARAMETER TimeToLiveMinutes
-Parameter description
+Optional. The minimum time in minutes to keep idle agents alive. Defaults to '15'
 
 .EXAMPLE
-An example
+$inputObject = @{
+    Organization      = 'contoso'
+    ScaleSetPoolId    = 14
+    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
+    VMSSOSType        = 'Linux'
+}
+Set-ElasticPool @inputObject
 
-.NOTES
-General notes
+Update the agent pool with ID [14]  using the default configuration
 #>
 function Set-ElasticPool {
 
@@ -112,7 +117,7 @@ function Set-ElasticPool {
                 return
             }
 
-            Write-Verbose ('Successfully updated scale set agent pool with ID [{0}] for virtual machine scale set [{1}]' -f $reponse.poolId, $response.azureId.Split('/')[-1]) -Verbose
+            Write-Verbose ('Successfully updated scale set agent pool with ID [{0}] for virtual machine scale set [{1}]' -f $ScaleSetPoolId, $response.azureId.Split('/')[-1]) -Verbose
         }
     }
 

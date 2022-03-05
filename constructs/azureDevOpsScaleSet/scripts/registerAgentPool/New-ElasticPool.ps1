@@ -47,7 +47,7 @@ Optional. The minimum time in minutes to keep idle agents alive. Defaults to '15
 .EXAMPLE
 $inputObject = @{
     Organization      = 'contoso'
-    ProjectId         = '43'
+    ProjectId         = 43
     PoolName          = 'myPool'
     ServiceEndpointId = '11111-1111-11111-1111-1111111'
     VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
