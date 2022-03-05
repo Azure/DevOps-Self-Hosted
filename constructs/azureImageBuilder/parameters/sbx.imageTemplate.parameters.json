@@ -28,19 +28,19 @@
                     {
                         "type": "Shell",
                         "name": "PowerShell installation",
-                        "scriptUri": "https://shaibstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh<SAS>"
+                        "scriptUri": "https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh<SAS>"
                     },
                     {
                         "type": "Shell",
                         "name": "Prepare software installation",
                         "inline": [
-                            "wget 'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1<SAS>' -O 'LinuxPrepareMachine.ps1'",
+                            "wget 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1<SAS>' -O 'LinuxPrepareMachine.ps1'",
                             "sed -i 's/\r$//' 'LinuxPrepareMachine.ps1'",
                             "pwsh 'LinuxPrepareMachine.ps1'"
                         ]
                     }
                 ],
-                "sigImageDefinitionId": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
+                "sigImageDefinitionId": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
                 "userAssignedIdentities": "aibMsi"
                 // Windows example
                 // "imageSource": {
@@ -57,7 +57,7 @@
                 //     {
                 //         "type": "PowerShell",
                 //         "name": "Software installation",
-                //         "scriptUri": "https://shaibstorage.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1<SAS>",
+                //         "scriptUri": "https://<YourStorageAccount>.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1<SAS>",
                 //         "runElevated": true
                 //     }
                 // ],
