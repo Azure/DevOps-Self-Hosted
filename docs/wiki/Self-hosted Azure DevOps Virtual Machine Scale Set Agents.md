@@ -231,7 +231,7 @@ Also, when triggering the pipeline you have several configuration options to cho
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
 | `Scope of deployment` | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured) | Set to `All` | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only execute the agent pool registration (if enabled)</li>|
-| `Add/Update agent pool` | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section. |
+| `Add/Update agent pool` | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'. |
 
 ### First deployment
 
