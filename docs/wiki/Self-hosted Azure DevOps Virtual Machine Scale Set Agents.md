@@ -150,7 +150,7 @@ Depending on whether you want to register the agent pool later in the process au
    | `AgentPoolProperties.DesiredIdle` | `1` | Number of agents to have ready waiting for jobs |
    | `AgentPoolProperties.TimeToLiveMinutes` | `15` | The minimum time in minutes to keep idle agents alive |
    | `AgentPoolProperties.AgentInteractiveUI` | `false` | Set whether agents should be configured to run with interactive UI |
-   | `AgentPoolProperties.AuthorizeAllPipelines` | `true` | Setting to determine if all pipelines are authorized to use this agent pool by default |
+   | `AgentPoolProperties.AuthorizeAllPipelines` | `true` | Setting to determine if all pipelines are authorized to use this agent pool by default. Only considered during creation. |
 
 </details>
 
