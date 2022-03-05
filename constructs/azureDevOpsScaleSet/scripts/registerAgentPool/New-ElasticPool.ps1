@@ -18,37 +18,44 @@ Mandatory. The name of the agent pool
 Mandatory. The ID of the service connection that has access to the Azure subscription that contains the virtual machine scale set
 
 .PARAMETER VMSSResourceID
-Parameter description
+Mandatory. The resource ID of the virtual machine scale set to register with
 
 .PARAMETER VMSSOSType
-Parameter description
+Mandatory. The OSType of the virtual machine scale set to register with
 
 .PARAMETER AuthorizeAllPipelines
-Parameter description
+Optional. Setting to determine if all pipelines are authorized to use this TaskAgentPool by default. Defaults to 'true'
 
 .PARAMETER MaxCapacity
-Parameter description
+Optional. Maximum number of nodes that will exist in the elastic pool. Defaults to '10'
 
 .PARAMETER DesiredIdle
-Parameter description
+Optional. Number of agents to have ready waiting for jobs. Defaults to '1'
 
 .PARAMETER RecycleAfterEachUse
-Parameter description
+Optional. Discard node after each job completes. Defaults to 'false'
 
 .PARAMETER AgentInteractiveUI
-Parameter description
+Optional. Set whether agents should be configured to run with interactive UI. Defaults to 'false'
 
 .PARAMETER MaxSavedNodeCount
-Parameter description
+Optional. Keep nodes in the pool on failure for investigation. Defaults to '0'
 
 .PARAMETER TimeToLiveMinutes
-Parameter description
+Optional. The minimum time in minutes to keep idle agents alive. Defaults to '15'
 
 .EXAMPLE
-An example
+$inputObject = @{
+    Organization      = 'contoso'
+    ProjectId         = '43'
+    PoolName          = 'myPool'
+    ServiceEndpointId = '11111-1111-11111-1111-1111111'
+    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
+    VMSSOSType        = 'Linux'
+}
+New-ElasticPool @inputObject
 
-.NOTES
-General notes
+Register virtual machine scale set 'agent-scaleset' as agent pool 'myPool' in project [contoso|43] using the default configuration
 #>
 function New-ElasticPool {
 
