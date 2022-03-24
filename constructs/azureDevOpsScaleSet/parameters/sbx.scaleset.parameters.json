@@ -38,9 +38,9 @@
                 "osType": "Linux",
                 "skuCapacity": 0,
                 "imageReference": {
-                    //"id": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241"
+                    //"id": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241"
                     // Use latest
-                    "id": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest"
+                    "id": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest"
                 },
                 "disablePasswordAuthentication": true,
                 "publicKeys": [
@@ -57,7 +57,7 @@
                                 "name": "ipconfig1",
                                 "properties": {
                                     "subnet": {
-                                        "id": "subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet/subnets/vmsssubnet"
+                                        "id": "subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet/subnets/vmsssubnet"
                                     }
                                 }
                             }
@@ -67,7 +67,7 @@
                 // Windows example
                 // "osType": "Windows",
                 // "imageReference": {
-                //     "id": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/0.24470.39803"
+                //     "id": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/0.24470.39803"
                 // },
                 // "disablePasswordAuthentication": false,
             }
@@ -76,7 +76,7 @@
         // "vmssAdminPassword" : {
         //     "reference": {
         //         "keyVault": {
-        //             "id": "/subscriptions/<YourSubscriptionID>/resourceGroups/dependencies-rg/providers/Microsoft.KeyVault/vaults/sxx-az-kv-weu-x-004"
+        //             "id": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/dependencies-rg/providers/Microsoft.KeyVault/vaults/sxx-az-kv-weu-x-004"
         //         },
         //         "secretName": "adminPassword"
         //     }
