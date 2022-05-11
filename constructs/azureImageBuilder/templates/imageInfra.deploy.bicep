@@ -58,7 +58,7 @@ module msi '../../../CARML0.5/Microsoft.ManagedIdentity/userAssignedIdentities/d
 }
 
 // MSI Subscription contributor assignment
-module msi_rbac '../../../CARML0.5/Microsoft.Authorization/roleAssignments/subscriptions/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module msi_rbac '../../../CARML0.5/Microsoft.Authorization/roleAssignments/subscription/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ra'
   params: {
     // Tracked issue: https://github.com/Azure/bicep/issues/2371
