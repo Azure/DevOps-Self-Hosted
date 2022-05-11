@@ -23,7 +23,7 @@
         // Storage Account parameters
         "saParam": {
             "value": {
-                "name": "<YourStorageAccount>",
+                "name": "alsehrcustomsa",
                 "blobServices": {
                     "containers": [
                         {
