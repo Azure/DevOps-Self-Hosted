@@ -36,7 +36,7 @@ param deploymentsToPerform string = 'Only storage & image'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.4/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-rg'
   params: {
     name: rgParam.name
@@ -45,7 +45,7 @@ module rg '../../../CARML0.4/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // User Assigned Identity (MSI)
-module msi '../../../CARML0.4/Microsoft.ManagedIdentity/userAssignedIdentities/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module msi '../../../CARML0.5/Microsoft.ManagedIdentity/userAssignedIdentities/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-msi'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -58,7 +58,7 @@ module msi '../../../CARML0.4/Microsoft.ManagedIdentity/userAssignedIdentities/d
 }
 
 // MSI Subscription contributor assignment
-module msi_rbac '../../../CARML0.4/Microsoft.Authorization/roleAssignments/subscriptions/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module msi_rbac '../../../CARML0.5/Microsoft.Authorization/roleAssignments/subscription/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ra'
   params: {
     // Tracked issue: https://github.com/Azure/bicep/issues/2371
@@ -71,7 +71,7 @@ module msi_rbac '../../../CARML0.4/Microsoft.Authorization/roleAssignments/subsc
 }
 
 // Azure Compute Gallery
-module acg '../../../CARML0.4/Microsoft.Compute/galleries/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module acg '../../../CARML0.5/Microsoft.Compute/galleries/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-acg'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -85,7 +85,7 @@ module acg '../../../CARML0.4/Microsoft.Compute/galleries/deploy.bicep' = if (de
 }
 
 // Assets storage account deployment
-module sa '../../../CARML0.4/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+module sa '../../../CARML0.5/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-sa'
   scope: resourceGroup(rgParam.name)
   params: {
