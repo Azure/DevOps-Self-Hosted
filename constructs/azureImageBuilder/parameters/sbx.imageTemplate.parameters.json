@@ -28,19 +28,19 @@
                     {
                         "type": "Shell",
                         "name": "PowerShell installation",
-                        "scriptUri": "https://alsehrcustomsa.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh<SAS>"
+                        "scriptUri": "https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh<SAS>"
                     },
                     {
                         "type": "Shell",
                         "name": "Prepare software installation",
                         "inline": [
-                            "wget 'https://alsehrcustomsa.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1<SAS>' -O 'LinuxPrepareMachine.ps1'",
+                            "wget 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1<SAS>' -O 'LinuxPrepareMachine.ps1'",
                             "sed -i 's/\r$//' 'LinuxPrepareMachine.ps1'",
                             "pwsh 'LinuxPrepareMachine.ps1'"
                         ]
                     }
                 ],
-                "sigImageDefinitionId": "/subscriptions/b765c5e5-ae60-4724-9b59-36fbcf56795b/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
+                "sigImageDefinitionId": "/subscriptions/<YourSubscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
                 "userAssignedIdentities": "aibMsi"
                 // Windows example
                 // "imageSource": {

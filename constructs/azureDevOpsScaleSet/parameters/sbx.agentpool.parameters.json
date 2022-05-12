@@ -1,9 +1,9 @@
 {
-    "Organization": "alsehr",
-    "Project": "Module Playground",
-    "ServiceConnectionName": "ModulePlaygroundPrivate",
+    "Organization": "<YourOrganization>",
+    "Project": "<YourProject>",
+    "ServiceConnectionName": "<YourServiceConnection>",
     "AgentPoolProperties": {
-        "ScaleSetPoolName": "CustomAgentPool",
+        "ScaleSetPoolName": "<YourPoolName>",
         "RecycleAfterEachUse": false,
         "MaxSavedNodeCount": 0,
         "MaxCapacity": 10,
