@@ -11,34 +11,33 @@ function Set-SasKeysInFile {
 
 		# Install required modules
 		$currentVerbosePreference = $VerbosePreference
-        $VerbosePreference = 'SilentlyContinue'
-        $requiredModules = @(
-            'Az.ResourceGraph'
-        )
-        foreach ($moduleName in $requiredModules) {
-            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
-                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
-                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
-                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
-                }
-            }
-            else {
-                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
-            }
-        }
+		$VerbosePreference = 'SilentlyContinue'
+		$requiredModules = @(
+			'Az.ResourceGraph'
+		)
+		foreach ($moduleName in $requiredModules) {
+			if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
+				Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
+				if ($installed = Get-Module -Name $moduleName -ListAvailable) {
+					Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
+				}
+			} else {
+				Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
+			}
+		}
 
-        $VerbosePreference = $currentVerbosePreference
+		$VerbosePreference = $currentVerbosePreference
 	}
 
 	process {
 		$parameterFileContent = Get-Content -Path $filePath
-		$saslines = $parameterFileContent | Where-Object { $_ -like "*<SAS>*" } | ForEach-Object { $_.Trim() }
+		$saslines = $parameterFileContent | Where-Object { $_ -match '^[^/]*:.*<SAS>.*$' } | ForEach-Object { $_.Trim() }
 
-		Write-Verbose ("Found [{0}] lines with sas tokens (<SAS>) to replace" -f $saslines.Count)
+		Write-Verbose ('Found [{0}] lines with sas tokens (<SAS>) to replace' -f $saslines.Count)
 
 		foreach ($line in $saslines) {
 			Write-Verbose "Evaluate line [$line]" -Verbose
-			$null = $line -cmatch "https.*<SAS>"
+			$null = $line -cmatch 'https.*<SAS>'
 			$fullPath = $Matches[0].Replace('https://', '').Replace('<SAS>', '')
 			$pathElements = $fullPath.Split('/')
 			$containerName = $pathElements[1]
@@ -61,7 +60,7 @@ function Set-SasKeysInFile {
 			$parameterFileContent = $parameterFileContent.Replace($line, $newString)
 		}
 
-		if ($PSCmdlet.ShouldProcess("File in path [$filePath]", "Overwrite")) {
+		if ($PSCmdlet.ShouldProcess("File in path [$filePath]", 'Overwrite')) {
 			Set-Content -Path $filePath -Value $parameterFileContent -Force
 		}
 	}

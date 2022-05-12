@@ -52,6 +52,8 @@ jobs:
                 azurePowerShellVersion: LatestVersion
   - deployment: deploy_job
     displayName: Deploy Resources
+    dependsOn:
+      - cleanup_job
     environment: ${{ parameters.environment }}
     condition: in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
     timeoutInMinutes: 120
