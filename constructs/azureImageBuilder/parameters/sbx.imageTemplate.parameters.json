@@ -40,7 +40,7 @@
                         ]
                     }
                 ],
-                "sigImageDefinitionId": "/subscriptions/<YourSubscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
+                "sigImageDefinitionId": "/subscriptions/<YourSubscriptionID>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid",
                 "userAssignedIdentities": "aibMsi"
                 // Windows example
                 // "imageSource": {
