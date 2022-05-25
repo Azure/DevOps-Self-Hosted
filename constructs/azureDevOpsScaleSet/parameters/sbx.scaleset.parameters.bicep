@@ -1,5 +1,8 @@
 targetScope = 'subscription'
 
+//////////////////////////
+//   Input Parameters   //
+//////////////////////////
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
   'All'
@@ -10,13 +13,22 @@ param deploymentsToPerform string = 'All'
 @description('Specifies the location for resources.')
 param location string = 'WestEurope'
 
-param rgParam object = {
+///////////////////////////////
+//   Deployment Properties   //
+///////////////////////////////
+
+// Resource Group
+var rgParam = {
   name: 'agents-vmss-rg'
 }
-param nsgParam object = {
+
+// Network Security Group
+var nsgParam = {
   name: 'vmss-nsg'
 }
-param vnetParam object = {
+
+// Virtual Network
+var vnetParam = {
   name: 'vmss-vnet'
   addressPrefixes: [
     '10.0.0.0/16'
@@ -30,7 +42,8 @@ param vnetParam object = {
   ]
 }
 
-param vmssParam object = {
+// Virtual Machine Scale Set
+var vmssParam = {
   name: 'agent-scaleset'
   vmNamePrefix: 'vmssvm'
   osType: 'Linux'
@@ -62,6 +75,9 @@ param vmssParam object = {
   ]
 }
 
+/////////////////////////////
+//   Template Deployment   //
+/////////////////////////////
 module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-scaleSet-sbx'
   params: {
