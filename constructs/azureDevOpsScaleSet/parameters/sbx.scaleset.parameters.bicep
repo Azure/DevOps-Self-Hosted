@@ -10,7 +10,7 @@ targetScope = 'subscription'
 ])
 param deploymentsToPerform string = 'All'
 
-@description('Specifies the location for resources.')
+@description('Optional. Specifies the location for resources.')
 param location string = 'WestEurope'
 
 ///////////////////////////////
@@ -73,7 +73,19 @@ var vmssParam = {
       ]
     }
   ]
+  // Windows example
+  // osType: 'Windows'
+  // imageReference: {
+  //     id: 'subscription().id/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/0.24470.3980'
+  // }
+  // disablePasswordAuthentication: false
+  // adminPassword: kv.getSecret('adminPassword')
 }
+// For the windows example
+// resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
+//   name: kvName
+//   scope: resourceGroup(subscription().id, kvResourceGroup)
+// }
 
 /////////////////////////////
 //   Template Deployment   //

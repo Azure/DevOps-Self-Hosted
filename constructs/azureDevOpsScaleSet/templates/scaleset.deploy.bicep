@@ -35,7 +35,7 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = if(deploymentsToPerform == 'All') {
+module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-rg'
   params: {
     name: rgParam.name
@@ -44,7 +44,7 @@ module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // Network Security Group
-module nsg '../../../CARML0.5/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if(deploymentsToPerform == 'All') {
+module nsg '../../../CARML0.5/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-nsg'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -57,7 +57,7 @@ module nsg '../../../CARML0.5/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Virtual Network
-module vnet '../../../CARML0.5/Microsoft.Network/virtualNetworks/deploy.bicep' = if(deploymentsToPerform == 'All') {
+module vnet '../../../CARML0.5/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -93,7 +93,7 @@ module vmss '../../../CARML0.5/Microsoft.Compute/virtualMachineScaleSets/deploy.
     systemAssignedIdentity: contains(vmssParam, 'systemAssignedIdentity') ? vmssParam.systemAssignedIdentity : true
     osType: vmssParam.osType
     imageReference: vmssParam.imageReference
-    adminUsername: contains(vmssParam, 'adminUsername')? vmssParam.adminUsername : 'scaleSetAdmin'
+    adminUsername: contains(vmssParam, 'adminUsername') ? vmssParam.adminUsername : 'scaleSetAdmin'
     disablePasswordAuthentication: vmssParam.disablePasswordAuthentication
     nicConfigurations: vmssParam.nicConfigurations
     scaleInPolicy: contains(vmssParam, 'scaleInPolicy') ? vmssParam.scaleInPolicy : {
@@ -101,8 +101,8 @@ module vmss '../../../CARML0.5/Microsoft.Compute/virtualMachineScaleSets/deploy.
         'Default'
       ]
     }
-    adminPassword: !empty(vmssAdminPassword) ? vmssAdminPassword : ''
-    publicKeys:  contains(vmssParam , 'publicKeys') ? vmssParam.publicKeys : ''
+    adminPassword: contains(vmssParam, 'adminPassword') ? vmssParam.adminPassword : ''
+    publicKeys: contains(vmssParam, 'publicKeys') ? vmssParam.publicKeys : ''
     location: location
   }
   dependsOn: [
