@@ -81,20 +81,20 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   # Get scale set properties
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
-                  $vmssParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   # Get agent  pool properties
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'  # TODO: Update
-                  $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
+                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
+                  $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $agentsParameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{
                     PAT                   = '$(System.AccessToken)'
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
-                    VMSSName              = $vmssParameterFileContent.parameters.vmssParam.value.name # TODO: Update
-                    VMSSResourceGroupName = $vmssParameterFileContent.parameters.rgParam.value.name  # TODO: Update
+                    VMSSName              = $templateContent.parameters.vmssParam.defaultValue.name
+                    VMSSResourceGroupName = $templateContent.parameters.rgParam.defaultValue.name
                     AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
                   }
 
