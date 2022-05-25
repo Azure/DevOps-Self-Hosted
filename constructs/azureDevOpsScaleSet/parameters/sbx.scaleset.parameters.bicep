@@ -84,7 +84,7 @@ var vmssParam = {
 // For the windows example
 // resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
 //   name: kvName
-//   scope: resourceGroup(subscription().id, kvResourceGroup)
+//   scope: resourceGroup(subscription().subscriptionId, kvResourceGroup)
 // }
 
 /////////////////////////////
