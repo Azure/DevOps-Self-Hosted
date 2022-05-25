@@ -31,7 +31,7 @@ var sasConfig = {
     signedResourceTypes: 'o'
     signedPermission: 'r'
     signedServices: 'b'
-    signedExpiry: dateTimeAdd(baseTime, 'PT1H') // TODO: now plus 2 hours
+    signedExpiry: dateTimeAdd(baseTime, 'PT1H')
     signedProtocol: 'https'
     // keyToSign: 'key2'
 }
@@ -61,13 +61,13 @@ var itParam = {
         {
             type: 'Shell'
             name: 'PowerShell installation'
-            scriptUri: 'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh${sasKey}'
+            scriptUri: 'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
         }
         {
             type: 'Shell'
             name: 'Prepare software installation'
             inline: [
-                'wget \'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+                'wget \'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
                 'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                 'pwsh \'LinuxPrepareMachine.ps1\''
             ]
@@ -86,11 +86,11 @@ var itParam = {
     //     {
     //         type: 'PowerShell'
     //         name: 'Software installation'
-    //         scriptUri: 'https://alsehrcustomsa.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1${sasKey}'
+    //         scriptUri: 'https://alsehrcustomsa.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1?${sasKey}'
     //         runElevated: true
     //     }
     // ]
-    // sigImageDefinitionId: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid'
+    // sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid'
 }
 
 /////////////////////////////
