@@ -35,7 +35,7 @@ function Remove-ImageTemplate {
         [string] $resourcegroupName,
 
         [Parameter(Mandatory = $false)]
-        [string] $imageTemplateName = ''
+        [string] $imageTemplateName = '*'
     )
 
     begin {
@@ -55,7 +55,7 @@ function Remove-ImageTemplate {
                     Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
                 }
             } else {
-                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
+                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule[0].Name, $installedModule[0].Version) -Verbose
             }
         }
         $VerbosePreference = $currentVerbosePreference
@@ -66,7 +66,7 @@ function Remove-ImageTemplate {
 
     process {
         [array] $imageTemplateResources = (Search-AzGraph -Query "Resources | where resourceGroup == '$resourcegroupName' | where name startswith '$imageTemplateName'")
-        [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -templateResourceGroup $_.ResourceGroup -templateName $_.name) -notIn @('running', 'new') }
+        [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -templateResourceGroup $_.resourceGroup -templateName $_.name) -notIn @('running', 'new') }
         Write-Verbose ('Found [{0}] image templates to remove.' -f $filteredTemplateResource.Count)
         if ($imageTemplateResources.Count -gt $filteredTemplateResource.Count) {
             Write-Verbose ("[{0}] instances are filtered as they are still in state 'running'." -f ($imageTemplateResources.Count - $filteredTemplateResource.Count))

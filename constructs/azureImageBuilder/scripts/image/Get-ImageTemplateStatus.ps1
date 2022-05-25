@@ -34,5 +34,12 @@ function Get-ImageTemplateStatus {
         Method = 'GET'
         Path   = $path
     }
-    return ((Invoke-AzRestMethod @requestInputObject).Content | ConvertFrom-Json).properties.lastRunStatus.runState.ToLower()
+
+    $response = ((Invoke-AzRestMethod @requestInputObject).Content | ConvertFrom-Json).properties
+    if ($response.lastRunStatus) {
+        return $response.lastRunStatus.runState.ToLower()
+    } else {
+        Write-Verbose ('Image Build failed with error: [{0}]' -f $response.provisioningError.message)
+        return 'failed'
+    }
 }
