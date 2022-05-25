@@ -29,13 +29,14 @@ param vnetParam object = {
     }
   ]
 }
+
 param vmssParam object = {
   name: 'agent-scaleset'
   vmNamePrefix: 'vmssvm'
   osType: 'Linux'
   skuCapacity: 0
   imageReference: {
-    id: '/subscriptions/${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest'
+    id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest'
   }
   disablePasswordAuthentication: true
   publicKeys: [
@@ -52,7 +53,7 @@ param vmssParam object = {
           name: 'ipconfig1'
           properties: {
             subnet: {
-              id: 'subscriptions/${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Network/virtualNetworks/${vnetParam.name}/subnets/${vnetParam.subnets[0].name}'
+              id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Network/virtualNetworks/${vnetParam.name}/subnets/${vnetParam.subnets[0].name}'
             }
           }
         }
