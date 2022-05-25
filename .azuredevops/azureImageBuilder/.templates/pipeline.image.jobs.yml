@@ -37,17 +37,13 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
-                  # $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # $functionInput = @{
-                  #   resourcegroupName =  $templateContent.variables.rgParam.name
-                  #   imageTemplateName =  $templateContent.variables.itParam.name
-                  # }
-
-                  # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
                   $functionInput = @{
                     resourcegroupName =  $templateContent.variables.rgParam.name
+                    # imageTemplateName =  $templateContent.variables.itParam.name
+
+                    # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
                     imageTemplateName =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
                   }
 
