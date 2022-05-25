@@ -77,8 +77,8 @@ jobs:
                 ScriptType: InlineScript
                 inline: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment')
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
@@ -99,10 +99,10 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   # Validate deployment
-                  Test-TemplateWithParameterFile @functionInput
+                  Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  New-ModuleDeployment @functionInput -Verbose
+                  New-TemplateDeployment @functionInput -Verbose
                 errorActionPreference: stop
                 azurePowerShellVersion: LatestVersion
 
@@ -146,8 +146,8 @@ jobs:
                 ScriptType: InlineScript
                 inline: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Set-SasKeysInFile.ps1')
 
                   # ----------------- #
@@ -173,10 +173,10 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   # Validate deployment
-                  Test-TemplateWithParameterFile @functionInput
+                  Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  $res = New-ModuleDeployment @functionInput -Verbose
+                  $res = New-TemplateDeployment @functionInput -Verbose
 
                   Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
 

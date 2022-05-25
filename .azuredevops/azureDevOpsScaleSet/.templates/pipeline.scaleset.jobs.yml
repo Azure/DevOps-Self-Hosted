@@ -37,29 +37,15 @@ jobs:
                 ScriptType: InlineScript
                 inline: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Set-CustomParameter')
-
-                  # Check the provide image
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
-                  $parameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
-
-                  # Overwrite parameter file if necessary
-                  if($customValueMap.Count -gt 0) {
-                    $overwriteInputObject = @{
-                      parameterFilePath = $parameterFilePath
-                      valueMap          = $customValueMap
-                    }
-                    Set-CustomParameter @overwriteInputObject
-                  }
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(templatesPath)' 'scaleset.deploy.bicep'
-                    parameterFilePath = $parameterFilePath
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -73,10 +59,10 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   # Validate deployment
-                  Test-TemplateWithParameterFile @functionInput
+                  Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  New-ModuleDeployment @functionInput -Verbose
+                  New-TemplateDeployment @functionInput -Verbose
                 errorActionPreference: stop
                 azurePowerShellVersion: LatestVersion
 
@@ -99,7 +85,7 @@ jobs:
                   $vmssParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
                   # Get agent  pool properties
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
+                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'  # TODO: Update
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{
@@ -107,8 +93,8 @@ jobs:
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
-                    VMSSName              = $vmssParameterFileContent.parameters.vmssParam.value.name
-                    VMSSResourceGroupName = $vmssParameterFileContent.parameters.rgParam.value.name
+                    VMSSName              = $vmssParameterFileContent.parameters.vmssParam.value.name # TODO: Update
+                    VMSSResourceGroupName = $vmssParameterFileContent.parameters.rgParam.value.name  # TODO: Update
                     AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
                   }
 
