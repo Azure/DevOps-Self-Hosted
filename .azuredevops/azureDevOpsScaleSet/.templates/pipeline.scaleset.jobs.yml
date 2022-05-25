@@ -93,8 +93,8 @@ jobs:
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
-                    VMSSName              = $templateContent.parameters.vmssParam.defaultValue.name
-                    VMSSResourceGroupName = $templateContent.parameters.rgParam.defaultValue.name
+                    VMSSName              = $templateContent.variables.vmssParam.name
+                    VMSSResourceGroupName = $templateContent.variables.rgParam.name
                     AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
                   }
 

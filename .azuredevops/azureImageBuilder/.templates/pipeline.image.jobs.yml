@@ -40,8 +40,8 @@ jobs:
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    resourcegroupName =  $templateContent.parameters.rgParam.defaultValue.name
-                    imageTemplateName =  $templateContent.parameters.itParam.defaultValue.name
+                    resourcegroupName =  $templateContent.variables.rgParam.name
+                    imageTemplateName =  $templateContent.variables.itParam.name
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -123,7 +123,7 @@ jobs:
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    storageAccountName =  $templateContent.parameters.saParam.defaultValue.name
+                    storageAccountName =  $templateContent.variables.saParam.name
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -199,7 +199,7 @@ jobs:
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    ResourceGroupName = $templateContent.parameters.rgParam.defaultValue.name
+                    ResourceGroupName = $templateContent.variables.rgParam.name
                     ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
                   }
 
