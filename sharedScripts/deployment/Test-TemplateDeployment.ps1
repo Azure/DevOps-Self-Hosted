@@ -75,7 +75,7 @@ function Test-TemplateDeployment {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
-        . (Join-Path (Get-Item -Path $PSScriptRoot).parent.FullName 'sharedScripts' 'Get-ScopeOfTemplateFile.ps1')
+        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {
