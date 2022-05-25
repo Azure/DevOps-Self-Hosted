@@ -40,18 +40,10 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Set-CustomParameter')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Select-Image.ps1')
 
                   # Check the provide image
                   $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.json'
                   $parameterFileContent = ConvertFrom-Json (Get-Content $parameterFilePath -Raw) -AsHashTable
-
-                  # if($imageVersionReference = Select-Image -imageReference $parameterFileContent.parameters.vmssParam.value.imageReference -Verbose) {
-                  #   $customValueMap += @{
-                  #     path = 'vmssParam.value.imageReference.id'
-                  #     value = $imageVersionReference
-                  #   }
-                  # }
 
                   # Overwrite parameter file if necessary
                   if($customValueMap.Count -gt 0) {
