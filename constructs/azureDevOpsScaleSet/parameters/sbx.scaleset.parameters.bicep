@@ -1,5 +1,12 @@
 targetScope = 'subscription'
 
+@description('Optional. A parameter to control which deployments should be executed')
+@allowed([
+  'All'
+  'Only Scale Set'
+])
+param deploymentsToPerform string = 'All'
+
 @description('Specifies the location for resources.')
 param location string = 'WestEurope'
 
@@ -62,5 +69,6 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
     nsgParam: nsgParam
     vnetParam: vnetParam
     vmssParam: vmssParam
+    deploymentsToPerform: deploymentsToPerform
   }
 }
