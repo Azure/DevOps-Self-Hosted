@@ -133,6 +133,8 @@ function Sync-ElasticPool {
         . (Join-Path -Path $PSScriptRoot 'Get-ElasticPool.ps1')
         . (Join-Path -Path $PSScriptRoot 'New-ElasticPool.ps1')
         . (Join-Path -Path $PSScriptRoot 'Set-ElasticPool.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-ElasticPoolRegisteredInProject.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Set-ElasticPoolRegistrationInProject.ps1')
     }
 
     process {
@@ -184,7 +186,29 @@ function Sync-ElasticPool {
                 New-ElasticPool @inputObject
             }
         } else {
-            Write-Verbose ('Agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName) -Verbose
+            # Check if agent pool is registered to  project, or only the organization
+            $inputObject = @{
+                Organization = $Organization
+                Project      = $Project
+                PoolId       = $elasticPool.poolId
+            }
+            $poolInProjectScope = Get-ElasticPoolRegisteredInProject @inputObject
+
+            if ($poolInProjectScope.Count -eq 0) {
+                # Pool not registered in project. Adding...
+                $inputObject = @{
+                    Organization = $Organization
+                    Project      = $Project
+                    PoolName     = $AgentPoolProperties.ScaleSetPoolName
+                    PoolId       = $elasticPool.poolId
+                }
+                Write-Verbose ('The agent pool [{0}] exists, but is not yet registered in project [{1}]. Linking.' -f $AgentPoolProperties.ScaleSetPoolName, $Project) -Verbose
+                $null = Set-ElasticPoolRegistrationInProject @inputObject
+            } else {
+                Write-Verbose ('The agent pool [{0}] exists and is registered in project [{1}].' -f $poolInProjectScope.name, $Project) -Verbose
+            }
+            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
+
             $inputObject = @{
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId

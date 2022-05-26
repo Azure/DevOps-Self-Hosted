@@ -104,3 +104,6 @@ module scaleSetDeployment '../templates/imageTemplate.deploy.bicep' = {
         deploymentsToPerform: deploymentsToPerform
     }
 }
+
+@description('The generated name of the image template')
+output imageTempateName string = scaleSetDeployment.outputs.imageTempateName

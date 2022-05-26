@@ -39,7 +39,6 @@ jobs:
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Set-CustomParameter')
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #

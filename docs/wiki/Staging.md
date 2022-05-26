@@ -7,14 +7,14 @@ This section gives you an overview of how staging works for the provided constru
 
 # How does it work
 
-The solution comes with 3 pre-configured stages, SBX, DEV & PRD, and each pipeline deploys sequentially into these environments. However, you can also decide to deploy into an environment directly. 
+The solution comes with 3 pre-configured stages, SBX, DEV & PRD, and each pipeline deploys sequentially into these environments. However, you can also decide to deploy into an environment directly.
 
 <img src="./media/staging/devOpsPipelineExample.png" alt="DevOps pipeline example" height="250">
 
 To this end, pipeline variables and parameter files are named as per the environment they belong to:
 
-- Parameters files (in `Parameters` folder): `<env>.<name>.parameters.json` (for example: `sbx.imageInfra.parameters.json`) 
-- Pipeline variables (in `variables.yml` file): `<name>_<env>` (for example `serviceConnection_sbx`)
+- Parameters (Bicep) files (in a `parameters` folder): `<env>.<name>.parameters.bicep` (for example: `sbx.imageInfra.parameters.bicep`)
+- Pipeline variables (in a `variables.yml` file): `<name>_<env>` (for example `serviceConnection_sbx`)
 
 Upon triggering a pipeline, the corresponding stage will select the correct parameter file(s) and pipeline variable(s). For an exemplary `SBX` stage this could look like:
 
@@ -28,7 +28,7 @@ stages:
   - template: .templates/pipeline.jobs.yml
     parameters:
       # Comment: Passed to template to set environment & select the correct parameter file (see next example)
-      environment: 'sbx' 
+      environment: 'sbx'
 
 - stage: DEV_Deployments
   displayName: Deploy to DEV
@@ -40,7 +40,7 @@ stages:
       # Comment: Passed to template to set environment & select the correct parameter file (see next example)
       environment: 'dev'
 ```
-> _**NOTE:**_ The `${{ parameters.<name> }}'` notation corresponds to the pipeline's runtime parameters (on top of the file) and is not to be confused with deployment parameter files (for example `sbx.parameter.json`).
+> _**NOTE:**_ The `${{ parameters.<name> }}'` notation corresponds to the pipeline's runtime parameters (on top of the file) and is not to be confused with deployment parameter files (for example `sbx.parameter.bicep`).
 
 In the `pipeline.jobs.yml` file, the values passed in as template parameters (for example `environment: sbx`) could then further be used like:
 
@@ -67,14 +67,14 @@ jobs:
               ScriptType: InlineScript
               inline: |
                 # Comment: Access the correct parameter file as per the stage's 'environment' template parameter
-                parameterFilePath = '${{ parameters.environment }}.imageInfra.parameters.json'
+                templateFilePath = '${{ parameters.environment }}.imageInfra.parameters.bicep'
 ```
 
 # How to use it
 
 With the fundamentals established, let's take a look into how to interact with the stages.
 
-As mentioned previously, the constructs come with differently named parameter files per stage (for example `sbx.parameters.json`) and variables in the `variable.yml` file (for example `serviceConneection_sbx`). 
+As mentioned previously, the constructs come with differently named parameter files per stage (for example `sbx.parameters.bicep`) and variables in the `variable.yml` file (for example `serviceConneection_sbx`).
 
 ## 1. Add/Remove environments
 The first thing to do when configuring the environment, is to add/remove parameter files or variables as per your requirements (i.e. if you need more or less stages) and also update the `pipeline.yml` file that consumes these (i.e. add / remove stages & optionally also update the pipeline's runtime parameters & conditions).
@@ -83,16 +83,16 @@ The first thing to do when configuring the environment, is to add/remove paramet
 Once set, you have to update the values as per your requirements. For example, when selecting a virtual network for a virtual machine scale set, you will most likely use a different one for each environment. Hence navigate to the corresponding parameter files and update each value to match the configuration of this environment.
 
 Example:
-- `sbx.parameters.json`
-  ```json
-  "subnet": {
-    "id": "subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-sbx/subnets/vmsssubnet"
-    }
+- `sbx.parameters.bicep`
+  ```Bicep
+  subnet: {
+    id: 'subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-sbx/subnets/vmsssubnet'
+  }
   ```
-- `dev.parameters.json`
-  ```json
-  "subnet": {
-    "id": "subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-dev/subnets/vmsssubnet"
+- `dev.parameters.bicep`
+  ```Bicep
+  subnet: {
+    id: 'subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-dev/subnets/vmsssubnet'
   }
   ```
 
@@ -104,11 +104,11 @@ serviceConnection_sbx: 'sbxConnection'
 serviceConnection_dev: 'devConnection'
 ```
 
-> _**Note:**_ If you use different or additional names than SBX, DEV or PRD, make sure the variable naming schema & parameter file naming schema fit's the new name exactly. (for example if you add a stage `eastus2`, the parameter file would need to be named `eastus2.parameters.json`, the service connection variable `serviceconnection_eastus2`) and the references in the `pipeline.yml` as well.
+> _**Note:**_ If you use different or additional names than SBX, DEV or PRD, make sure the variable naming schema & parameter file naming schema fit's the new name exactly. (for example if you add a stage `eastus2`, the parameter file would need to be named `eastus2.parameters.bicep`, the service connection variable `serviceconnection_eastus2`) and the references in the `pipeline.yml` as well.
 
 ## 3. Run the pipeline
 
-Last but not least, if you execute the pipeline, you will notice that runtime parameters such as 
+Last but not least, if you execute the pipeline, you will notice that runtime parameters such as
 
 ```yaml
 - name: startEnvironment
@@ -125,7 +125,7 @@ are rendered as
 
 <img src="./media/staging/stagingRuntime.png" alt="Runtime parameter" height="120">
 
-effectively allowing you to choose the environment to start from. 
+effectively allowing you to choose the environment to start from.
 
 For example, you may want to carry out a 'Continuous Deployment', always starting from sandbox or `sbx` which is selected by default. Once the pipeline is executed and the sandbox stage concluded successfully, the pipeline would automatically continue with the next stage in line (by default, development or `dev`), and so on.
 
@@ -145,8 +145,8 @@ If you have no need for a staging approach, you can also remove any trace of it.
        - template: .templates/<originalTemplateReference>
          parameters:
            <<Keep all template parameters but `environment`>>
-     ``` 
-     
+     ```
+
      for example
 
      ```yaml
@@ -157,7 +157,7 @@ If you have no need for a staging approach, you can also remove any trace of it.
          parameters:
            deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
      ```
-1. In any pipeline template file (in the `.templates` folder), 
+1. In any pipeline template file (in the `.templates` folder),
    - remove the `environment` template parameter on the top completely
    - remove any trace of `_${{ parameters.environment }}`
    - replace the `deployment` jobs with simple `jobs`. For example, replace
@@ -190,4 +190,4 @@ If you have no need for a staging approach, you can also remove any trace of it.
 
 1. In the pipeline's `variable.yml` file, reduce all environment-replicated variables (for example `subscription_sbx` & `subscription_dev`) to a single variable and remove it's environment reference (for example `subscription`)
 
-1. Rename any parameter file from for example `sbx.parameters.json` to `parameters.json`
+1. Rename any parameter file from for example `sbx.parameters.bicep` to `parameters.bicep`
