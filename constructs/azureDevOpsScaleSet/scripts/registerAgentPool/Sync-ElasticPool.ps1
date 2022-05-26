@@ -184,7 +184,7 @@ function Sync-ElasticPool {
                 New-ElasticPool @inputObject
             }
         } else {
-            Write-Verbose ('Agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName) -Verbose
+            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
             $inputObject = @{
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId
