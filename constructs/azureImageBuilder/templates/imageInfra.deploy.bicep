@@ -67,6 +67,7 @@ module msi_rbac '../../../CARML0.5/Microsoft.Authorization/roleAssignments/subsc
     //principalId: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, rgParam.name), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name)),'2021-04-01').outputs.principalId.value
     principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? msi.outputs.principalId : ''
     roleDefinitionIdOrName: msiRoleAssignmentParam.roleDefinitionIdOrName
+    location: location
   }
 }
 

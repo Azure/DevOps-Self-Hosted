@@ -36,12 +36,15 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
-                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    resourcegroupName = $parameters.rgParam.value.name
-                    imageTemplateName =  $parameters.itParam.value.name
+                    resourcegroupName =  $templateContent.variables.rgParam.name
+                    # imageTemplateName =  $templateContent.variables.itParam.name
+
+                    # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
+                    imageTemplateName =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -77,15 +80,14 @@ jobs:
                 ScriptType: InlineScript
                 inline: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment')
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(templatesPath)' 'imageInfra.deploy.bicep'
-                    parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -99,10 +101,10 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   # Validate deployment
-                  Test-TemplateWithParameterFile @functionInput
+                  Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  New-ModuleDeployment @functionInput -Verbose
+                  New-TemplateDeployment @functionInput -Verbose
                 errorActionPreference: stop
                 azurePowerShellVersion: LatestVersion
 
@@ -120,11 +122,11 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.json'
-                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    storageAccountName = $parameters.saParam.value.name
+                    storageAccountName =  $templateContent.variables.saParam.name
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -146,19 +148,16 @@ jobs:
                 ScriptType: InlineScript
                 inline: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-ModuleDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateWithParameterFile')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Set-SasKeysInFile.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment')
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
-                  $parameterFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(templatesPath)' 'imageTemplate.deploy.bicep'
-                    parameterFilePath = $parameterFilePath
-                    location          = '$(location)'
-                    subscriptionId    = (Get-AzContext).Subscription.Id
+                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                    location         = '$(location)'
+                    subscriptionId   = (Get-AzContext).Subscription.Id
                   }
 
                   # Inject control parmaeters from pipeline
@@ -166,17 +165,14 @@ jobs:
                     deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
                   }
 
-                  # Set SAS keys for storage references
-                  Set-SasKeysInFile -filePath $parameterFilePath -Verbose
-
                   Write-Verbose "Invoke task with" -Verbose
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   # Validate deployment
-                  Test-TemplateWithParameterFile @functionInput
+                  Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  $res = New-ModuleDeployment @functionInput -Verbose
+                  $res = New-TemplateDeployment @functionInput -Verbose
 
                   Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
 
@@ -202,11 +198,11 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                  $parameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.json'
-                  $parameters = (ConvertFrom-Json (Get-Content -Path $parameterFilePath -Raw)).parameters
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
-                    ResourceGroupName = $parameters.rgParam.value.name
+                    ResourceGroupName = $templateContent.variables.rgParam.name
                     ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
                   }
 
