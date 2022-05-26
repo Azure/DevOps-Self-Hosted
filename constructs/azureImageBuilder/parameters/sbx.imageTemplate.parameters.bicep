@@ -33,7 +33,6 @@ var sasConfig = {
     signedServices: 'b'
     signedExpiry: dateTimeAdd(baseTime, 'PT1H')
     signedProtocol: 'https'
-    // keyToSign: 'key2'
 }
 var sasKey = existingStorage.listAccountSas(existingStorage.apiVersion, sasConfig).accountSasToken
 
