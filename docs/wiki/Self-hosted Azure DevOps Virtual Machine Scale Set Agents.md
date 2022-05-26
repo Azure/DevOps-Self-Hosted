@@ -56,7 +56,7 @@ To prepare the construct for deployment you have to perform two fundamental step
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureDevOpsScaleSet\variables.yml`
-- `constructs\azureDevOpsScaleSet\parameters\scaleset.parameters.json`
+- `constructs\azureDevOpsScaleSet\parameters\scaleset.parameters.bicep`
 
 ### Variables
 
@@ -68,19 +68,19 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 
 ### Parameters
 
-You configure one primary parameter file: `scaleset.parameters.json`.
+You configure one primary parameter file: `scaleset.parameters.bicep`.
 
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
 - For the `imageReference` property of the `vmssParam` parameter you can choose to select a marketplace image, or a custom image. If you use a custom image from a Shared Image Gallery, you have the option to specify `latest` instead of a specific version. The pipeline has a task to automatically fetch `latest` for you
   Example
-  ```json
-  "imageReference": {
-    "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241"
-  },
+  ```Bicep
+  imageReference: {
+    id: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241'
+  }
   // or
-  "imageReference": {
-    "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest"
+  imageReference: {
+    id: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest'
   }
   ```
 - Make sure the scaling is configured as `'manual'` (as Azure DevOps will control the scaling)
@@ -96,16 +96,16 @@ The parameter file was created with Linux in mind. However, it also contains exa
 
 As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to add specific rules to the network security group deployment. This and several other parameters are available and documented in the module's `readme.md`.
 
-> _**Note:**_ If you add a new parameter to any resource in any `parameter.json` file, make sure that is is actually passed into the deployment inside the `deploy.bicep` files. For example, adding `Tags` to the resource group deployment would require you to update the deployment's `params` block from
+> _**Note:**_ If you add a new parameter to any resource in any `parameter.bicep` file, make sure that is is actually passed into the deployment inside the `deploy.bicep` files. For example, adding `Tags` to the resource group deployment would require you to update the deployment's `params` block from
 
-> ```yaml
+> ```Bicep
 > params: {
 >   name: rgParam.name
 >   location: location
 > }
 > ```
 > to
-> ```yaml
+> ```Bicep
 > params: {
 >   name: rgParam.name
 >   location: location
