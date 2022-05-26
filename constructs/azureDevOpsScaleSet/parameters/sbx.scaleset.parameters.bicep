@@ -81,7 +81,7 @@ var vmssParam = {
   // disablePasswordAuthentication: false
   // adminPassword: kv.getSecret('adminPassword')
 }
-// For the windows example
+// For the Windows example
 // resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
 //   name: kvName
 //   scope: resourceGroup(subscription().subscriptionId, kvResourceGroup)
