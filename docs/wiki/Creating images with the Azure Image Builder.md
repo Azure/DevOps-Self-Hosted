@@ -95,13 +95,13 @@ customizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+      scriptUri: 'https://shaibforkstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+          'wget \'https://shaibforkstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
           'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
           'pwsh \'LinuxPrepareMachine.ps1\''
       ]

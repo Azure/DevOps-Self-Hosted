@@ -36,7 +36,7 @@ var msiRoleAssignmentParam = {
 
 // Storage Account
 var saParam = {
-    name: '<YourStorageAccount>'
+    name: 'shaibforkstorage'
     blobServices: {
         containers: [
             {
