@@ -133,6 +133,8 @@ function Sync-ElasticPool {
         . (Join-Path -Path $PSScriptRoot 'Get-ElasticPool.ps1')
         . (Join-Path -Path $PSScriptRoot 'New-ElasticPool.ps1')
         . (Join-Path -Path $PSScriptRoot 'Set-ElasticPool.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Get-ElasticPoolRegisteredInProject.ps1')
+        . (Join-Path -Path $PSScriptRoot 'Set-ElasticPoolRegistrationInProject.ps1')
     }
 
     process {
@@ -185,6 +187,27 @@ function Sync-ElasticPool {
             }
         } else {
             Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
+
+            # Check if agent pool is registered to  project, or only the organization
+            $inputObject = @{
+                Organization = $Organization
+                Project      = $Project
+                PoolId       = $elasticPool.poolId
+            }
+            $poolInProjectScope = Get-ElasticPoolRegisteredInProject @inputObject
+
+            if (-not $poolInProjectScope) {
+                # Pool not registered in project. Adding...
+                $inputObject = @{
+                    Organization = $Organization
+                    Project      = $Project
+                    PoolName     = $AgentPoolProperties.ScaleSetPoolName
+                    PoolId       = $elasticPool.poolId
+                }
+                Write-Verbose ('The agent pool [{0}] is not registered in project [{1}]. Linking.' -f $AgentPoolProperties.ScaleSetPoolName, $Project) -Verbose
+                $null = Set-ElasticPoolRegistrationInProject @inputObject
+            }
+
             $inputObject = @{
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId

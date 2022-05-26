@@ -26,7 +26,7 @@ function Get-ConfigValue {
     }
 
     process {
-        $content = Get-Content (Join-Path $PSScriptRoot 'REST.json') -Raw | Out-String
+        $content = Get-Content (Join-Path $PSScriptRoot 'REST.jsonc') -Raw | Out-String
         $converted = ConvertFrom-Json $content
         return  $converted.$token
     }
