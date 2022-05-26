@@ -186,8 +186,6 @@ function Sync-ElasticPool {
                 New-ElasticPool @inputObject
             }
         } else {
-            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
-
             # Check if agent pool is registered to  project, or only the organization
             $inputObject = @{
                 Organization = $Organization
@@ -196,7 +194,7 @@ function Sync-ElasticPool {
             }
             $poolInProjectScope = Get-ElasticPoolRegisteredInProject @inputObject
 
-            if (-not $poolInProjectScope) {
+            if ($poolInProjectScope.Count -eq 0) {
                 # Pool not registered in project. Adding...
                 $inputObject = @{
                     Organization = $Organization
@@ -204,9 +202,12 @@ function Sync-ElasticPool {
                     PoolName     = $AgentPoolProperties.ScaleSetPoolName
                     PoolId       = $elasticPool.poolId
                 }
-                Write-Verbose ('The agent pool [{0}] is not registered in project [{1}]. Linking.' -f $AgentPoolProperties.ScaleSetPoolName, $Project) -Verbose
+                Write-Verbose ('The agent pool [{0}] exists, but is not yet registered in project [{1}]. Linking.' -f $AgentPoolProperties.ScaleSetPoolName, $Project) -Verbose
                 $null = Set-ElasticPoolRegistrationInProject @inputObject
+            } else {
+                Write-Verbose ('The agent pool [{0}] exists and is registered in project [{1}].' -f $poolInProjectScope.name, $Project) -Verbose
             }
+            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
 
             $inputObject = @{
                 Organization   = $Organization
