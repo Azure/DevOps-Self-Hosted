@@ -133,6 +133,8 @@ jobs:
                 inlineScript: |
                   Write-Verbose (Get-Content -Path $profile -Raw) -Verbose
                   Write-Verbose ($env:PSModulePath) -Verbose
+                  . $profile
+                  Write-Verbose ($env:PSModulePath) -Verbose
                   Write-Verbose ($profile) -Verbose
                   # Write-Verbose ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')) -Verbose // Not available?
 
