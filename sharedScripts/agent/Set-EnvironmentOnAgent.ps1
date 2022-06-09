@@ -204,6 +204,8 @@ function Set-EnvironmentOnAgent {
         [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath;:$maximumVersionPath", 'Machine')
     }
 
+    Write-Verbose ($env:PSModulePath) -Verbose
+
     # Load already installed modules
     $installedModules = Get-Module -ListAvailable
 
