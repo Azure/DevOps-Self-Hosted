@@ -1,15 +1,15 @@
 {
-    "Organization": "<YourOrganization>",
-    "Project": "<YourProject>",
-    "ServiceConnectionName": "<YourServiceConnection>",
+    "Organization": "alsehr",
+    "Project": "Module Playground",
+    "ServiceConnectionName": "ModulePlaygroundPrivate",
     "AgentPoolProperties": {
-        "ScaleSetPoolName": "<YourPoolName>",
+        "ScaleSetPoolName": "moduleplayground-scaleset",
         "RecycleAfterEachUse": false,
         "MaxSavedNodeCount": 0,
         "MaxCapacity": 10,
         "DesiredIdle": 1,
         "TimeToLiveMinutes": 15,
         "AgentInteractiveUI": false,
-        "AuthorizeAllPipelines": true
+        "AuthorizeAllPipelines": true // works only on creation
     }
 }
