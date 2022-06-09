@@ -201,10 +201,10 @@ function Set-EnvironmentOnAgent {
         $preInstalledModulePaths = Get-ChildItem -Path '/usr/share/az_*' -Directory
         $maximumVersionPath = '/usr/share/az_{0}' -f (($preInstalledModulePaths | ForEach-Object { ($_ -split 'az_')[1] }) | ForEach-Object { [version]$_ } | Measure-Object -Maximum ).Maximum
         Write-Verbose "Found pre-installed modules in path [$maximumVersionPath]. Adding it PSModulePath environment variable." -Verbose
-        if ($IsLinux) {
-            [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath:$maximumVersionPath", 'Machine')
-        } elseif ($IsWindows) {
+        if ($IsWindows) {
             [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath;$maximumVersionPath", 'Machine')
+        } else {
+            [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath:$maximumVersionPath", 'Machine')
         }
     }
 
