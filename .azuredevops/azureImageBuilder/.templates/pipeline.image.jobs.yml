@@ -41,8 +41,7 @@ jobs:
                   $Modules = @(
                       @{ Name = 'Az.Accounts' },
                       @{ Name = 'Az.Resources' },
-                      @{ Name = 'Az.ResourceGraph' },
-                      @{ Name = 'Az.Storage' }
+                      @{ Name = 'Az.ResourceGraph' }
                   )
 
                   # Set agent up
@@ -111,7 +110,8 @@ jobs:
                   # Define PS modules to install on the runner
                   $Modules = @(
                       @{ Name = 'Az.Accounts' },
-                      @{ Name = 'Az.Resources' }
+                      @{ Name = 'Az.Resources' },
+                      @{ Name = 'Az.Storage' }
                   )
 
                   # Set agent up
@@ -131,6 +131,9 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
+                  Write-Verbose ($env:PSModulePath) -Verbose
+                  Write-Verbose ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')) -Verbose
+
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
