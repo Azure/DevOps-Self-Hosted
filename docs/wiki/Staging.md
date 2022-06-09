@@ -13,7 +13,7 @@ The solution comes with 3 pre-configured stages, SBX, DEV & PRD, and each pipeli
 
 To this end, pipeline variables and parameter files are named as per the environment they belong to:
 
-- Parameters (Bicep) files (in a `parameters` folder): `<env>.<name>.parameters.bicep` (for example: `sbx.imageInfra.parameters.bicep`)
+- Parameters (Bicep) files (in a `parameters` folder): `<env>.<name>.bicep` (for example: `sbx.imageInfra.bicep`)
 - Pipeline variables (in a `variables.yml` file): `<name>_<env>` (for example `serviceConnection_sbx`)
 
 Upon triggering a pipeline, the corresponding stage will select the correct parameter file(s) and pipeline variable(s). For an exemplary `SBX` stage this could look like:
@@ -67,14 +67,14 @@ jobs:
               ScriptType: InlineScript
               inline: |
                 # Comment: Access the correct parameter file as per the stage's 'environment' template parameter
-                templateFilePath = '${{ parameters.environment }}.imageInfra.parameters.bicep'
+                templateFilePath = '${{ parameters.environment }}.imageInfra.bicep'
 ```
 
 # How to use it
 
 With the fundamentals established, let's take a look into how to interact with the stages.
 
-As mentioned previously, the constructs come with differently named parameter files per stage (for example `sbx.parameters.bicep`) and variables in the `variable.yml` file (for example `serviceConneection_sbx`).
+As mentioned previously, the constructs come with differently named parameter files per stage (for example `sbx.bicep`) and variables in the `variable.yml` file (for example `serviceConnection_sbx`).
 
 ## 1. Add/Remove environments
 The first thing to do when configuring the environment, is to add/remove parameter files or variables as per your requirements (i.e. if you need more or less stages) and also update the `pipeline.yml` file that consumes these (i.e. add / remove stages & optionally also update the pipeline's runtime parameters & conditions).
@@ -83,13 +83,13 @@ The first thing to do when configuring the environment, is to add/remove paramet
 Once set, you have to update the values as per your requirements. For example, when selecting a virtual network for a virtual machine scale set, you will most likely use a different one for each environment. Hence navigate to the corresponding parameter files and update each value to match the configuration of this environment.
 
 Example:
-- `sbx.parameters.bicep`
+- `sbx.bicep`
   ```Bicep
   subnet: {
     id: 'subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-sbx/subnets/vmsssubnet'
   }
   ```
-- `dev.parameters.bicep`
+- `dev.bicep`
   ```Bicep
   subnet: {
     id: 'subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/agents-vmss-rg/providers/Microsoft.Network/virtualNetworks/vmss-vnet-dev/subnets/vmsssubnet'
@@ -104,7 +104,7 @@ serviceConnection_sbx: 'sbxConnection'
 serviceConnection_dev: 'devConnection'
 ```
 
-> _**Note:**_ If you use different or additional names than SBX, DEV or PRD, make sure the variable naming schema & parameter file naming schema fit's the new name exactly. (for example if you add a stage `eastus2`, the parameter file would need to be named `eastus2.parameters.bicep`, the service connection variable `serviceconnection_eastus2`) and the references in the `pipeline.yml` as well.
+> _**Note:**_ If you use different or additional names than SBX, DEV or PRD, make sure the variable naming schema & parameter file naming schema fit's the new name exactly. (for example if you add a stage `eastus2`, the parameter file would need to be named `eastus2.bicep`, the service connection variable `serviceconnection_eastus2`) and the references in the `pipeline.yml` as well.
 
 ## 3. Run the pipeline
 
@@ -190,4 +190,4 @@ If you have no need for a staging approach, you can also remove any trace of it.
 
 1. In the pipeline's `variable.yml` file, reduce all environment-replicated variables (for example `subscription_sbx` & `subscription_dev`) to a single variable and remove it's environment reference (for example `subscription`)
 
-1. Rename any parameter file from for example `sbx.parameters.bicep` to `parameters.bicep`
+1. Rename any parameter file from for example `sbx.bicep` to `.bicep`

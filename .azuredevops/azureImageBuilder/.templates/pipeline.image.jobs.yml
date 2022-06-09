@@ -61,13 +61,13 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     resourcegroupName =  $templateContent.variables.rgParam.name
@@ -134,7 +134,7 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
@@ -144,7 +144,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -178,13 +178,13 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     storageAccountName =  $templateContent.variables.saParam.name
@@ -210,7 +210,7 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
@@ -220,7 +220,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                     location         = '$(location)'
                     subscriptionId   = (Get-AzContext).Subscription.Id
                   }
@@ -264,13 +264,13 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     ResourceGroupName = $templateContent.variables.rgParam.name

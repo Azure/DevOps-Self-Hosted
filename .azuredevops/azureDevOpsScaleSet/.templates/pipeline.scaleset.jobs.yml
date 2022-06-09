@@ -61,7 +61,7 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
@@ -71,7 +71,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -107,17 +107,17 @@ jobs:
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   # Get scale set properties
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   # Get agent  pool properties
-                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
+                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.config.json'
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $agentsParameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{
