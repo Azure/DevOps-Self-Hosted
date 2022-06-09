@@ -212,7 +212,8 @@ function Set-EnvironmentOnAgent {
     }
 
     Write-Verbose ($env:PSModulePath) -Verbose
-    # null = Import-Module 'PowerShellGet' -Force
+    Get-Module | Remove-Module -Force
+    Import-Module 'PowerShellGet'
 
     # Load already installed modules
     $installedModules = Get-Module -ListAvailable
