@@ -204,10 +204,10 @@ function Set-EnvironmentOnAgent {
 
         if ($IsWindows) {
             $env:PSModulePath += "$env:PSModulePath;$maximumVersionPath"
-            [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath;$maximumVersionPath", 'Machine')
+            [Environment]::SetEnvironmentVariable('PSModulePath', ('{0};{1}' -f ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')), $maximumVersionPath), 'Machine')
         } else {
             $env:PSModulePath += "$env:PSModulePath:$maximumVersionPath"
-            [Environment]::SetEnvironmentVariable('PSModulePath', "$env:PSModulePath:$maximumVersionPath", 'Machine')
+            [Environment]::SetEnvironmentVariable('PSModulePath', ('{0}:{1}' -f ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')), $maximumVersionPath), 'Machine')
         }
     }
 
