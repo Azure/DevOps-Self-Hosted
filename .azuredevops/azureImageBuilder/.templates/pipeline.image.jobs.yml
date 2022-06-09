@@ -26,13 +26,22 @@ jobs:
         deploy:
           steps:
             - checkout: self
-            - task: AzurePowerShell@4
-              displayName: 'Remove previous image template resources'
+            # [Sanitization] task(s)
+            #-----------------------
+            - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
+              displayName: 'Remove previous image template resources'
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
@@ -51,8 +60,7 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Remove-ImageTemplate @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
+
   - deployment: deploy_job
     displayName: Deploy Resources
     dependsOn:
@@ -68,7 +76,9 @@ jobs:
         deploy:
           steps:
             - checkout: self
-            - task: AzurePowerShell@4
+            # [Deployment] task(s)
+            #---------------------
+            - task: AzureCLI@2
               displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -76,9 +86,16 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -105,10 +122,7 @@ jobs:
 
                   # Invoke deployment
                   New-TemplateDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Trigger Storage Account post-deployment'
               condition: |
                 and(
@@ -116,9 +130,16 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
@@ -133,10 +154,7 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Invoke-StorageAccountPostDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -144,9 +162,16 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only storage & image', 'Only image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -179,10 +204,10 @@ jobs:
                   foreach ($outputKey in $res.deploymentOutput.Keys) {
                     Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
                   }
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            # [Image Template Build] task(s)
+            #------------------------------
+            - task: AzureCLI@2
+              name: PostDeploy_ImageTemplates_Task
               displayName: 'Wait for image build'
               condition: |
                 and(
@@ -190,11 +215,17 @@ jobs:
                   eq('${{ parameters.waitForImageBuild }}', 'true'),
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
                 )
-              name: PostDeploy_ImageTemplates_Task
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
@@ -210,5 +241,3 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Wait-ForImageBuild @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion

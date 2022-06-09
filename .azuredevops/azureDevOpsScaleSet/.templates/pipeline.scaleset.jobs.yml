@@ -25,7 +25,7 @@ jobs:
             - checkout: self
             # [Deployment] task(s)
             #---------------------
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -33,9 +33,16 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only Scale Set')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -62,10 +69,9 @@ jobs:
 
                   # Invoke deployment
                   New-TemplateDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            # [Azure DevOps] task(s)
+            #-----------------------
+            - task: AzureCLI@2
               displayName: 'Register scale set'
               condition: |
                 and(
@@ -73,9 +79,16 @@ jobs:
                   eq('${{ parameters.setAgentPool }}', 'true')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
@@ -101,5 +114,3 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Sync-ElasticPool @functionInput
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
