@@ -203,10 +203,10 @@ function Set-EnvironmentOnAgent {
         Write-Verbose "Found pre-installed modules in path [$maximumVersionPath]. Adding it PSModulePath environment variable." -Verbose
 
         if ($IsWindows) {
-            $env:PSModulePath += "$env:PSModulePath;$maximumVersionPath"
+            $env:PSModulePath += ('{0};{1}' -f $env:PSModulePath, $maximumVersionPath)
             [Environment]::SetEnvironmentVariable('PSModulePath', ('{0};{1}' -f ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')), $maximumVersionPath), 'Machine')
         } else {
-            $env:PSModulePath += "$env:PSModulePath:$maximumVersionPath"
+            $env:PSModulePath += ('{0}:{1}' -f $env:PSModulePath, $maximumVersionPath)
             [Environment]::SetEnvironmentVariable('PSModulePath', ('{0}:{1}' -f ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')), $maximumVersionPath), 'Machine')
         }
     }
