@@ -26,6 +26,27 @@ jobs:
         deploy:
           steps:
             - checkout: self
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' },
+                      @{ Name = 'Az.ResourceGraph' },
+                      @{ Name = 'Az.Storage' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
             # [Sanitization] task(s)
             #-----------------------
             - task: AzureCLI@2
@@ -76,6 +97,25 @@ jobs:
         deploy:
           steps:
             - checkout: self
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
             # [Deployment] task(s)
             #---------------------
             - task: AzureCLI@2
