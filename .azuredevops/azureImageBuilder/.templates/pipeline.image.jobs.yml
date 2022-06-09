@@ -132,7 +132,8 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   Write-Verbose ($env:PSModulePath) -Verbose
-                  Write-Verbose ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')) -Verbose
+                  Write-Verbose ($profile) -Verbose
+                  # Write-Verbose ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')) -Verbose // Not available?
 
                   # Log into Az-PowerShell context
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
