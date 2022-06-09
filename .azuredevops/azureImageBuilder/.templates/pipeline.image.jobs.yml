@@ -58,6 +58,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
+                  . $profile
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
@@ -131,14 +132,8 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  Write-Verbose (Get-Content -Path $profile -Raw) -Verbose
-                  Write-Verbose ($env:PSModulePath) -Verbose
-                  . $profile
-                  Write-Verbose ($env:PSModulePath) -Verbose
-                  Write-Verbose ($profile) -Verbose
-                  # Write-Verbose ([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')) -Verbose // Not available?
-
                   # Log into Az-PowerShell context
+                  . $profile
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
@@ -183,6 +178,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
+                  . $profile
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
@@ -215,6 +211,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
+                  . $profile
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
@@ -269,6 +266,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
+                  . $profile
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
