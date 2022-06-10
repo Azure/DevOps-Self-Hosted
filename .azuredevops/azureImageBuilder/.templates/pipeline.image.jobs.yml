@@ -87,7 +87,11 @@ jobs:
     dependsOn:
       - cleanup_job
     environment: ${{ parameters.environment }}
-    condition: in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
+    condition: |
+      and(
+        succeeded(),
+        in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
+      )
     timeoutInMinutes: 120
     pool:
       vmImage: '$(vmImage_${{ parameters.environment }})'
