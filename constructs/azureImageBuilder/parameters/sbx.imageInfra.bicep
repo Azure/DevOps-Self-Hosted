@@ -36,7 +36,7 @@ var msiRoleAssignmentParam = {
 
 // Storage Account
 var saParam = {
-    name: '<yourstorageaccount>'
+    name: '<YourStorageAccount>'
     blobServices: {
         containers: [
             {
