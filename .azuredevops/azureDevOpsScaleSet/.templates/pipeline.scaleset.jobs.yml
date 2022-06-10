@@ -59,7 +59,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
-                  . $profile
+                  . $profile # Load PS-Profile configuration
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
@@ -106,7 +106,7 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Log into Az-PowerShell context
-                  . $profile
+                  . $profile # Load PS-Profile configuration
                   $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
