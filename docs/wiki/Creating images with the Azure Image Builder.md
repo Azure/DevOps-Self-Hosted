@@ -46,8 +46,8 @@ To prepare the construct for usage you have to perform two fundamental steps:
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureImageBuilder\variables.yml`
-- `constructs\azureImageBuilder\Parameters\imageInfra.parameters.bicep`
-- `constructs\azureImageBuilder\Parameters\imageTemplate.parameters.bicep`
+- `constructs\azureImageBuilder\Parameters\imageInfra.bicep`
+- `constructs\azureImageBuilder\Parameters\imageTemplate.bicep`
 
 ### Variables
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
@@ -57,11 +57,11 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 - `location`: The location to store deployment metadata in. This variable is also used as a default location to deploy into, if no location is provided in the parameter files.
 
 ### Parameters
-Next, we have two parameter files, `imageInfra.parameters.bicep` & `imageTemplate.parameters.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
+Next, we have two parameter files, `imageInfra.bicep` & `imageTemplate.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
 
 Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
-- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.parameters.bicep` parameter file should be the same you then reference in the `imageTemplate.parameters.bicep`'s `customizationSteps` parameter.
+- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.bicep` parameter file should be the same you then reference in the `imageTemplate.bicep`'s `customizationSteps` parameter.
 
 The parameter files are created with a Linux-Image in mind. However, they also contain examples on how the same implementation would look like for Windows images. Examples are always commented and can be used to replace the currently not commented values.
 

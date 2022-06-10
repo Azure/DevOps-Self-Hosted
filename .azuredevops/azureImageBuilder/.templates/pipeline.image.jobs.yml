@@ -26,18 +26,48 @@ jobs:
         deploy:
           steps:
             - checkout: self
-            - task: AzurePowerShell@4
-              displayName: 'Remove previous image template resources'
-              name: Remove_ImageTemplates_Task
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
               inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' },
+                      @{ Name = 'Az.ResourceGraph' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
+            # [Sanitization] task(s)
+            #-----------------------
+            - task: AzureCLI@2
+              name: Remove_ImageTemplates_Task
+              displayName: 'Remove previous image template resources'
+              inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     resourcegroupName =  $templateContent.variables.rgParam.name
@@ -51,8 +81,7 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Remove-ImageTemplate @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
+
   - deployment: deploy_job
     displayName: Deploy Resources
     dependsOn:
@@ -68,7 +97,29 @@ jobs:
         deploy:
           steps:
             - checkout: self
-            - task: AzurePowerShell@4
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' },
+                      @{ Name = 'Az.Storage' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
+            # [Deployment] task(s)
+            #---------------------
+            - task: AzureCLI@2
               displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -76,9 +127,17 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -87,7 +146,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -105,10 +164,7 @@ jobs:
 
                   # Invoke deployment
                   New-TemplateDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Trigger Storage Account post-deployment'
               condition: |
                 and(
@@ -116,14 +172,22 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     storageAccountName =  $templateContent.variables.saParam.name
@@ -133,10 +197,7 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Invoke-StorageAccountPostDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -144,9 +205,17 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only storage & image', 'Only image')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -155,7 +224,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
+                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                     location         = '$(location)'
                     subscriptionId   = (Get-AzContext).Subscription.Id
                   }
@@ -179,10 +248,10 @@ jobs:
                   foreach ($outputKey in $res.deploymentOutput.Keys) {
                     Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
                   }
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            # [Image Template Build] task(s)
+            #------------------------------
+            - task: AzureCLI@2
+              name: PostDeploy_ImageTemplates_Task
               displayName: 'Wait for image build'
               condition: |
                 and(
@@ -190,16 +259,23 @@ jobs:
                   eq('${{ parameters.waitForImageBuild }}', 'true'),
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
                 )
-              name: PostDeploy_ImageTemplates_Task
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
                     ResourceGroupName = $templateContent.variables.rgParam.name
@@ -210,5 +286,3 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Wait-ForImageBuild @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion

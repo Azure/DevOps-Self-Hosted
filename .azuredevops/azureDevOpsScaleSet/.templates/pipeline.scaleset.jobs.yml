@@ -23,9 +23,29 @@ jobs:
         deploy:
           steps:
             - checkout: self
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' },
+                      @{ Name = 'Az.Compute' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
             # [Deployment] task(s)
             #---------------------
-            - task: AzurePowerShell@4
+            - task: AzureCLI@2
               displayName: 'Deploy [scaleset.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
@@ -33,9 +53,17 @@ jobs:
                   in('${{ parameters.deploymentsToPerform }}', 'All', 'Only Scale Set')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
@@ -44,7 +72,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
+                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -62,10 +90,9 @@ jobs:
 
                   # Invoke deployment
                   New-TemplateDeployment @functionInput -Verbose
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion
-
-            - task: AzurePowerShell@4
+            # [Azure DevOps] task(s)
+            #-----------------------
+            - task: AzureCLI@2
               displayName: 'Register scale set'
               condition: |
                 and(
@@ -73,18 +100,26 @@ jobs:
                   eq('${{ parameters.setAgentPool }}', 'true')
                 )
               inputs:
+                addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                ScriptType: InlineScript
-                inline: |
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   # Get scale set properties
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.parameters.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   # Get agent  pool properties
-                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.parameters.json'
+                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.config.json'
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $agentsParameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{
@@ -101,5 +136,3 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Sync-ElasticPool @functionInput
-                errorActionPreference: stop
-                azurePowerShellVersion: LatestVersion

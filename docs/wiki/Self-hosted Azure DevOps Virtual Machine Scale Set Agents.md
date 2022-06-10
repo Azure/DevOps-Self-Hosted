@@ -56,7 +56,7 @@ To prepare the construct for deployment you have to perform two fundamental step
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureDevOpsScaleSet\variables.yml`
-- `constructs\azureDevOpsScaleSet\parameters\scaleset.parameters.bicep`
+- `constructs\azureDevOpsScaleSet\parameters\scaleset.bicep`
 
 ### Variables
 
@@ -68,7 +68,7 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 
 ### Parameters
 
-You configure one primary parameter file: `scaleset.parameters.bicep`.
+You configure one primary parameter file: `scaleset.bicep`.
 
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
@@ -120,7 +120,7 @@ As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find
 
 <summary>1.1 (Optional) Configure the agent pool parameters & environment</summary>
 
-Depending on whether you want to register the agent pool automatically (via the pipeline) or manually (via the UI) later in the process, you may also need to configure the parameter file `agentpool.parameters.json`. When configured, the file is used to automatically register the provisioned virtual machine scale set as an agent pool in an Azure DevOps project. This however requires you to perform two steps:
+Depending on whether you want to register the agent pool automatically (via the pipeline) or manually (via the UI) later in the process, you may also need to configure the parameter file `agentpool.config.json`. When configured, the file is used to automatically register the provisioned virtual machine scale set as an agent pool in an Azure DevOps project. This however requires you to perform two steps:
 
 <details>
 <summary>1.1.1 Configure the parameter file</summary>

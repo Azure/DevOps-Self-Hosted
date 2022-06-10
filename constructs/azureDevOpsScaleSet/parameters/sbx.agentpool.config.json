@@ -10,6 +10,6 @@
         "DesiredIdle": 1,
         "TimeToLiveMinutes": 15,
         "AgentInteractiveUI": false,
-        "AuthorizeAllPipelines": true
+        "AuthorizeAllPipelines": true // works only on creation
     }
 }
