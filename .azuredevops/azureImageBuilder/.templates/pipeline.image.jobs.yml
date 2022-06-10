@@ -35,7 +35,7 @@ jobs:
                 pwsh: true
                 script: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'agent' 'Set-EnvironmentOnAgent.ps1')
 
                   # Define PS modules to install on the runner
                   $Modules = @(
@@ -110,7 +110,7 @@ jobs:
                 pwsh: true
                 script: |
                   # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' 'sharedScripts' 'agent' 'Set-EnvironmentOnAgent.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'agent' 'Set-EnvironmentOnAgent.ps1')
 
                   # Define PS modules to install on the runner
                   $Modules = @(
