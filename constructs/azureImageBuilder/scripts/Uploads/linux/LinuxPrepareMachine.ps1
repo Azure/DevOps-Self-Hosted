@@ -160,7 +160,7 @@ function Install-CustomModule {
             $foundModules | Save-Module -Path $installPath -Force
 
             if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
-                LogInfo('Module [{0}] is installed with version [{1}] in path [{2]}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
+                LogInfo('Module [{0}] is installed with version [{1}] in path [{2}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
             } else {
                 LogError('Installation of module [{0}] failed' -f $foundModule.Name)
             }
