@@ -49,33 +49,45 @@ function Log {
 }
 
 function Install-CustomModule {
+
     <#
     .SYNOPSIS
-    Installes given PowerShell module and saves it to a local store
+    Installes given PowerShell modules
+
+    .DESCRIPTION
+    Installes given PowerShell modules
 
     .PARAMETER Module
-    Module to be installed, must be Object
+    Required. Modules to be installed, must be Object
     @{
         Name = 'Name'
         Version = '1.0.0' # Optional
     }
 
+    .PARAMETER InstalledModule
+    Optional. Modules that are already installed on the machine. Can be fetched via 'Get-Module -ListAvailable'
+
     .EXAMPLE
     Install-CustomModule @{ Name = 'Pester' } C:\Modules
+
     Installes pester and saves it to C:\Modules
     #>
+
     [CmdletBinding(SupportsShouldProcess)]
     Param (
         [Parameter(Mandatory = $true)]
-        [Hashtable] $Module
+        [Hashtable] $Module,
+
+        [Parameter(Mandatory = $false)]
+        [object[]] $InstalledModule = @()
     )
 
-    # Remove exsisting module
-    if (Get-Module $Module -ErrorAction SilentlyContinue) {
+    # Remove exsisting module in session
+    if (Get-Module $Module -ErrorAction 'SilentlyContinue') {
         try {
             Remove-Module $Module -Force
         } catch {
-            LogError("Unable to remove module $($Module.Name)  : $($_.Exception) found, $($_.ScriptStackTrace)")
+            LogError('Unable to remove module [{0}] because of exception [{1}]. Stack Trace: [{2}]' -f $Module.Name, $_.Exception, $_.ScriptStackTrace)
         }
     }
 
@@ -84,27 +96,41 @@ function Install-CustomModule {
         name       = $Module.Name
         Repository = 'PSGallery'
     }
-    if ($module.Version) {
-        $moduleImportInputObject['RequiredVersion'] = $module.Version
+    if ($Module.Version) {
+        $moduleImportInputObject['RequiredVersion'] = $Module.Version
     }
+
+    # Get all modules that match a certain name. In case of e.g. 'Az' it returns several.
     $foundModules = Find-Module @moduleImportInputObject
+
     foreach ($foundModule in $foundModules) {
 
-        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable
-        if ($localModuleVersions -and $localModuleVersions.Version -contains $foundModule.Version ) {
-            LogInfo('Module [{0}] already installed with latest version [{1}]' -f $foundModule.Name, $foundModule.Version)
-            continue
-        }
-        if ($module.ExcludeModules -and $module.excludeModules.contains($foundModule.Name)) {
-            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name)
+        # Check if already installed as required
+        if ($alreadyInstalled = $InstalledModule | Where-Object { $_.Name -eq $Module.Name }) {
+            if ($Module.Version) {
+                $alreadyInstalled = $alreadyInstalled | Where-Object { $_.Version -eq $Module.Version }
+            } else {
+                # Get latest in case of multiple
+                $alreadyInstalled = ($alreadyInstalled | Sort-Object -Property Version -Descending)[0]
+            }
+            LogInfo('Module [{0}] already installed with version [{1}]' -f $alreadyInstalled.Name, $alreadyInstalled.Version) -Verbose
             continue
         }
 
-        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version)
+        # Check if not to be excluded
+        if ($Module.ExcludeModules -and $Module.excludeModules.contains($foundModule.Name)) {
+            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name) -Verbose
+            continue
+        }
+
+        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version) -Verbose
         if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
-            $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
-            if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable)[0]) {
-                LogInfo('Module [{0}] is installed with version [{1}]' -f $installed.Name, $installed.Version)
+            # $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
+            $installPath = ($env:PSModulePath -split ';')[0]
+            $foundModules | Save-Module -Path $installPath -Force
+
+            if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
+                LogInfo('Module [{0}] is installed with version [{1}] in path [{2]}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
             } else {
                 LogError('Installation of module [{0}] failed' -f $foundModule.Name)
             }
@@ -549,6 +575,9 @@ $modules | ForEach-Object {
     $count++
 }
 
+# Load already installed modules
+$installedModules = Get-Module -ListAvailable
+
 LogInfo('Install-CustomModule start')
 $count = 0
 Foreach ($Module in $Modules) {
@@ -556,7 +585,7 @@ Foreach ($Module in $Modules) {
     LogInfo('HANDLING MODULE [{0}] [{1}/{2}]' -f $Module.Name, $count, $Modules.Count)
     LogInfo('=====================')
     # Installing New Modules and Removing Old
-    $null = Install-CustomModule -Module $Module # $ModuleSavePath
+    $null = Install-CustomModule -Module $Module -InstalledModule $installedModules
     $count++
 }
 LogInfo('Install-CustomModule end')
