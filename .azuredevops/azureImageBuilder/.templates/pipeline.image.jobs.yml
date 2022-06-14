@@ -85,7 +85,8 @@ jobs:
   - deployment: deploy_job
     displayName: Deploy Resources
     dependsOn:
-      - cleanup_job
+      - ${{ if eq( parameters.removeImageTemplateResources, true) }}:
+          - cleanup_job
     environment: ${{ parameters.environment }}
     condition: |
       and(
