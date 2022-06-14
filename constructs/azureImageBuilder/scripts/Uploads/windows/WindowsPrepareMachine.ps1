@@ -40,7 +40,7 @@ function Log {
     $content = "[$date]`t$category`t`t$message`n"
     Write-Verbose $Content -Verbose
 
-    $FilePath = Join-Path $env:TEMP 'log.log'
+    $FilePath = Join-Path ([System.IO.Path]::GetTempPath()) 'log.log'
     if (-not (Test-Path $FilePath)) {
         Write-Verbose "Log file not found, create new in path: [$FilePath]" -Verbose
         $null = New-Item -ItemType 'File' -Path $FilePath -Force
@@ -173,7 +173,7 @@ function Install-RawModule {
 
     $url = "https://www.powershellgallery.com/api/v2/package/$ModuleName/$ModuleVersion"
 
-    $downloadFolder = Join-Path $env:Temp 'modulesToInstall'
+    $downloadFolder = Join-Path ([System.IO.Path]::GetTempPath()) 'modulesToInstall'
     $downloadPath = Join-Path $downloadFolder "$ModuleName.$ModuleVersion.zip" # Assuming [.zip] instead of [.nupkg]
     $expandedRootPath = Join-Path $downloadFolder 'formattedModules'
     $expandedPath = Join-Path $expandedRootPath (Split-Path $downloadPath -LeafBase)
@@ -423,10 +423,7 @@ function Install-Choco {
     LogInfo( 'Install choco')
 
     LogInfo( 'Invoke install.ps1 content')
-    if ($null -eq $env:TEMP) {
-        $env:TEMP = Join-Path $env:SystemDrive 'temp'
-    }
-    $chocTempDir = Join-Path $env:TEMP 'chocolatey'
+    $chocTempDir = Join-Path ([System.IO.Path]::GetTempPath()) 'chocolatey'
     $tempDir = Join-Path $chocTempDir 'chocInstall'
     if (-not [System.IO.Directory]::Exists($tempDir)) { [void][System.IO.Directory]::CreateDirectory($tempDir) }
     $file = Join-Path $tempDir 'chocolatey.zip'
