@@ -212,7 +212,7 @@ function Install-RawModule {
     # 2. Expand Achive
     if (-not (Test-Path $expandedPath)) {
         if ($PSCmdlet.ShouldProcess("File [$downloadPath] to path [$expandedPath]", 'Expand/Unzip')) {
-            Expand-Archive -Path $downloadPath -DestinationPath $expandedPath
+            $null = Expand-Archive -Path $downloadPath -DestinationPath $expandedPath -PassThru
         }
     }
 
@@ -498,7 +498,7 @@ function Install-Choco {
                 throw "Unable to unzip package using built-in compression. Set `$env:chocolateyUseWindowsCompression = 'false' and call install again to use 7zip to unzip. Error: `n $_"
             }
         } else {
-            Expand-Archive -Path "$file" -DestinationPath "$tempDir" -Force
+            $null = Expand-Archive -Path $file -DestinationPath $tempDir -Force -PassThru
         }
     }
 
@@ -675,7 +675,7 @@ LogInfo('Update Package Provider Nuget end')
 #######################
 LogInfo('Install az copy start')
 Invoke-WebRequest -Uri 'https://aka.ms/downloadazcopy-v10-windows' -OutFile 'AzCopy.zip' -UseBasicParsing
-Expand-Archive './AzCopy.zip' './AzCopy' -Force
+$null = Expand-Archive './AzCopy.zip' './AzCopy' -Force -PassThru
 Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\thmaure\AzCopy\AzCopy.exe'
 $userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 [System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\thmaure\AzCopy', 'User')

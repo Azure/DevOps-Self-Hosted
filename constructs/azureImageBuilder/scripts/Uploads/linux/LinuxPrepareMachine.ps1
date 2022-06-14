@@ -239,7 +239,7 @@ function Install-RawModule {
     # 2. Expand Achive
     if (-not (Test-Path $expandedPath)) {
         if ($PSCmdlet.ShouldProcess("File [$downloadPath] to path [$expandedPath]", 'Expand/Unzip')) {
-            Expand-Archive -Path $downloadPath -DestinationPath $expandedPath
+            $null = Expand-Archive -Path $downloadPath -DestinationPath $expandedPath -PassThru
         }
     }
 
