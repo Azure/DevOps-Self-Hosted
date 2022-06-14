@@ -200,9 +200,14 @@ function Install-RawModule {
     } catch {
         LogError("Download FAILED: $_")
     }
-    if ($PSCmdlet.ShouldProcess("File in path [$downloadFolder]", 'Unblock')) {
-        Unblock-File -Path $downloadPath
+
+    if ($IsWindows) {
+        # Not supported in Linux
+        if ($PSCmdlet.ShouldProcess("File in path [$downloadFolder]", 'Unblock')) {
+            Unblock-File -Path $downloadPath
+        }
     }
+
 
     # 2. Expand Achive
     if (-not (Test-Path $expandedPath)) {
