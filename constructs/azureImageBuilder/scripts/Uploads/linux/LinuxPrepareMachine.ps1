@@ -363,13 +363,10 @@ LogInfo('Install kubectl end')
 ##   Install Terraform   ##
 ###########################
 LogInfo('Install Terraform start')
-$TFVersion = '0.12.30' # Required for layered TF approach (01.2021)
-if ([String]::IsNullOrEmpty($TFVersion)) {
-    $terraformReleasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases/latest'
-    $latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasicParsing | ConvertFrom-Json).name.Replace('v', '')
-    LogInfo("Fetched latest available version: [$TFVersion]")
-    $TFVersion = $latestTerraformVersion
-}
+$terraformReleasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases/latest'
+$latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasicParsing | ConvertFrom-Json).name.Replace('v', '')
+LogInfo("Fetched latest available version: [$TFVersion]")
+$TFVersion = $latestTerraformVersion
 
 LogInfo("Using version: [$TFVersion]")
 sudo apt-get install unzip
