@@ -601,6 +601,7 @@ function Uninstall-AzureRM {
 #endregion
 
 $StartTime = Get-Date
+$progressPreference = 'SilentlyContinue'
 
 LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force
