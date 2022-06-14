@@ -154,7 +154,7 @@ function Install-CustomModule {
         }
 
         if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
-            $dependenciesAlreadyAvailable = Get-AreDependenciesAvailable -InstalledModuleList $InstalledModuleList -DependencyList $foundModule
+            $dependenciesAlreadyAvailable = Get-AreDependenciesAvailable -InstalledModuleList $InstalledModuleList -Module $foundModule
             if ($dependenciesAlreadyAvailable) {
                 LogInfo('Install module [{0}] with version [{1}] exluding dependencies.' -f $foundModule.Name, $foundModule.Version) -Verbose
                 Install-RawModule -ModuleName $foundModule.Name -ModuleVersion $foundModule.Version
@@ -290,7 +290,7 @@ function Get-AreDependenciesAvailable {
     Optional. The module to check the dependencies  for
 
     .EXAMPLE
-    Get-AreDependenciesAvailable -InstalledModuleList (Get-Module -ListAvailable) -DependencyList (Find-Module 'Az.Compute')
+    Get-AreDependenciesAvailable -InstalledModuleList (Get-Module -ListAvailable) -Module (Find-Module 'Az.Compute')
 
     Check if all dependencies of 'Az.Compute' are part of the already installed modules.
     #>
