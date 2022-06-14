@@ -64,7 +64,7 @@ function Install-CustomModule {
         Version = '1.0.0' # Optional
     }
 
-    .PARAMETER InstalledModule
+    .PARAMETER InstalledModuleList
     Optional. Modules that are already installed on the machine. Can be fetched via 'Get-Module -ListAvailable'
 
     .EXAMPLE
@@ -79,7 +79,7 @@ function Install-CustomModule {
         [Hashtable] $Module,
 
         [Parameter(Mandatory = $false)]
-        [object[]] $InstalledModule = @()
+        [object[]] $InstalledModuleList = @()
     )
 
     # Remove exsisting module in session
@@ -123,19 +123,171 @@ function Install-CustomModule {
             continue
         }
 
-        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version) -Verbose
         if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
-            # $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
-            $installPath = ($env:PSModulePath -split ';')[0]
-            $foundModules | Save-Module -Path $installPath -Force
-
-            if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
-                LogInfo('Module [{0}] is installed with version [{1}] in path [{2}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
+            $dependenciesAlreadyAvailable = Get-AreDependenciesAvailable -InstalledModuleList $InstalledModuleList -DependencyList $foundModule
+            if ($dependenciesAlreadyAvailable) {
+                LogInfo('Install module [{0}] with version [{1}] exluding dependencies.' -f $foundModule.Name, $foundModule.Version) -Verbose
+                Install-RawModule -ModuleName $foundModule.Name -ModuleVersion $foundModule.Version
             } else {
-                LogError('Installation of module [{0}] failed' -f $foundModule.Name)
+                LogInfo('Install module [{0}] with version [{1}] including dependencies' -f $foundModule.Name, $foundModule.Version) -Verbose
+                $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
+            }
+        }
+
+        if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
+            LogInfo('Module [{0}] is installed with version [{1}] in path [{2}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
+        } else {
+            LogError('Installation of module [{0}] failed' -f $foundModule.Name)
+        }
+    }
+}
+
+function Install-RawModule {
+    <#
+    .SYNOPSIS
+    Install a module without any of its dependencies
+
+    .DESCRIPTION
+    Modules are downloaded from the PSGallery and stored in the first path of the PSModulePath environment variable
+
+    .PARAMETER ModuleName
+    Mandatory. The name of the module to install
+
+    .PARAMETER ModuleVersion
+    Mandatory. The name of the module version to install
+
+    .EXAMPLE
+    Install-RawModule -ModuleName 'Az.Compute' -ModuleVersion '4.27.0'
+
+    Install module 'Az.Compute' in version '4.27.0' in the default PSModule installation path
+    #>
+
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string] $ModuleName,
+
+        [Parameter(Mandatory)]
+        [string] $ModuleVersion
+    )
+
+    $url = "https://www.powershellgallery.com/api/v2/package/$ModuleName/$ModuleVersion"
+
+    $downloadFolder = Join-Path $env:Temp 'modulesToInstall'
+    $downloadPath = Join-Path $downloadFolder "$ModuleName.$ModuleVersion.zip" # Assuming [.zip] instead of [.nupkg]
+    $expandedRootPath = Join-Path $downloadFolder 'formattedModules'
+    $expandedPath = Join-Path $expandedRootPath (Split-Path $downloadPath -LeafBase)
+    $newModuleRootFolder = Join-Path $expandedRootPath $ModuleName
+    $newModuleRawVersionFolder = (Join-Path $newModuleRootFolder (Split-Path $expandedPath -Leaf))
+
+    if ($IsWindows) { $psModulesPath = ($env:PSModulePath -split ';')[0] }
+    else { $psModulesPath = ($env:PSModulePath -split ':')[0] }
+
+    $finalVersionPath = Join-Path $psModulesPath $ModuleName $ModuleVersion
+
+    # 1. Download nupkg package
+    if (-not (Test-Path $downloadFolder)) {
+        if ($PSCmdlet.ShouldProcess("Folder [$downloadFolder]", 'Create')) {
+            $null = New-Item $downloadFolder -ItemType 'Directory'
+        }
+    }
+    try {
+        if (-not (Test-Path $downloadPath)) {
+            if ($PSCmdlet.ShouldProcess("From url [$url] to path [$downloadPath]", 'Download')) {
+                (New-Object System.Net.WebClient).DownloadFile($Url, $downloadPath)
+            }
+        }
+    } catch {
+        LogError("Download FAILED: $_")
+    }
+    if ($PSCmdlet.ShouldProcess("File in path [$downloadFolder]", 'Unblock')) {
+        Unblock-File -Path $downloadPath
+    }
+
+    # 2. Expand Achive
+    if (-not (Test-Path $expandedPath)) {
+        if ($PSCmdlet.ShouldProcess("File [$downloadPath] to path [$expandedPath]", 'Expand/Unzip')) {
+            Expand-Archive -Path $downloadPath -DestinationPath $expandedPath
+        }
+    }
+
+    # 3. Remove files & folders
+    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels', 'package')) {
+        $filePath = Join-Path $expandedPath $fileOrFolderToRemove
+        if (Test-Path -LiteralPath $filePath) {
+            if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
+                $null = Remove-Item -LiteralPath $filePath -Force -Recurse
             }
         }
     }
+
+    # 4. Rename folder
+    $modulename, $moduleVersion = [regex]::Match((Split-Path $downloadPath -LeafBase), '([a-zA-Z.]+)\.([0-9.]+)').Captures.Groups.value[1, 2]
+    # Rename-Item -Path $expandedPath -NewName
+    if (-not (Test-Path $newModuleRootFolder)) {
+        if ($PSCmdlet.ShouldProcess("Folder [$newModuleRootFolder]", 'Create')) {
+            $null = New-Item -Path $newModuleRootFolder -ItemType 'Directory'
+        }
+        if ($PSCmdlet.ShouldProcess("All items from [$expandedPath] to path [$newModuleRootFolder]", 'Move')) {
+            $null = Move-Item -LiteralPath $expandedPath -Destination $newModuleRootFolder -Force
+        }
+        if ($PSCmdlet.ShouldProcess("Folder [$newModuleRawVersionFolder] to name [$ModuleVersion]", 'Rename')) {
+            $null = Rename-Item -Path (Join-Path $newModuleRootFolder (Split-Path $expandedPath -Leaf)) -NewName $ModuleVersion
+        }
+    }
+
+    # 5. Move folder
+    if (-not (Test-Path $finalVersionPath)) {
+        if ($PSCmdlet.ShouldProcess("All items from [$newModuleRootFolder] to path [$psModulesPath]", 'Move')) {
+            $null = Move-Item -LiteralPath $newModuleRootFolder -Destination $psModulesPath -Force
+        }
+    }
+}
+
+function Get-AreDependenciesAvailable {
+    <#
+    .SYNOPSIS
+    Check if all depenencies for a given module are already available in the required minimum version.
+
+    .DESCRIPTION
+    Check if all depenencies for a given module are already available in the required minimum version.
+    Returns '$true' if they are, otherwise '$false'
+
+    .PARAMETER InstalledModuleList
+    Optional. A list of already installed modules.
+
+    .PARAMETER Module
+    Optional. The module to check the dependencies  for
+
+    .EXAMPLE
+    Get-AreDependenciesAvailable -InstalledModuleList (Get-Module -ListAvailable) -DependencyList (Find-Module 'Az.Compute')
+
+    Check if all dependencies of 'Az.Compute' are part of the already installed modules.
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [object[]] $InstalledModuleList = @(),
+
+        [Parameter(Mandatory = $false)]
+        [PSCustomObject] $Module
+    )
+
+    foreach ($depenency in $Module.dependencies) {
+
+        $dependencyModuleName = $depenency.Name
+        $dependencyModuleMinimumVersion = [version] ($depenency.minimumVersion)
+
+        $matchingModulesByName = $InstalledModuleList | Where-Object { $_.Name -eq $dependencyModuleName }
+        $matchingModules = $matchingModulesByName | Where-Object { ([version] $_.Version) -ge $dependencyModuleMinimumVersion }
+
+        if ($matchingModules.Count -eq 0) {
+            return $false
+        }
+    }
+
+    return $true
 }
 
 function Set-PowerShellOutputRedirectionBugFix {
@@ -585,7 +737,7 @@ Foreach ($Module in $Modules) {
     LogInfo('HANDLING MODULE [{0}] [{1}/{2}]' -f $Module.Name, $count, $Modules.Count)
     LogInfo('=====================')
     # Installing New Modules and Removing Old
-    $null = Install-CustomModule -Module $Module -InstalledModule $installedModules
+    $null = Install-CustomModule -Module $Module -InstalledModuleList $installedModules
     $count++
 }
 LogInfo('Install-CustomModule end')
