@@ -18,14 +18,14 @@ Request the user to confirm whether to actually execute any should process
 Perform a dry run of the script. Runs everything but the content of any should process
 
 .EXAMPLE
-Remove-ImageTemplate -resourcegroupName 'WVD-Imaging-TO-RG'
+Remove-ImageTemplate -resourcegroupName 'My-RG'
 
-Search and remove the image template '*' and its generated resource group 'IT_WVD-Imaging-TO-RG_*'
+Search and remove the image template '*' and its generated resource group 'IT_My-RG_*'
 
 .EXAMPLE
-Remove-ImageTemplate -resourcegroupName 'WVD-Imaging-TO-RG' -imageTemplateName '19h2NoOffice'
+Remove-ImageTemplate -resourcegroupName 'My-RG' -imageTemplateName '19h2NoOffice'
 
-Search and remove the image template '19h2NoOffice' and its generated resource group 'IT_WVD-Imaging-TO-RG_19h2NoOffice*'
+Search and remove the image template '19h2NoOffice' and its generated resource group 'IT_My-RG_19h2NoOffice*'
 #>
 function Remove-ImageTemplate {
 
