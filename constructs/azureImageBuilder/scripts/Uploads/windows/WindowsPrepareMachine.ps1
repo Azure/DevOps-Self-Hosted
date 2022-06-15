@@ -113,29 +113,30 @@ function Install-CustomModule {
                 # Get latest in case of multiple
                 $alreadyInstalled = ($alreadyInstalled | Sort-Object -Property Version -Descending)[0]
             }
-            LogInfo('Module [{0}] already installed with version [{1}]' -f $alreadyInstalled.Name, $alreadyInstalled.Version) -Verbose
+            LogInfo('[{0}] Module is already installed with version [{1}]' -f $alreadyInstalled.Name, $alreadyInstalled.Version) -Verbose
             continue
         }
 
         # Check if not to be excluded
         if ($Module.ExcludeModules -and $Module.excludeModules.contains($foundModule.Name)) {
-            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name) -Verbose
+            LogInfo('[{0}] Module is configured to be ignored.' -f $foundModule.Name) -Verbose
             continue
         }
 
         if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
             $dependenciesAlreadyAvailable = Get-AreDependenciesAvailable -InstalledModuleList $InstalledModuleList -Module $foundModule
             if ($dependenciesAlreadyAvailable) {
-                LogInfo('Install module [{0}] with version [{1}] exluding dependencies.' -f $foundModule.Name, $foundModule.Version) -Verbose
+                LogInfo('[{0}] Install module with version [{1}] exluding dependencies.' -f $foundModule.Name, $foundModule.Version) -Verbose
                 Install-RawModule -ModuleName $foundModule.Name -ModuleVersion $foundModule.Version
             } else {
-                LogInfo('Install module [{0}] with version [{1}] including dependencies' -f $foundModule.Name, $foundModule.Version) -Verbose
+                LogInfo('[{0}] Install module with version [{1}] including dependencies' -f $foundModule.Name, $foundModule.Version) -Verbose
                 $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
             }
         }
 
-        if ($installed = Get-Module -Name $foundModule.Name -ListAvailable) {
-            LogInfo('Module [{0}] is installed with version [{1}] in path [{2}]' -f $installed.Name, $installed.Version, $installPath) -Verbose
+        if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable | Where-Object { $_.Version -eq $foundModule.Version })) {
+            $installPath = Split-Path (Split-Path (Split-Path $installed[0].Path))
+            LogInfo('[{0}] Module was installed in path [{2}]' -f $installed[0].Name, $installed[0].Version, $installPath) -Verbose
         } else {
             LogError('Installation of module [{0}] failed' -f $foundModule.Name)
         }
