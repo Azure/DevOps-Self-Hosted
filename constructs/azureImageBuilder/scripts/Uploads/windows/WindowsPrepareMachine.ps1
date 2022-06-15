@@ -222,7 +222,7 @@ function Install-RawModule {
         $filePath = Join-Path $expandedPath $fileOrFolderToRemove
         if (Test-Path -LiteralPath $filePath) {
             if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
-                $null = Remove-Item -LiteralPath $filePath -Force -Recurse
+                $null = Remove-Item -LiteralPath $filePath -Force -Recurse -ErrorAction 'SilentlyContinue'
             }
         }
     }
