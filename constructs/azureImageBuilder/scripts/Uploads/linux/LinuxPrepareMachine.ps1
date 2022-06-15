@@ -325,6 +325,7 @@ function Get-AreDependenciesAvailable {
 
 
 $StartTime = Get-Date
+$progressPreference = 'SilentlyContinue'
 
 ###########################
 ##   Install Azure CLI   ##
@@ -454,7 +455,7 @@ $Modules = @(
     @{ Name = 'ThreadJob' },
     @{ Name = 'JWTDetails' },
     @{ Name = 'OMSIngestionAPI' },
-    @{ Name = 'Az' },
+    @{ Name = 'Az.*' },
     @{ Name = 'AzureAD' },
     @{ Name = 'ImportExcel' }
 )
