@@ -603,6 +603,7 @@ function Uninstall-AzureRM {
 
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
+LogInfo('Entering WindowsPrepareMachine.ps1')
 
 LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force

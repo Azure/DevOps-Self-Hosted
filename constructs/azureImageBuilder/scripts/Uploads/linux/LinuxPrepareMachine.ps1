@@ -327,6 +327,7 @@ function Get-AreDependenciesAvailable {
 
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
+LogInfo('Entering LinuxPrepareMachine.ps1')
 
 ###########################
 ##   Install Azure CLI   ##
