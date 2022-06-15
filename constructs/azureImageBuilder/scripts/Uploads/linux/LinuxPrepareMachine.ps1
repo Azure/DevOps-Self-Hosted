@@ -249,11 +249,11 @@ function Install-RawModule {
     }
 
     # 3. Remove files & folders
-    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels', 'package')) {
+    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels/.rels', '_rels', 'package')) {
         $filePath = Join-Path $expandedPath $fileOrFolderToRemove
         if (Test-Path -LiteralPath $filePath) {
             if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
-                $null = Remove-Item -LiteralPath $filePath -Force -Recurse -ErrorAction 'SilentlyContinue'
+                $null = Remove-Item -LiteralPath $filePath -Force -ErrorAction 'SilentlyContinue'
             }
         }
     }
@@ -376,13 +376,12 @@ LogInfo('Install kubectl end')
 LogInfo('Install Terraform start')
 $terraformReleasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases/latest'
 $latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasicParsing | ConvertFrom-Json).name.Replace('v', '')
-LogInfo("Fetched latest available version: [$TFVersion]")
-$TFVersion = $latestTerraformVersion
+LogInfo("Fetched latest available version: [$latestTerraformVersion]")
 
-LogInfo("Using version: [$TFVersion]")
+LogInfo("Using version: [$latestTerraformVersion]")
 sudo apt-get install unzip
-wget ('https://releases.hashicorp.com/terraform/{0}/terraform_{0}_linux_amd64.zip' -f $TFVersion)
-unzip ('terraform_{0}_linux_amd64.zip' -f $TFVersion )
+wget ('https://releases.hashicorp.com/terraform/{0}/terraform_{0}_linux_amd64.zip' -f $latestTerraformVersion)
+unzip ('terraform_{0}_linux_amd64.zip' -f $latestTerraformVersion )
 sudo mv terraform /usr/local/bin/
 terraform --version
 LogInfo('Install Terraform end')

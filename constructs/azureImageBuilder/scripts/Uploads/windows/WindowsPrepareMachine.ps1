@@ -222,11 +222,11 @@ function Install-RawModule {
     }
 
     # 3. Remove files & folders
-    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels', 'package')) {
+    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels/.rels', '_rels', 'package')) {
         $filePath = Join-Path $expandedPath $fileOrFolderToRemove
         if (Test-Path -LiteralPath $filePath) {
             if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
-                $null = Remove-Item -LiteralPath $filePath -Force -Recurse -ErrorAction 'SilentlyContinue'
+                $null = Remove-Item -LiteralPath $filePath -Force -ErrorAction 'SilentlyContinue'
             }
         }
     }
