@@ -248,15 +248,15 @@ function Install-RawModule {
         }
     }
 
-    # 3. Remove files & folders
-    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels/.rels', '_rels', 'package')) {
-        $filePath = Join-Path $expandedPath $fileOrFolderToRemove
-        if (Test-Path -LiteralPath $filePath) {
-            if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
-                $null = Remove-Item -LiteralPath $filePath -Force -ErrorAction 'SilentlyContinue'
-            }
-        }
-    }
+    # 3. Remove files & folders - Optional
+    # foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels', 'package')) {
+    #     $filePath = Join-Path $expandedPath $fileOrFolderToRemove
+    #     if (Test-Path -LiteralPath $filePath) {
+    #         if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
+    #             $null = Remove-Item -LiteralPath $filePath -Force -Recurse -ErrorAction 'SilentlyContinue'
+    #         }
+    #     }
+    # }
 
     # 4. Rename folder
     $modulename, $moduleVersion = [regex]::Match((Split-Path $downloadPath -LeafBase), '([a-zA-Z.]+)\.([0-9.]+)').Captures.Groups.value[1, 2]
