@@ -163,6 +163,10 @@ function Install-CustomModule {
         }
 
         if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable | Where-Object { $_.Version -eq $foundModule.Version })) {
+
+            # Adding new module to list of 'already installed' modules
+            $InstalledModuleList += $installed
+
             $installPath = Split-Path (Split-Path (Split-Path $installed[0].Path))
             LogInfo('[{0}] Module was installed in path [{2}]' -f $installed[0].Name, $installed[0].Version, $installPath) -Verbose
         } else {
