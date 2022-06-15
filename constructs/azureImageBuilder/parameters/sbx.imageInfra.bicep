@@ -72,7 +72,7 @@ var acgParam = {
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
-module scaleSetDeployment '../templates/imageInfra.deploy.bicep' = {
+module imageInfraDeployment '../templates/imageInfra.deploy.bicep' = {
     name: '${uniqueString(deployment().name)}-imageInfra-sbx'
     params: {
         location: location

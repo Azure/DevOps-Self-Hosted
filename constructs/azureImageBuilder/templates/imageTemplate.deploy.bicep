@@ -10,6 +10,9 @@ param rgParam object
 @description('Required. The Image Template properties')
 param itParam object
 
+@description('Required. The Deployment Script properties')
+param dsParam object
+
 @description('Optional. The location to deploy into')
 param location string = deployment().location
 
@@ -65,7 +68,7 @@ module ds '../../../CARML0.5/Microsoft.Resources/deploymentScripts/deploy.bicep'
   name: '${deployment().name}-ds'
   scope: resourceGroup(rgParam.name)
   params: {
-    name: 'triggerBuild-imageTemplate-${formattedTime}-${it.outputs.name}'
+    name: '${dsParam.defaultPrefix}-${formattedTime}-${it.outputs.name}'
     userAssignedIdentities: {
       '${msi.id}': {}
     }

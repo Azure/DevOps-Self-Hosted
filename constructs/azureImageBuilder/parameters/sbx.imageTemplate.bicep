@@ -92,18 +92,23 @@ var itParam = {
     // sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid'
 }
 
+var dsParam = {
+    defaultPrefix: 'triggerBuild-imageTemplate'
+}
+
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
-module scaleSetDeployment '../templates/imageTemplate.deploy.bicep' = {
+module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
     name: '${uniqueString(deployment().name)}-imageInfra-sbx'
     params: {
         location: location
         rgParam: rgParam
         itParam: itParam
+        dsParam: dsParam
         deploymentsToPerform: deploymentsToPerform
     }
 }
 
 @description('The generated name of the image template')
-output imageTempateName string = scaleSetDeployment.outputs.imageTempateName
+output imageTempateName string = imageTemplateDeployment.outputs.imageTempateName
