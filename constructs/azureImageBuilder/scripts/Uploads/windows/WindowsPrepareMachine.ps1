@@ -209,7 +209,7 @@ function Install-RawModule {
     if ($IsWindows) {
         # Not supported in Linux
         if ($PSCmdlet.ShouldProcess("File in path [$downloadFolder]", 'Unblock')) {
-            Unblock-File -Path $downloadPath
+            $null = Unblock-File -Path $downloadPath
         }
     }
 
@@ -595,7 +595,7 @@ function Uninstall-AzureRM {
 
     try {
         $AzureRMModuleFolder = 'C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager'
-        Remove-Item $AzureRMModuleFolder -Force -Recurse
+        $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
         LogInfo("Removed $AzureRMModuleFolder")
     } catch {
         LogError("Unable to remove $AzureRMModuleFolder")
