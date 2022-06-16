@@ -66,7 +66,7 @@ function Copy-FileAndFolderList {
                 # only copies non-existing files
                 if (-not (Test-Path $targetPath)) {
                     # if folder doesn't exist, creates it
-                    $null = New-Item -ItemType 'directory' -Path $targetPath -Verbose
+                    $null = New-Item -ItemType 'directory' -Path $targetPath
                 }
                 $null = Copy-Item $sourceItemPath $targetItemPath
             } else {
