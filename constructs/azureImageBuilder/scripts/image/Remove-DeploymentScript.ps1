@@ -27,12 +27,40 @@ function Remove-DeploymentScript {
         [string] $DeploymentScriptPrefix = 'triggerBuild-imageTemplate-'
     )
 
-    $deploymentScripts = Get-AzResource -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.Resources/deploymentScripts'
+    begin {
+        Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
-    $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.Name -like "$DeploymentScriptPrefix*" }
+        # Install required modules
+        $currentVerbosePreference = $VerbosePreference
+        $VerbosePreference = 'SilentlyContinue'
+        $requiredModules = @(
+            'Az.Resources'
+        )
+        foreach ($moduleName in $requiredModules) {
+            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
+                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
+                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
+                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
+                }
+            } else {
+                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule[0].Name, $installedModule[0].Version) -Verbose
+            }
+        }
+        $VerbosePreference = $currentVerbosePreference
+    }
 
-    $deploymentScriptsToRemove | ForEach-Object -ThrottleLimit 5 -Parallel {
-        $null = Remove-AzResource -ResourceId $_.ResourceId -Force
-        Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.ResourceId) -Verbose
+    process {
+        $deploymentScripts = Get-AzDeploymentScript -ResourceGroupName $ResourceGroupName
+
+        $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.Name -like "$DeploymentScriptPrefix*" -and $_.ProvisioningState -ne 'Running' }
+
+        $deploymentScriptsToRemove | ForEach-Object -ThrottleLimit 5 -Parallel {
+            $null = Remove-AzResource -ResourceId $_.Id -Force
+            Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.ResourceId) -Verbose
+        }
+    }
+
+    end {
+        Write-Debug ('{0} exited' -f $MyInvocation.MyCommand)
     }
 }
