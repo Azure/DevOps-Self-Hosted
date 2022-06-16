@@ -42,10 +42,11 @@ function Wait-ForImageBuild {
 
         do {
             $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $ResourceGroupName -templateName $ImageTemplateName
-            if ($latestStatus -notIn @('running', 'new')) {
+            $runState = $latestStatus.runState.ToLower()
+            if ($runState -notIn @('running', 'new')) {
 
-                if ($latestStatus -eq 'failed') {
-                    throw $latestStatus
+                if ($runState -eq 'failed') {
+                    throw $runState
                 }
                 break
             }
@@ -57,9 +58,12 @@ function Wait-ForImageBuild {
             Start-Sleep $timeToWait
         } while ($currentRetry -le $maximumRetries)
 
-        $Duration = New-TimeSpan -Start $latestStatus.startTime -End $latestStatus.endTime
-
-        Write-Verbose "It took $($Duration.TotalMinutes) minutes to build and distribute the image." -Verbose
+        if ($latestStatus) {
+            $duration = New-TimeSpan -Start $latestStatus.startTime -End $latestStatus.endTime
+            Write-Verbose ('It took [{0}] minutes and [{1}] seconds to build and distribute the image.' -f $duration.Minutes, $duration.Seconds) -Verbose
+        } else {
+            Write-Warning "Timeout at [$currTimeCalc]. Note, the Azure Image Builder may still succeed."
+        }
         return $latestStatus
     }
 

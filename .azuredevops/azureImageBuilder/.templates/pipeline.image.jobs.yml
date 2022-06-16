@@ -50,7 +50,7 @@ jobs:
             #-----------------------
             - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
-              displayName: 'Remove previous image template resources'
+              displayName: 'Remove previous Image Template resources'
               inputs:
                 addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
@@ -70,22 +70,53 @@ jobs:
                   $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
 
                   $functionInput = @{
-                    resourcegroupName =  $templateContent.variables.rgParam.name
-                    # imageTemplateName =  $templateContent.variables.itParam.name
+                    resourcegroupName   = $templateContent.variables.rgParam.name
+                    # imageTemplateName = $templateContent.variables.itParam.name
 
                     # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
-                    imageTemplateName =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
+                    imageTemplateName   =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Remove-ImageTemplate @functionInput -Verbose
+            - task: AzureCLI@2
+              name: Remove_DeploymentScripts_Task
+              displayName: 'Remove previous Deployment Script resources'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
+
+                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+
+                  $functionInput = @{
+                    resourcegroupName      = $templateContent.variables.rgParam.name
+                    deploymentScriptPrefix = $templateContent.variables.dsParam.defaultPrefix
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Remove-DeploymentScript @functionInput -Verbose
 
   - deployment: deploy_job
     displayName: Deploy Resources
     dependsOn:
-      - cleanup_job
+      - ${{ if eq( parameters.removeImageTemplateResources, true) }}:
+          - cleanup_job
     environment: ${{ parameters.environment }}
     condition: |
       and(

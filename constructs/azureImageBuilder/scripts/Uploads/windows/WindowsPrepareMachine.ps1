@@ -40,7 +40,7 @@ function Log {
     $content = "[$date]`t$category`t`t$message`n"
     Write-Verbose $Content -Verbose
 
-    $FilePath = Join-Path $env:TEMP 'log.log'
+    $FilePath = Join-Path ([System.IO.Path]::GetTempPath()) 'log.log'
     if (-not (Test-Path $FilePath)) {
         Write-Verbose "Log file not found, create new in path: [$FilePath]" -Verbose
         $null = New-Item -ItemType 'File' -Path $FilePath -Force
@@ -49,33 +49,45 @@ function Log {
 }
 
 function Install-CustomModule {
+
     <#
     .SYNOPSIS
-    Installes given PowerShell module and saves it to a local store
+    Installes given PowerShell modules
+
+    .DESCRIPTION
+    Installes given PowerShell modules
 
     .PARAMETER Module
-    Module to be installed, must be Object
+    Required. Modules to be installed, must be Object
     @{
         Name = 'Name'
         Version = '1.0.0' # Optional
     }
 
+    .PARAMETER InstalledModuleList
+    Optional. Modules that are already installed on the machine. Can be fetched via 'Get-Module -ListAvailable'
+
     .EXAMPLE
     Install-CustomModule @{ Name = 'Pester' } C:\Modules
+
     Installes pester and saves it to C:\Modules
     #>
+
     [CmdletBinding(SupportsShouldProcess)]
     Param (
         [Parameter(Mandatory = $true)]
-        [Hashtable] $Module
+        [Hashtable] $Module,
+
+        [Parameter(Mandatory = $false)]
+        [object[]] $InstalledModuleList = @()
     )
 
-    # Remove exsisting module
-    if (Get-Module $Module -ErrorAction SilentlyContinue) {
+    # Remove exsisting module in session
+    if (Get-Module $Module -ErrorAction 'SilentlyContinue') {
         try {
             Remove-Module $Module -Force
         } catch {
-            LogError("Unable to remove module $($Module.Name)  : $($_.Exception) found, $($_.ScriptStackTrace)")
+            LogError('Unable to remove module [{0}] because of exception [{1}]. Stack Trace: [{2}]' -f $Module.Name, $_.Exception, $_.ScriptStackTrace)
         }
     }
 
@@ -84,32 +96,208 @@ function Install-CustomModule {
         name       = $Module.Name
         Repository = 'PSGallery'
     }
-    if ($module.Version) {
-        $moduleImportInputObject['RequiredVersion'] = $module.Version
+    if ($Module.Version) {
+        $moduleImportInputObject['RequiredVersion'] = $Module.Version
     }
+
+    # Get all modules that match a certain name. In case of e.g. 'Az' it returns several.
     $foundModules = Find-Module @moduleImportInputObject
+
     foreach ($foundModule in $foundModules) {
 
-        $localModuleVersions = Get-Module $foundModule.Name -ListAvailable
-        if ($localModuleVersions -and $localModuleVersions.Version -contains $foundModule.Version ) {
-            LogInfo('Module [{0}] already installed with latest version [{1}]' -f $foundModule.Name, $foundModule.Version)
-            continue
-        }
-        if ($module.ExcludeModules -and $module.excludeModules.contains($foundModule.Name)) {
-            LogInfo('Module {0} is configured to be ignored.' -f $foundModule.Name)
+        # Check if already installed as required
+        if ($alreadyInstalled = $InstalledModule | Where-Object { $_.Name -eq $Module.Name }) {
+            if ($Module.Version) {
+                $alreadyInstalled = $alreadyInstalled | Where-Object { $_.Version -eq $Module.Version }
+            } else {
+                # Get latest in case of multiple
+                $alreadyInstalled = ($alreadyInstalled | Sort-Object -Property Version -Descending)[0]
+            }
+            LogInfo('[{0}] Module is already installed with version [{1}]' -f $alreadyInstalled.Name, $alreadyInstalled.Version) -Verbose
             continue
         }
 
-        LogInfo('Install module [{0}] with version [{1}]' -f $foundModule.Name, $foundModule.Version)
+        # Check if not to be excluded
+        if ($Module.ExcludeModules -and $Module.excludeModules.contains($foundModule.Name)) {
+            LogInfo('[{0}] Module is configured to be ignored.' -f $foundModule.Name) -Verbose
+            continue
+        }
+
         if ($PSCmdlet.ShouldProcess('Module [{0}]' -f $foundModule.Name, 'Install')) {
-            $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
-            if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable)[0]) {
-                LogInfo('Module [{0}] is installed with version [{1}]' -f $installed.Name, $installed.Version)
+            $dependenciesAlreadyAvailable = Get-AreDependenciesAvailable -InstalledModuleList $InstalledModuleList -Module $foundModule
+            if ($dependenciesAlreadyAvailable) {
+                LogInfo('[{0}] Install module with version [{1}] exluding dependencies.' -f $foundModule.Name, $foundModule.Version) -Verbose
+                Install-RawModule -ModuleName $foundModule.Name -ModuleVersion $foundModule.Version
             } else {
-                LogError('Installation of module [{0}] failed' -f $foundModule.Name)
+                LogInfo('[{0}] Install module with version [{1}] including dependencies' -f $foundModule.Name, $foundModule.Version) -Verbose
+                $foundModule | Install-Module -Force -SkipPublisherCheck -AllowClobber
+            }
+        }
+
+        if ($installed = (Get-Module -Name $foundModule.Name -ListAvailable | Where-Object { $_.Version -eq $foundModule.Version })) {
+
+            # Adding new module to list of 'already installed' modules
+            $InstalledModuleList += $installed
+
+            $installPath = Split-Path (Split-Path (Split-Path $installed[0].Path))
+            LogInfo('[{0}] Module was installed in path [{2}]' -f $installed[0].Name, $installed[0].Version, $installPath) -Verbose
+        } else {
+            LogError('Installation of module [{0}] failed' -f $foundModule.Name)
+        }
+    }
+}
+
+function Install-RawModule {
+    <#
+    .SYNOPSIS
+    Install a module without any of its dependencies
+
+    .DESCRIPTION
+    Modules are downloaded from the PSGallery and stored in the first path of the PSModulePath environment variable
+
+    .PARAMETER ModuleName
+    Mandatory. The name of the module to install
+
+    .PARAMETER ModuleVersion
+    Mandatory. The name of the module version to install
+
+    .EXAMPLE
+    Install-RawModule -ModuleName 'Az.Compute' -ModuleVersion '4.27.0'
+
+    Install module 'Az.Compute' in version '4.27.0' in the default PSModule installation path
+    #>
+
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string] $ModuleName,
+
+        [Parameter(Mandatory)]
+        [string] $ModuleVersion
+    )
+
+    $url = "https://www.powershellgallery.com/api/v2/package/$ModuleName/$ModuleVersion"
+
+    $downloadFolder = Join-Path ([System.IO.Path]::GetTempPath()) 'modulesToInstall'
+    $downloadPath = Join-Path $downloadFolder "$ModuleName.$ModuleVersion.zip" # Assuming [.zip] instead of [.nupkg]
+    $expandedRootPath = Join-Path $downloadFolder 'formattedModules'
+    $expandedPath = Join-Path $expandedRootPath (Split-Path $downloadPath -LeafBase)
+    $newModuleRootFolder = Join-Path $expandedRootPath $ModuleName
+    $newModuleRawVersionFolder = (Join-Path $newModuleRootFolder (Split-Path $expandedPath -Leaf))
+
+    if ($IsWindows) { $psModulesPath = ($env:PSModulePath -split ';')[0] }
+    else { $psModulesPath = ($env:PSModulePath -split ':')[0] }
+
+    $finalVersionPath = Join-Path $psModulesPath $ModuleName $ModuleVersion
+
+    # 1. Download nupkg package
+    if (-not (Test-Path $downloadFolder)) {
+        if ($PSCmdlet.ShouldProcess("Folder [$downloadFolder]", 'Create')) {
+            $null = New-Item $downloadFolder -ItemType 'Directory'
+        }
+    }
+    try {
+        if (-not (Test-Path $downloadPath)) {
+            if ($PSCmdlet.ShouldProcess("From url [$url] to path [$downloadPath]", 'Download')) {
+                (New-Object System.Net.WebClient).DownloadFile($Url, $downloadPath)
+            }
+        }
+    } catch {
+        LogError("Download FAILED: $_")
+    }
+
+    if ($IsWindows) {
+        # Not supported in Linux
+        if ($PSCmdlet.ShouldProcess("File in path [$downloadFolder]", 'Unblock')) {
+            $null = Unblock-File -Path $downloadPath
+        }
+    }
+
+
+    # 2. Expand Achive
+    if (-not (Test-Path $expandedPath)) {
+        if ($PSCmdlet.ShouldProcess("File [$downloadPath] to path [$expandedPath]", 'Expand/Unzip')) {
+            $null = Expand-Archive -Path $downloadPath -DestinationPath $expandedPath -PassThru
+        }
+    }
+
+    # 3. Remove files & folders - Optional
+    foreach ($fileOrFolderToRemove in @('PSGetModuleInfo.xml', '[Content_Types].xml', '_rels', 'package')) {
+        $filePath = Join-Path $expandedPath $fileOrFolderToRemove
+        if (Test-Path -LiteralPath $filePath) {
+            if ($PSCmdlet.ShouldProcess("Item [$filePath]", 'Remove')) {
+                $null = Remove-Item -LiteralPath $filePath -Force -Recurse -ErrorAction 'SilentlyContinue'
             }
         }
     }
+
+    # 4. Rename folder
+    $modulename, $moduleVersion = [regex]::Match((Split-Path $downloadPath -LeafBase), '([a-zA-Z.]+)\.([0-9.]+)').Captures.Groups.value[1, 2]
+    # Rename-Item -Path $expandedPath -NewName
+    if (-not (Test-Path $newModuleRootFolder)) {
+        if ($PSCmdlet.ShouldProcess("Folder [$newModuleRootFolder]", 'Create')) {
+            $null = New-Item -Path $newModuleRootFolder -ItemType 'Directory'
+        }
+        if ($PSCmdlet.ShouldProcess("All items from [$expandedPath] to path [$newModuleRootFolder]", 'Move')) {
+            $null = Move-Item -LiteralPath $expandedPath -Destination $newModuleRootFolder -Force
+        }
+        if ($PSCmdlet.ShouldProcess("Folder [$newModuleRawVersionFolder] to name [$ModuleVersion]", 'Rename')) {
+            $null = Rename-Item -Path (Join-Path $newModuleRootFolder (Split-Path $expandedPath -Leaf)) -NewName $ModuleVersion
+        }
+    }
+
+    # 5. Move folder
+    if (-not (Test-Path $finalVersionPath)) {
+        if ($PSCmdlet.ShouldProcess("All items from [$newModuleRootFolder] to path [$psModulesPath]", 'Move')) {
+            $null = Move-Item -LiteralPath $newModuleRootFolder -Destination $psModulesPath -Force
+        }
+    }
+}
+
+function Get-AreDependenciesAvailable {
+    <#
+    .SYNOPSIS
+    Check if all depenencies for a given module are already available in the required minimum version.
+
+    .DESCRIPTION
+    Check if all depenencies for a given module are already available in the required minimum version.
+    Returns '$true' if they are, otherwise '$false'
+
+    .PARAMETER InstalledModuleList
+    Optional. A list of already installed modules.
+
+    .PARAMETER Module
+    Optional. The module to check the dependencies  for
+
+    .EXAMPLE
+    Get-AreDependenciesAvailable -InstalledModuleList (Get-Module -ListAvailable) -Module (Find-Module 'Az.Compute')
+
+    Check if all dependencies of 'Az.Compute' are part of the already installed modules.
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [object[]] $InstalledModuleList = @(),
+
+        [Parameter(Mandatory = $false)]
+        [PSCustomObject] $Module
+    )
+
+    foreach ($depenency in $Module.dependencies) {
+
+        $dependencyModuleName = $depenency.Name
+        $dependencyModuleMinimumVersion = [version] ($depenency.minimumVersion)
+
+        $matchingModulesByName = $InstalledModuleList | Where-Object { $_.Name -eq $dependencyModuleName }
+        $matchingModules = $matchingModulesByName | Where-Object { ([version] $_.Version) -ge $dependencyModuleMinimumVersion }
+
+        if ($matchingModules.Count -eq 0) {
+            return $false
+        }
+    }
+
+    return $true
 }
 
 function Set-PowerShellOutputRedirectionBugFix {
@@ -245,10 +433,7 @@ function Install-Choco {
     LogInfo( 'Install choco')
 
     LogInfo( 'Invoke install.ps1 content')
-    if ($null -eq $env:TEMP) {
-        $env:TEMP = Join-Path $env:SystemDrive 'temp'
-    }
-    $chocTempDir = Join-Path $env:TEMP 'chocolatey'
+    $chocTempDir = Join-Path ([System.IO.Path]::GetTempPath()) 'chocolatey'
     $tempDir = Join-Path $chocTempDir 'chocInstall'
     if (-not [System.IO.Directory]::Exists($tempDir)) { [void][System.IO.Directory]::CreateDirectory($tempDir) }
     $file = Join-Path $tempDir 'chocolatey.zip'
@@ -318,7 +503,7 @@ function Install-Choco {
                 throw "Unable to unzip package using built-in compression. Set `$env:chocolateyUseWindowsCompression = 'false' and call install again to use 7zip to unzip. Error: `n $_"
             }
         } else {
-            Expand-Archive -Path "$file" -DestinationPath "$tempDir" -Force
+            $null = Expand-Archive -Path $file -DestinationPath $tempDir -Force -PassThru
         }
     }
 
@@ -410,7 +595,7 @@ function Uninstall-AzureRM {
 
     try {
         $AzureRMModuleFolder = 'C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager'
-        Remove-Item $AzureRMModuleFolder -Force -Recurse
+        $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
         LogInfo("Removed $AzureRMModuleFolder")
     } catch {
         LogError("Unable to remove $AzureRMModuleFolder")
@@ -421,6 +606,10 @@ function Uninstall-AzureRM {
 #endregion
 
 $StartTime = Get-Date
+$progressPreference = 'SilentlyContinue'
+LogInfo('##########################################')
+LogInfo('#   Entering WindowsPrepareMachine.ps1   #')
+LogInfo('##########################################')
 
 LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -495,7 +684,7 @@ LogInfo('Update Package Provider Nuget end')
 #######################
 LogInfo('Install az copy start')
 Invoke-WebRequest -Uri 'https://aka.ms/downloadazcopy-v10-windows' -OutFile 'AzCopy.zip' -UseBasicParsing
-Expand-Archive './AzCopy.zip' './AzCopy' -Force
+$null = Expand-Archive './AzCopy.zip' './AzCopy' -Force -PassThru
 Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\thmaure\AzCopy\AzCopy.exe'
 $userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 [System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\thmaure\AzCopy', 'User')
@@ -538,7 +727,7 @@ $Modules = @(
     @{ Name = 'ThreadJob' },
     @{ Name = 'JWTDetails' },
     @{ Name = 'OMSIngestionAPI' },
-    @{ Name = 'Az' },
+    @{ Name = 'Az.*' },
     @{ Name = 'AzureAD' },
     @{ Name = 'ImportExcel' }
 )
@@ -549,6 +738,9 @@ $modules | ForEach-Object {
     $count++
 }
 
+# Load already installed modules
+$installedModules = Get-Module -ListAvailable
+
 LogInfo('Install-CustomModule start')
 $count = 0
 Foreach ($Module in $Modules) {
@@ -556,7 +748,7 @@ Foreach ($Module in $Modules) {
     LogInfo('HANDLING MODULE [{0}] [{1}/{2}]' -f $Module.Name, $count, $Modules.Count)
     LogInfo('=====================')
     # Installing New Modules and Removing Old
-    $null = Install-CustomModule -Module $Module # $ModuleSavePath
+    $null = Install-CustomModule -Module $Module -InstalledModuleList $installedModules
     $count++
 }
 LogInfo('Install-CustomModule end')
@@ -573,7 +765,9 @@ if (Get-Module AzureRm* -ListAvailable) {
 $elapsedTime = (Get-Date) - $StartTime
 $totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo('Exiting WindowsPrepareMachine.ps1')
+LogInfo('#########################################')
+LogInfo('#   Exiting WindowsPrepareMachine.ps1   #')
+LogInfo('#########################################')
 
 return 0;
 #endregion
