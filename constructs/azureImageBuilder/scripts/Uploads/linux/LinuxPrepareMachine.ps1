@@ -70,7 +70,7 @@ function Copy-FileAndFolderList {
                 }
                 $null = Copy-Item $sourceItemPath $targetItemPath
             } else {
-                Write-Verbose "[$sourceItemPath] already exists" -Verbose
+                Write-Verbose "[$sourceItemPath] already exists"
             }
         }
     }
