@@ -607,7 +607,9 @@ function Uninstall-AzureRM {
 
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
-LogInfo('Entering WindowsPrepareMachine.ps1')
+LogInfo('##########################################')
+LogInfo('#   Entering WindowsPrepareMachine.ps1   #')
+LogInfo('##########################################')
 
 LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -763,7 +765,9 @@ if (Get-Module AzureRm* -ListAvailable) {
 $elapsedTime = (Get-Date) - $StartTime
 $totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo('Exiting WindowsPrepareMachine.ps1')
+LogInfo('#########################################')
+LogInfo('#   Exiting WindowsPrepareMachine.ps1   #')
+LogInfo('#########################################')
 
 return 0;
 #endregion
