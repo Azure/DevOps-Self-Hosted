@@ -24,7 +24,7 @@ parameters:
     type: boolean
     default: false
   - name: removeImageTemplateResources
-    displayName: Remove previous Image Template Resource Groups
+    displayName: Cleanup temporal resources from previous runs
     type: boolean
     default: true
 
