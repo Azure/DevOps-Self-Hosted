@@ -10,7 +10,7 @@ parameters:
 
 jobs:
   - deployment: cleanup_job
-    displayName: Remove previous Image Template resources
+    displayName: Cleanup temporal resources from previous runs
     environment: ${{ parameters.environment }}
     timeoutInMinutes: 120
     condition: |
