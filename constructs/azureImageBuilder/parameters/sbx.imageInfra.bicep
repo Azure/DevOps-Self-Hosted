@@ -52,6 +52,7 @@ var acgParam = {
     name: 'aibgallery'
     images: [
         {
+            hyperVGeneration: 'V2'
             name: 'linux-sid'
             osType: 'Linux'
             publisher: 'devops'
