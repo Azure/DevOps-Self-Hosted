@@ -72,7 +72,7 @@ var itParam = {
             ]
         }
     ]
-    sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid'
+    sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgalleryv2/images/linux-sid-v2'
     // Windows example
     // imageSource: {
     //     type: 'PlatformImage'

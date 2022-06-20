@@ -49,10 +49,11 @@ var saParam = {
 
 // Azure Compute Gallery
 var acgParam = {
-    name: 'aibgallery'
+    name: 'aibgalleryv2'
     images: [
         {
-            name: 'linux-sid'
+            hyperVGeneration: 'V2'
+            name: 'linux-sid-v2'
             osType: 'Linux'
             publisher: 'devops'
             offer: 'devops_linux'
