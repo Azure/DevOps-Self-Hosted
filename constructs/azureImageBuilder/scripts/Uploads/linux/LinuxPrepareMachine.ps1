@@ -493,7 +493,14 @@ LogInfo('Install-CustomModule end')
 ##   Post Installation Configuration   ##
 #########################################
 LogInfo("Copy PS modules to '/opt/microsoft/powershell/7/Modules' start")
-$null = Copy-FileAndFolderList -sourcePath '/home/packer/.local/share/powershell/Modules' -targetPath '/opt/microsoft/powershell/7/Modules'
+$targetPath = '/opt/microsoft/powershell/7/Modules'
+$sourcePaths = @('/home/packer/.local/share/powershell/Modules', '/root/.local/share/powershell/Modules')
+foreach ($sourcePath in $sourcePaths) {
+    LogInfo("Copying from [$sourcePath] to [$targetPath]")
+    if (Test-Path $sourcePath) {
+        $null = Copy-FileAndFolderList -sourcePath $sourcePath -targetPath $targetPath
+    }
+}
 LogInfo('Copy PS modules end')
 
 $elapsedTime = (Get-Date) - $StartTime
