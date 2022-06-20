@@ -49,7 +49,7 @@ var vmssParam = {
   osType: 'Linux'
   skuCapacity: 0
   imageReference: {
-    id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgalleryv2/images/linux-sid-v2/versions/latest'
+    id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest'
   }
   disablePasswordAuthentication: true
   publicKeys: [
