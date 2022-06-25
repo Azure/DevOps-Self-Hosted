@@ -2,7 +2,7 @@
 
 The objective of this repository is to provide you with example implementations for self-hosted DevOps agents. This includes a pipeline to bake images via the Azure Image Builder solution.
 
-<img src="../generalMedia/homeOverviewImage.png" alt="Overview" height="500">
+<img src="./media/homeOverviewImage.png" alt="Overview" height="500">
 
 ### _Navigation_
 
