@@ -2,6 +2,8 @@
 
 The objective of this repository is to provide you with example implementations for self-hosted DevOps agents. This includes a pipeline to bake images via the Azure Image Builder solution.
 
+<img src="../generalMedia/homeOverviewImage.png" alt="Overview" height="500">
+
 ### _Navigation_
 
 Core
@@ -13,7 +15,7 @@ Shared concepts
 
 ### Additional resources
 <details>
-  
+
 <summary>Telemetry</summary>
 
 Each leveraged CARML module (see corresponding folder in root) contains a `defaultTelemetry` deployment  `'pid-<GUID>-${uniqueString(deployment().name)}'`, resulting in deployments such as `'pid-<GUID>-nx2c3rnlt2wru'`.
@@ -29,5 +31,5 @@ If you want to prevent this deployment to take place, it is enough to set the `'
 > **Note:** _The deployment and its GUID can NOT be used to track [Azure Consumed Revenue (ACR)](https://docs.microsoft.com/en-us/azure/marketplace/azure-partner-customer-usage-attribution)._
 >
 > _If you want to track consumption, you must add your own PID deployment, apply the required naming format `'pid-<GUID>'` (without the suffix)._
-  
+
   </details>
