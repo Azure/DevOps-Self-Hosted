@@ -685,9 +685,9 @@ LogInfo('Update Package Provider Nuget end')
 LogInfo('Install az copy start')
 Invoke-WebRequest -Uri 'https://aka.ms/downloadazcopy-v10-windows' -OutFile 'AzCopy.zip' -UseBasicParsing
 $null = Expand-Archive './AzCopy.zip' './AzCopy' -Force -PassThru
-Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\thmaure\AzCopy\AzCopy.exe'
+Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\carml\AzCopy\AzCopy.exe'
 $userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
-[System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\thmaure\AzCopy', 'User')
+[System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\carml\AzCopy', 'User')
 LogInfo('Install az copy end')
 
 ###########################
