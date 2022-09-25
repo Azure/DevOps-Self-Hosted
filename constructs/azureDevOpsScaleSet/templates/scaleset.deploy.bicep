@@ -35,7 +35,7 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module rg '../../../CARML0.7/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-rg'
   params: {
     name: rgParam.name
@@ -44,7 +44,7 @@ module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // Network Security Group
-module nsg '../../../CARML0.5/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module nsg '../../../CARML0.7/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-nsg'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -57,7 +57,7 @@ module nsg '../../../CARML0.5/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Virtual Network
-module vnet '../../../CARML0.5/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module vnet '../../../CARML0.7/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -73,7 +73,7 @@ module vnet '../../../CARML0.5/Microsoft.Network/virtualNetworks/deploy.bicep' =
 }
 
 // Virtual Machine Scale Set
-module vmss '../../../CARML0.5/Microsoft.Compute/virtualMachineScaleSets/deploy.bicep' = {
+module vmss '../../../CARML0.7/Microsoft.Compute/virtualMachineScaleSets/deploy.bicep' = {
   name: '${deployment().name}-vmss'
   scope: resourceGroup(rgParam.name)
   params: {
