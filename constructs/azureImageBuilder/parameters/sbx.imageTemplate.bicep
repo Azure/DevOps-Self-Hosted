@@ -24,7 +24,7 @@ param baseTime string = utcNow('u')
 
 // Misc
 resource existingStorage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
-    name: '<YourStorageAccount>'
+    name: 'alsehrcustomsa'
     scope: resourceGroup(subscription().subscriptionId, rgParam.name)
 }
 var sasConfig = {
@@ -60,13 +60,13 @@ var itParam = {
         {
             type: 'Shell'
             name: 'PowerShell installation'
-            scriptUri: 'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+            scriptUri: 'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
         }
         {
             type: 'Shell'
             name: 'Prepare software installation'
             inline: [
-                'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+                'wget \'https://alsehrcustomsa.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
                 'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                 'pwsh \'LinuxPrepareMachine.ps1\''
             ]
@@ -85,7 +85,7 @@ var itParam = {
     //     {
     //         type: 'PowerShell'
     //         name: 'Software installation'
-    //         scriptUri: 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1?${sasKey}'
+    //         scriptUri: 'https://alsehrcustomsa.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1?${sasKey}'
     //         runElevated: true
     //     }
     // ]
