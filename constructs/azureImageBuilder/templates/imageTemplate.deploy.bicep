@@ -35,7 +35,7 @@ var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module rg '../../../CARML0.7/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-rg'
   params: {
     name: rgParam.name
@@ -44,7 +44,7 @@ module rg '../../../CARML0.5/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // Image template
-module it '../../../CARML0.5/Microsoft.VirtualMachineImages/imageTemplates/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module it '../../../CARML0.7/Microsoft.VirtualMachineImages/imageTemplates/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-it'
   scope: resourceGroup(rgParam.name)
   params: {
@@ -64,7 +64,7 @@ resource msi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' exist
 }
 
 // Deployment script to trigger image build
-module ds '../../../CARML0.5/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module ds '../../../CARML0.7/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-ds'
   scope: resourceGroup(rgParam.name)
   params: {
