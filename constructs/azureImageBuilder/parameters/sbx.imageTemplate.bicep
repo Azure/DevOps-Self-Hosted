@@ -24,7 +24,7 @@ param baseTime string = utcNow('u')
 
 // Misc
 resource existingStorage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
-    name: '<YourStorageAccount>'
+    name: 'shaibstorage'
     scope: resourceGroup(subscription().subscriptionId, rgParam.name)
 }
 var sasConfig = {
@@ -60,13 +60,13 @@ var itParam = {
     //     {
     //         type: 'Shell'
     //         name: 'PowerShell installation'
-    //         scriptUri: 'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+    //         scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
     //     }
     //     {
     //         type: 'Shell'
     //         name: 'Software installation'
     //         inline: [
-    //             'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+    //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
     //             'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
     //             'pwsh \'LinuxPrepareMachine.ps1\''
     //         ]
