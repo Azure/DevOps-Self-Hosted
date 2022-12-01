@@ -92,7 +92,7 @@ var itParam = {
             type: 'PowerShell'
             name: 'Software installation'
             inline: [
-                'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+                'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
                 'pwsh \'WindowsPrepareMachine.ps1\''
             ]
             runElevated: true
