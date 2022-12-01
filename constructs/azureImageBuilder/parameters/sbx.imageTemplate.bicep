@@ -93,6 +93,7 @@ var itParam = {
             name: 'Software installation'
             inline: [
                 'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+                'sed -i \'s/\r$//\' \'WindowsPrepareMachine.ps1\''
                 'pwsh \'WindowsPrepareMachine.ps1\''
             ]
             runElevated: true
