@@ -60,13 +60,13 @@ var acgParam = {
             sku: 'devops_linux_az'
         }
         // Windows Example
-        // {
-        //     name: 'windows-sid'
-        //     osType: 'Windows'
-        //     publisher: 'devops'
-        //     offer: 'devops_windows'
-        //     sku: 'devops_windows_az'
-        // }
+        {
+            name: 'windows-sid'
+            osType: 'Windows'
+            publisher: 'devops'
+            offer: 'devops_windows'
+            sku: 'devops_windows_az'
+        }
     ]
 }
 
