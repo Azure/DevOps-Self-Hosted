@@ -46,50 +46,59 @@ var itParam = {
     name: 'lin_it'
     userMsiName: 'aibMsi'
     userMsiResourceGroup: rgParam.name
-    imageSource: {
-        type: 'PlatformImage'
-        publisher: 'Canonical'
-        offer: '0001-com-ubuntu-server-focal'
-        sku: '20_04-lts-gen2'
-        version: 'latest'
-        // Custom image example
-        // type: 'SharedImageVersion'
-        // imageVersionID: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
-    }
-    customizationSteps: [
-        {
-            type: 'Shell'
-            name: 'PowerShell installation'
-            scriptUri: 'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
-        }
-        {
-            type: 'Shell'
-            name: 'Prepare software installation'
-            inline: [
-                'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
-                'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
-                'pwsh \'LinuxPrepareMachine.ps1\''
-            ]
-        }
-    ]
-    sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid'
-    // Windows example
     // imageSource: {
     //     type: 'PlatformImage'
-    //     publisher: 'MicrosoftWindowsDesktop'
-    //     offer: 'Windows-10'
-    //     sku: '19h2-evd'
+    //     publisher: 'Canonical'
+    //     offer: '0001-com-ubuntu-server-focal'
+    //     sku: '20_04-lts-gen2'
     //     version: 'latest'
+    //     // Custom image example
+    //     // type: 'SharedImageVersion'
+    //     // imageVersionID: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
     // }
     // customizationSteps: [
     //     {
-    //         type: 'PowerShell'
+    //         type: 'Shell'
+    //         name: 'PowerShell installation'
+    //         scriptUri: 'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+    //     }
+    //     {
+    //         type: 'Shell'
     //         name: 'Software installation'
-    //         scriptUri: 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/WindowsPrepareMachine.ps1?${sasKey}'
-    //         runElevated: true
+    //         inline: [
+    //             'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+    //             'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
+    //             'pwsh \'LinuxPrepareMachine.ps1\''
+    //         ]
     //     }
     // ]
-    // sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid'
+    // sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid'
+    // Windows example
+    imageSource: {
+        type: 'PlatformImage'
+        publisher: 'MicrosoftWindowsDesktop'
+        offer: 'Windows-10'
+        sku: '19h2-evd'
+        version: 'latest'
+    }
+    customizationSteps: [
+        {
+            type: 'PowerShell'
+            name: 'PowerShell installation'
+            inline: 'winget install --id Microsoft.Powershell --source winget'
+            runElevated: true
+        }
+        {
+            type: 'PowerShell'
+            name: 'Software installation'
+            inline: [
+                'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+                'pwsh \'WindowsPrepareMachine.ps1\''
+            ]
+            runElevated: true
+        }
+    ]
+    sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid'
 }
 
 var dsParam = {

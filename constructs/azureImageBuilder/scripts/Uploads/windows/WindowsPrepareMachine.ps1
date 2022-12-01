@@ -1,3 +1,5 @@
+#requires -Version 6.0
+
 #region Functions
 function LogInfo($message) {
     Log 'Info' $message
@@ -689,19 +691,6 @@ Get-ChildItem './AzCopy/*/azcopy.exe' | Move-Item -Destination 'C:\Users\carml\A
 $userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 [System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\carml\AzCopy', 'User')
 LogInfo('Install az copy end')
-
-###########################
-##   Install BICEP CLI   ##
-###########################
-LogInfo('Install BICEP start')
-
-# Fetch the latest Bicep CLI binary
-curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
-# Mark it as executable
-chmod +x ./bicep
-# Add bicep to your PATH (requires admin)
-sudo mv ./bicep /usr/local/bin/bicep
-LogInfo('Install BICEP end')
 
 ###############################
 ##   Install PowerShellGet   ##
