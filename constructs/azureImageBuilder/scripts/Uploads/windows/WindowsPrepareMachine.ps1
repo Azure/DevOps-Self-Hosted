@@ -557,38 +557,7 @@ function Uninstall-AzureRM {
     LogInfo('Remaining AzureRM modules: {0}' -f ((Get-Module 'AzureRM.*').Name -join ' | '))
     LogInfo('Remove Modules from context end')
 
-    # Uninstalling Azure PowerShell Modules
-    try {
-        $programName = 'Microsoft Azure PowerShell'
-        $retry = $false
-        try {
-            LogInfo("Remove Program $programName")
-            Remove-Program -Like "$programName*"
-            LogInfo("Removed Program $programName")
-        } catch {
-            LogWarning("'$($programName) msiexec removal failed, retry uninstall")
-            $retry = $true
-        }
-
-        if ($retry) {
-            try {
-                $app = Get-CimInstance -Class Win32_Product -Filter "Name Like '$($programName)%'" -Verbose
-                if ($app) {
-                    LogInfo("Found $($app.Name), try uninstall ")
-                    $app.Uninstall()
-                } else {
-                    LogWarning("'$($programName) not found")
-                }
-            } catch {
-                LogError("'$($programName) uninstall failed")
-            }
-        }
-
-    } catch {
-        LogError("Unable to remove Microsoft Azure PowerShell: $($_.Exception) found, $($_.ScriptStackTrace)")
-    }
-
-    # Uninstall AzureRm Module
+    # Uninstall AzureRm Modules
     try {
         Get-Module 'AzureRm.*' -ListAvailable | Uninstall-Module -Force
     } catch {
