@@ -16,10 +16,6 @@ param vnetParam object
 @description('Required. The virtual machine scale set properties')
 param vmssParam object
 
-@description('Optional. The admin password to use if the scale set uses a windows image')
-@secure()
-param vmssAdminPassword string = ''
-
 @description('Optional. The location to deploy into')
 param location string = deployment().location
 
@@ -102,7 +98,7 @@ module vmss '../../../CARML0.8/Microsoft.Compute/virtualMachineScaleSets/deploy.
       ]
     }
     adminPassword: contains(vmssParam, 'adminPassword') ? vmssParam.adminPassword : ''
-    publicKeys: contains(vmssParam, 'publicKeys') ? vmssParam.publicKeys : ''
+    publicKeys: contains(vmssParam, 'publicKeys') ? vmssParam.publicKeys : []
     location: location
   }
   dependsOn: [
