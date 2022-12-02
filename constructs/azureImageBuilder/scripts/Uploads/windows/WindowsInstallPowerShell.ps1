@@ -1,7 +1,4 @@
-﻿param(
-    [string] $psVersion = '7.3.0'
-)
-
+﻿$psVersion = '7.3.0'
 $ps7Url = "https://github.com/PowerShell/PowerShell/releases/download/v$psVersion/PowerShell-$psVersion-win-x64.zip"
 $downloadFolder = (Get-Location).Path
 $downloadLoc = Join-Path $downloadFolder (Split-Path $ps7Url -Leaf)
@@ -34,5 +31,5 @@ if ($Env:PATH -notlike "*$installLoc*") {
     Write-Verbose 'Environment variable already set' -Verbose
 }
 
-Write-Verbose 'Try run PWSH' -Verbose
-pwsh -Command 'Write-Host "Hello from inside"'
+Write-Verbose 'Try run PS-Core' -Verbose
+pwsh -Command 'Write-Host "Hello from the inside"'
