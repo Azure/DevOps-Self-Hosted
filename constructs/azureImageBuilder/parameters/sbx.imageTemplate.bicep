@@ -75,10 +75,15 @@ var itParam = {
     // sigImageDefinitionId: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid'
     // Windows example
     imageSource: {
+        // type: 'PlatformImage'
+        // publisher: 'MicrosoftWindowsDesktop'
+        // offer: 'windows-11'
+        // sku: 'win11-22h2-pro'
+        // version: 'latest'
         type: 'PlatformImage'
         publisher: 'MicrosoftWindowsDesktop'
-        offer: 'windows-11'
-        sku: 'win11-22h2-pro'
+        offer: 'Windows-10'
+        sku: '19h2-evd'
         version: 'latest'
     }
     customizationSteps: [

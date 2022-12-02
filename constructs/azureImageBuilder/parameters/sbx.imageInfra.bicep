@@ -66,7 +66,7 @@ var acgParam = {
             publisher: 'devops'
             offer: 'devops_windows'
             sku: 'devops_windows_az'
-            hyperVGeneration: 'V2'
+            //hyperVGeneration: 'V2'
         }
     ]
 }
