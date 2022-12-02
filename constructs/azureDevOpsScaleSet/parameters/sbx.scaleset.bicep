@@ -76,7 +76,7 @@ var vmssParam = {
   // Windows example
   osType: 'Windows'
   imageReference: {
-    id: 'subscription().id/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/latest'
+    id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/latest'
   }
   disablePasswordAuthentication: false
   //adminPassword: kv.getSecret('adminPassword')
