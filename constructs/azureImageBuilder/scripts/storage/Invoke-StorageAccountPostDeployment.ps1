@@ -26,13 +26,13 @@ function Invoke-StorageAccountPostDeployment {
     param(
         [Parameter(
             Mandatory,
-            HelpMessage = "Specifies the name of the Storage account to update."
+            HelpMessage = 'Specifies the name of the Storage account to update.'
         )]
         [string] $StorageAccountName,
 
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Map of source/target tuples for upload"
+            HelpMessage = 'Map of source/target tuples for upload'
         )]
         [Hashtable[]] $contentToUpload = $(
             @{
@@ -46,15 +46,15 @@ function Invoke-StorageAccountPostDeployment {
         )
     )
 
-    Write-Verbose "Getting storage account context."
+    Write-Verbose 'Getting storage account context.'
     $saResource = Get-AzResource -Name $StorageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
 
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $StorageAccountName -ErrorAction Stop
     $ctx = $storageAccount.Context
 
-    Write-Verbose "Building paths to the local folders to upload."
+    Write-Verbose 'Building paths to the local folders to upload.'
     Write-Verbose "Script Directory: '$PSScriptRoot'"
-    $contentDirectory = Join-Path -Path (Split-Path $PSScriptRoot -Parent) "Uploads"
+    $contentDirectory = Join-Path -Path (Split-Path $PSScriptRoot -Parent) 'Uploads'
     Write-Verbose "Content directory: '$contentDirectory'"
 
     foreach ($contentObject in $contentToUpload) {
@@ -66,26 +66,25 @@ function Invoke-StorageAccountPostDeployment {
             $pathToContentToUpload = Join-Path $contentDirectory $sourcePath
             Write-Verbose "Processing content in path: '$pathToContentToUpload'"
 
-            Write-Verbose "Testing local path"
+            Write-Verbose 'Testing local path'
             If (-Not (Test-Path -Path $pathToContentToUpload)) {
                 throw "Testing local paths FAILED: Cannot find content path to upload '$pathToContentToUpload'"
             }
-            Write-Verbose "Testing paths: SUCCEEDED"
+            Write-Verbose 'Testing paths: SUCCEEDED'
 
-            Write-Verbose "Getting files to be uploaded..."
+            Write-Verbose 'Getting files to be uploaded...'
             $scriptsToUpload = Get-ChildItem -Path $pathToContentToUpload -ErrorAction Stop
-            Write-Verbose "Files to be uploaded:"
-            Write-Verbose ($scriptsToUpload.Name | Format-List | Out-String)
+            Write-Verbose 'Files to be uploaded:'
+            $scriptsToUpload.Name | ForEach-Object { Write-Verbose "- $_" }
 
-            Write-Verbose "Testing blob container"
+            Write-Verbose 'Testing blob container'
             Get-AzStorageContainer -Name $targetBlob -Context $ctx -ErrorAction Stop
-            Write-Verbose "Testing blob container SUCCEEDED"
+            Write-Verbose 'Testing blob container SUCCEEDED'
 
-            if ($PSCmdlet.ShouldProcess("Files to the '$targetBlob' container", "Upload")) {
+            if ($PSCmdlet.ShouldProcess("Files to the '$targetBlob' container", 'Upload')) {
                 $scriptsToUpload | Set-AzStorageBlobContent -Container $targetBlob -Context $ctx -Force -ErrorAction 'Stop' | Out-Null
             }
-        }
-        catch {
+        } catch {
             Write-Error "Upload FAILED: $_"
         }
     }

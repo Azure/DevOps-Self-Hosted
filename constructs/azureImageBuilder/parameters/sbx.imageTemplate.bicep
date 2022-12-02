@@ -85,7 +85,7 @@ var itParam = {
         {
             type: 'PowerShell'
             name: 'PowerShell installation'
-            scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.sh?${sasKey}'
+            scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}'
             runElevated: true
         }
         {
