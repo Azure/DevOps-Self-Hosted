@@ -77,17 +77,15 @@ var itParam = {
     imageSource: {
         type: 'PlatformImage'
         publisher: 'MicrosoftWindowsDesktop'
-        offer: 'Windows-10'
-        sku: '19h2-evd'
+        offer: 'windows-11'
+        sku: 'win11-22h2-pro'
         version: 'latest'
     }
     customizationSteps: [
         {
             type: 'PowerShell'
             name: 'PowerShell installation'
-            inline: [
-                'winget install --id Microsoft.Powershell --source winget'
-            ]
+            scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.sh?${sasKey}'
             runElevated: true
         }
         {
