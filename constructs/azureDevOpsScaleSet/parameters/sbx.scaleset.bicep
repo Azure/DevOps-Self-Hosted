@@ -61,6 +61,7 @@ var vmssParam = {
   nicConfigurations: [
     {
       nicSuffix: '-nic01'
+      enableAcceleratedNetworking: false
       ipConfigurations: [
         {
           name: 'ipconfig1'
