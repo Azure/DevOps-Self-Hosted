@@ -116,7 +116,7 @@ jobs:
 
                   # Get scale set properties
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   # Get agent  pool properties
                   $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.config.json'

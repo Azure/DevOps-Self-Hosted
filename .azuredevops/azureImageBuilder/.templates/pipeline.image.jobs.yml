@@ -67,7 +67,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
                     resourcegroupName   = $templateContent.variables.rgParam.name
@@ -100,7 +100,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
 
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
                     resourcegroupName      = $templateContent.variables.rgParam.name
@@ -222,7 +222,7 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
                     storageAccountName =  $templateContent.variables.saParam.name
@@ -310,7 +310,7 @@ jobs:
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   $functionInput = @{
                     ResourceGroupName = $templateContent.variables.rgParam.name
