@@ -48,66 +48,65 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         imageTemplateComputeGalleryName: 'aibgallery'
 
         // Linux Example
-        // imageTemplateImageSource: {
-        //     type: 'PlatformImage'
-        //     publisher: 'Canonical'
-        //     offer: '0001-com-ubuntu-server-focal'
-        //     sku: '20_04-lts-gen2'
-        //     version: 'latest'
-        //     // Custom image example
-        //     // type: 'SharedImageVersion'
-        //     // imageVersionID: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
-        // }
-        // imageTemplateCustomizationSteps: [
-        //     {
-        //         type: 'Shell'
-        //         name: 'PowerShell installation'
-        //         scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
-        //     }
-        //     {
-        //         type: 'Shell'
-        //         name: 'Software installation'
-        //         inline: [
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
-        //             'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
-        //             'pwsh \'LinuxPrepareMachine.ps1\''
-        //         ]
-        //     }
-        // ]
-        // imageTemplateComputeGalleryImageDefinitionName: 'linux-sid'
-
-        // Windows Example
-        imageTemplateComputeGalleryImageDefinitionName: 'windows-sid'
-
         imageTemplateImageSource: {
             type: 'PlatformImage'
-            publisher: 'MicrosoftWindowsDesktop'
-            offer: 'Windows-10'
-            sku: '19h2-evd'
+            publisher: 'Canonical'
+            offer: '0001-com-ubuntu-server-focal'
+            sku: '20_04-lts-gen2'
             version: 'latest'
+            // Custom image example
+            // type: 'SharedImageVersion'
+            // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
         }
         imageTemplateCustomizationSteps: [
             {
-                type: 'PowerShell'
+                type: 'Shell'
                 name: 'PowerShell installation'
-                inline: [
-                    'Write-Output "Download"'
-                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}\' -O \'WindowsInstallPowerShell.ps1\''
-                    'Write-Output "Invocation"'
-                    '. \'WindowsInstallPowerShell.ps1\''
-                ]
-                runElevated: true
+                scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
             }
             {
-                type: 'PowerShell'
+                type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
-                    'pwsh \'WindowsPrepareMachine.ps1\''
+                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+                    'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
+                    'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
-                runElevated: true
             }
         ]
+        imageTemplateComputeGalleryImageDefinitionName: 'linux-sid'
+
+        // Windows Example
+        // imageTemplateComputeGalleryImageDefinitionName: 'windows-sid'
+        // imageTemplateImageSource: {
+        //     type: 'PlatformImage'
+        //     publisher: 'MicrosoftWindowsDesktop'
+        //     offer: 'Windows-10'
+        //     sku: '19h2-evd'
+        //     version: 'latest'
+        // }
+        // imageTemplateCustomizationSteps: [
+        //     {
+        //         type: 'PowerShell'
+        //         name: 'PowerShell installation'
+        //         inline: [
+        //             'Write-Output "Download"'
+        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'Write-Output "Invocation"'
+        //             '. \'WindowsInstallPowerShell.ps1\''
+        //         ]
+        //         runElevated: true
+        //     }
+        //     {
+        //         type: 'PowerShell'
+        //         name: 'Software installation'
+        //         inline: [
+        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+        //             'pwsh \'WindowsPrepareMachine.ps1\''
+        //         ]
+        //         runElevated: true
+        //     }
+        // ]
     }
 }
 
