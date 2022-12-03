@@ -4,22 +4,63 @@ targetScope = 'subscription'
 // Input Parameters //
 // ================ //
 
-@description('Required. The resource group properties')
-param rgParam object
+// Resource Group Parameters
+@description('Optional. The name of the Resource Group.')
+param resourceGroupName string = 'agents-vmss-rg'
 
-@description('Required. The network security group properties')
-param nsgParam object
+// Network Security Group Parameters
+@description('Optional. The name of the Network Security Group.')
+param networkSecurityGroupName string = 'vmss-nsg'
 
-@description('Required. The virtual network properties')
-param vnetParam object
+// Virtual Network Parameters
+@description('Optional. The name of the Virtual Network.')
+param virtualNetworkName string = 'vmss-vnet'
 
-@description('Required. The virtual machine scale set properties')
-param vmssParam object
+@description('Optional. The address space of the Virtual Network.')
+param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
-@description('Optional. The admin password to use if the scale set uses a windows image')
+@description('Optional. The name of the Virtual Network Subnet.')
+param virutalNetworkSubnetName string = 'vmsssubnet'
+
+@description('Optional. The address space of the Virtual Network Subnet.')
+param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+
+// Virtual Machine Scale Set Parameters
+@description('Optional. The name of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetName string = 'agent-scaleset'
+
+@description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
+
+@description('Required. The OS type of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetOsType string
+
+@description('Optional. The SKU Size of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetSKUSize string = 'Standard_B2s'
+
+@description('Required. Disable/Enable password authentication of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetDisablePasswordAuthentication bool
+
+@description('Optional. The Public Keys of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetPublicKeys array = []
+
+@description('Optional. The admin password of the Virtual Machine Scale Set.')
 @secure()
-param vmssAdminPassword string = ''
+param virtualMachineScaleSetAdminPassword string = ''
 
+@description('Optional. The admin user name of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetAdminUserName string = 'scaleSetAdmin'
+
+@description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetComputeGalleryName string
+
+@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetComputeGalleryImageDefinitionName string
+
+@description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
+param virtualMachineScaleSetImageVersion string = 'latest'
+
+// Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
 
@@ -35,20 +76,20 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.7/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module rg '../../../CARML0.8/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-rg'
   params: {
-    name: rgParam.name
+    name: resourceGroupName
     location: location
   }
 }
 
 // Network Security Group
-module nsg '../../../CARML0.7/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module nsg '../../../CARML0.8/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-nsg'
-  scope: resourceGroup(rgParam.name)
+  scope: resourceGroup(resourceGroupName)
   params: {
-    name: nsgParam.name
+    name: networkSecurityGroupName
     location: location
   }
   dependsOn: [
@@ -57,13 +98,21 @@ module nsg '../../../CARML0.7/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Virtual Network
-module vnet '../../../CARML0.7/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module vnet '../../../CARML0.8/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
-  scope: resourceGroup(rgParam.name)
+  scope: resourceGroup(resourceGroupName)
   params: {
-    name: vnetParam.name
-    addressPrefixes: vnetParam.addressPrefixes
-    subnets: vnetParam.subnets
+    name: virtualNetworkName
+    addressPrefixes: [
+      virtualNetworkAddressPrefix
+    ]
+    subnets: [
+      {
+        name: virutalNetworkSubnetName
+        addressPrefix: virutalNetworkSubnetAddressPrefix
+        networkSecurityGroupName: 'vmss-nsg'
+      }
+    ]
     location: location
   }
   dependsOn: [
@@ -72,37 +121,69 @@ module vnet '../../../CARML0.7/Microsoft.Network/virtualNetworks/deploy.bicep' =
   ]
 }
 
+// Image Version
+resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
+  scope: resourceGroup(resourceGroupName)
+
+  name: virtualMachineScaleSetComputeGalleryName
+
+  resource imageDefinition 'images@2022-03-03' existing = {
+    name: virtualMachineScaleSetComputeGalleryImageDefinitionName
+
+    resource imageVersion 'versions@2022-03-03' existing = {
+      name: virtualMachineScaleSetImageVersion
+    }
+  }
+}
+
 // Virtual Machine Scale Set
-module vmss '../../../CARML0.7/Microsoft.Compute/virtualMachineScaleSets/deploy.bicep' = {
+module vmss '../../../CARML0.8/Microsoft.Compute/virtualMachineScaleSets/deploy.bicep' = {
   name: '${deployment().name}-vmss'
-  scope: resourceGroup(rgParam.name)
+  scope: resourceGroup(resourceGroupName)
   params: {
-    name: vmssParam.name
-    vmNamePrefix: vmssParam.vmNamePrefix
-    skuName: contains(vmssParam, 'skuName') ? vmssParam.skuName : 'Standard_B2s'
-    skuCapacity: contains(vmssParam, 'skuCapacity') ? vmssParam.skuCapacity : 1
-    upgradePolicyMode: contains(vmssParam, 'upgradePolicyMode') ? vmssParam.upgradePolicyMode : 'Manual'
-    vmPriority: contains(vmssParam, 'vmPriority') ? vmssParam.vmPriority : 'Regular'
-    osDisk: contains(vmssParam, 'osDisk') ? vmssParam.osDisk : {
+    name: virtualMachineScaleSetName
+    vmNamePrefix: virtualMachineScaleSetVMNamePrefix
+    skuName: virtualMachineScaleSetSKUSize
+    skuCapacity: 0
+    upgradePolicyMode: 'Manual'
+    vmPriority: 'Regular'
+    osDisk: {
       createOption: 'fromImage'
       diskSizeGB: 128
       managedDisk: {
         storageAccountType: 'Premium_LRS'
       }
     }
-    systemAssignedIdentity: contains(vmssParam, 'systemAssignedIdentity') ? vmssParam.systemAssignedIdentity : true
-    osType: vmssParam.osType
-    imageReference: vmssParam.imageReference
-    adminUsername: contains(vmssParam, 'adminUsername') ? vmssParam.adminUsername : 'scaleSetAdmin'
-    disablePasswordAuthentication: vmssParam.disablePasswordAuthentication
-    nicConfigurations: vmssParam.nicConfigurations
-    scaleInPolicy: contains(vmssParam, 'scaleInPolicy') ? vmssParam.scaleInPolicy : {
+    systemAssignedIdentity: true
+    osType: virtualMachineScaleSetOsType
+    imageReference: {
+      id: computeGallery::imageDefinition::imageVersion.id
+    }
+    adminUsername: virtualMachineScaleSetAdminUserName
+    disablePasswordAuthentication: virtualMachineScaleSetDisablePasswordAuthentication
+    nicConfigurations: [
+      {
+        nicSuffix: '-nic01'
+        enableAcceleratedNetworking: false
+        ipConfigurations: [
+          {
+            name: 'ipconfig1'
+            properties: {
+              subnet: {
+                id: vnet.outputs.subnetResourceIds[0]
+              }
+            }
+          }
+        ]
+      }
+    ]
+    scaleInPolicy: {
       rules: [
         'Default'
       ]
     }
-    adminPassword: contains(vmssParam, 'adminPassword') ? vmssParam.adminPassword : ''
-    publicKeys: contains(vmssParam, 'publicKeys') ? vmssParam.publicKeys : ''
+    adminPassword: virtualMachineScaleSetAdminPassword
+    publicKeys: virtualMachineScaleSetPublicKeys
     location: location
   }
   dependsOn: [

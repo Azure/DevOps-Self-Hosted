@@ -1,3 +1,5 @@
+#requires -Version 6.0
+
 #region Functions
 function LogInfo($message) {
     Log 'Info' $message
@@ -555,38 +557,7 @@ function Uninstall-AzureRM {
     LogInfo('Remaining AzureRM modules: {0}' -f ((Get-Module 'AzureRM.*').Name -join ' | '))
     LogInfo('Remove Modules from context end')
 
-    # Uninstalling Azure PowerShell Modules
-    try {
-        $programName = 'Microsoft Azure PowerShell'
-        $retry = $false
-        try {
-            LogInfo("Remove Program $programName")
-            Remove-Program -Like "$programName*"
-            LogInfo("Removed Program $programName")
-        } catch {
-            LogWarning("'$($programName) msiexec removal failed, retry uninstall")
-            $retry = $true
-        }
-
-        if ($retry) {
-            try {
-                $app = Get-CimInstance -Class Win32_Product -Filter "Name Like '$($programName)%'" -Verbose
-                if ($app) {
-                    LogInfo("Found $($app.Name), try uninstall ")
-                    $app.Uninstall()
-                } else {
-                    LogWarning("'$($programName) not found")
-                }
-            } catch {
-                LogError("'$($programName) uninstall failed")
-            }
-        }
-
-    } catch {
-        LogError("Unable to remove Microsoft Azure PowerShell: $($_.Exception) found, $($_.ScriptStackTrace)")
-    }
-
-    # Uninstall AzureRm Module
+    # Uninstall AzureRm Modules
     try {
         Get-Module 'AzureRm.*' -ListAvailable | Uninstall-Module -Force
     } catch {
@@ -595,13 +566,45 @@ function Uninstall-AzureRM {
 
     try {
         $AzureRMModuleFolder = 'C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager'
-        $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
-        LogInfo("Removed $AzureRMModuleFolder")
+        if (Test-Path $AzureRMModuleFolder) {
+            $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
+            LogInfo("Removed $AzureRMModuleFolder")
+        }
     } catch {
         LogError("Unable to remove $AzureRMModuleFolder")
     }
 
     LogInfo('Remaining installed AzureRMModule: {0}' -f ((Get-Module 'AzureRM.*' -ListAvailable).Name -join ' | '))
+}
+
+function Copy-FileAndFolderList {
+
+    param(
+        [string] $sourcePath,
+        [string] $targetPath
+    )
+
+    $itemsFrom = Get-ChildItem $sourcePath
+    foreach ($item in $itemsFrom) {
+        if ($item.PSIsContainer) {
+            $subsourcePath = $sourcePath + '\' + $item.BaseName
+            $subtargetPath = $targetPath + '\' + $item.BaseName
+            $null = Copy-FileAndFolderList -sourcePath $subsourcePath -targetPath $subtargetPath
+        } else {
+            $sourceItemPath = $sourcePath + '\' + $item.Name
+            $targetItemPath = $targetPath + '\' + $item.Name
+            if (-not (Test-Path $targetItemPath)) {
+                # only copies non-existing files
+                if (-not (Test-Path $targetPath)) {
+                    # if folder doesn't exist, creates it
+                    $null = New-Item -ItemType 'directory' -Path $targetPath
+                }
+                $null = Copy-Item $sourceItemPath $targetItemPath
+            } else {
+                Write-Verbose "[$sourceItemPath] already exists"
+            }
+        }
+    }
 }
 #endregion
 
@@ -690,19 +693,6 @@ $userenv = [System.Environment]::GetEnvironmentVariable('Path', 'User')
 [System.Environment]::SetEnvironmentVariable('PATH', $userenv + ';C:\Users\carml\AzCopy', 'User')
 LogInfo('Install az copy end')
 
-###########################
-##   Install BICEP CLI   ##
-###########################
-LogInfo('Install BICEP start')
-
-# Fetch the latest Bicep CLI binary
-curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
-# Mark it as executable
-chmod +x ./bicep
-# Add bicep to your PATH (requires admin)
-sudo mv ./bicep /usr/local/bin/bicep
-LogInfo('Install BICEP end')
-
 ###############################
 ##   Install PowerShellGet   ##
 ###############################
@@ -752,6 +742,20 @@ Foreach ($Module in $Modules) {
     $count++
 }
 LogInfo('Install-CustomModule end')
+
+#########################################
+##   Post Installation Configuration   ##
+#########################################
+LogInfo('Copy PS modules to expected location start')
+$targetPath = 'C:\program files\powershell\7\Modules'
+$sourcePaths = @('C:\Users\packer\Documents\PowerShell\Modules')
+foreach ($sourcePath in $sourcePaths) {
+    if (Test-Path $sourcePath) {
+        LogInfo("Copying from [$sourcePath] to [$targetPath]")
+        $null = Copy-FileAndFolderList -sourcePath $sourcePath -targetPath $targetPath
+    }
+}
+LogInfo('Copy PS modules end')
 
 #########################################
 ##   Post Installation Configuration   ##

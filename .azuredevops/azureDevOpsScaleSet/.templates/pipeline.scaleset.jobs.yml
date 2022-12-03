@@ -116,7 +116,25 @@ jobs:
 
                   # Get scale set properties
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout --no-restore | ConvertFrom-Json -AsHashtable # No-restore is a workaround for a current issue with the ubuntu-agents (https://github.com/Azure/ResourceModules/issues/1477)
+                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+
+                  # Get VMSS name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'virtualMachineScaleSetName') {
+                    # Used explicit value
+                    $VMSSName = $templateContent.resources[-1].properties.parameters['virtualMachineScaleSetName'].value
+                  } else {
+                    # Used default value
+                    $VMSSName = $templateContent.resources[-1].properties.template.parameters['virtualMachineScaleSetName'].defaultValue
+                  }
+
+                  # Get VMMS RG name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+                    # Used explicit value
+                    $VMSSResourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+                  } else {
+                    # Used default value
+                    $VMSSResourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+                  }
 
                   # Get agent  pool properties
                   $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.config.json'
@@ -127,8 +145,8 @@ jobs:
                     Organization          = $agentPoolParameterFileContent.Organization
                     Project               = $agentPoolParameterFileContent.Project
                     ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
-                    VMSSName              = $templateContent.variables.vmssParam.name
-                    VMSSResourceGroupName = $templateContent.variables.rgParam.name
+                    VMSSName              = $VMSSName
+                    VMSSResourceGroupName = $VMSSResourceGroupName
                     AgentPoolProperties   = $agentPoolParameterFileContent.AgentPoolProperties
                   }
 

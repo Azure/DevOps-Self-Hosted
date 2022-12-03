@@ -4,15 +4,37 @@ targetScope = 'subscription'
 // Input Parameters //
 // ================ //
 
-@description('Required. The Resource Group properties')
-param rgParam object
+// Resource Group Parameters
+@description('Optional. The name of the Resource Group.')
+param resourceGroupName string = 'agents-vmss-rg'
 
-@description('Required. The Image Template properties')
-param itParam object
+// Dpeloyment Script Parameters
+@description('Optional. The name of the Deployment Script to trigger the image tempalte baking.')
+param deploymentScriptName string = 'triggerBuild-imageTemplate'
 
-@description('Required. The Deployment Script properties')
-param dsParam object
+// Image Template Parameters
+@description('Optional. The name of the Image Template.')
+param imageTemplateName string = 'aibIt'
 
+@description('Optional. The name of the Image Template.')
+param imageTemplateManagedIdendityName string = 'aibMsi'
+
+@description('Optional. The name of the Image Template.')
+param imageTemplateManagedIdentityResourceGroupName string = resourceGroupName
+
+@description('Required. The image source to use for the Image Template.')
+param imageTemplateImageSource object
+
+@description('Required. The customization steps to use for the Image Template.')
+param imageTemplateCustomizationSteps array
+
+@description('Required. The name of the Azure Compute Gallery to host the new image version.')
+param imageTemplateComputeGalleryName string
+
+@description('Required. The name of Image Definition of the Azure Compute Gallery to host the new image version.')
+param imageTemplateComputeGalleryImageDefinitionName string
+
+// Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
 
@@ -35,40 +57,50 @@ var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.7/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module rg '../../../CARML0.8/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-rg'
   params: {
-    name: rgParam.name
+    name: resourceGroupName
     location: location
   }
 }
 
 // Image template
-module it '../../../CARML0.7/Microsoft.VirtualMachineImages/imageTemplates/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
+  scope: resourceGroup(resourceGroupName)
+
+  name: imageTemplateComputeGalleryName
+
+  resource imageDefinition 'images@2022-03-03' existing = {
+    name: imageTemplateComputeGalleryImageDefinitionName
+  }
+}
+
+module it '../../../CARML0.8/Microsoft.VirtualMachineImages/imageTemplates/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-it'
-  scope: resourceGroup(rgParam.name)
+  scope: resourceGroup(resourceGroupName)
   params: {
-    customizationSteps: itParam.customizationSteps
-    imageSource: itParam.imageSource
-    name: itParam.name
-    userMsiName: itParam.userMsiName
-    userMsiResourceGroup: itParam.userMsiResourceGroup
-    sigImageDefinitionId: itParam.sigImageDefinitionId
+    customizationSteps: imageTemplateCustomizationSteps
+    imageSource: imageTemplateImageSource
+    name: imageTemplateName
+    userMsiName: imageTemplateManagedIdendityName
+    userMsiResourceGroup: imageTemplateManagedIdentityResourceGroupName
+    sigImageDefinitionId: computeGallery::imageDefinition.id
     location: location
   }
 }
 
 resource msi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  scope: resourceGroup(itParam.userMsiResourceGroup)
-  name: itParam.userMsiName
+  scope: resourceGroup(imageTemplateManagedIdentityResourceGroupName)
+  name: imageTemplateManagedIdendityName
 }
 
 // Deployment script to trigger image build
-module ds '../../../CARML0.7/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module ds '../../../CARML0.8/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-ds'
-  scope: resourceGroup(rgParam.name)
+  scope: resourceGroup(resourceGroupName)
   params: {
-    name: '${dsParam.defaultPrefix}-${formattedTime}-${it.outputs.name}'
+    name: '${deploymentScriptName}-${formattedTime}-${it.outputs.name}'
     userAssignedIdentities: {
       '${msi.id}': {}
     }

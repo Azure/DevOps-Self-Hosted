@@ -61,28 +61,13 @@ Next, we have two parameter files, `imageInfra.bicep` & `imageTemplate.bicep` th
 
 Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
-- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.bicep` parameter file should be the same you then reference in the `imageTemplate.bicep`'s `customizationSteps` parameter.
+- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.bicep` parameter file should be the same you then reference in the `imageTemplate.bicep`'s `imageTemplateCustomizationSteps` parameter.
+
+> **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
 The parameter files are created with a Linux-Image in mind. However, they also contain examples on how the same implementation would look like for Windows images. Examples are always commented and can be used to replace the currently not commented values.
 
 As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to deploy the Image Template into a specific subnet for networking access. This and several other parameters are available and documented in the module's `readme.md`.
-
-> _**Note:**_ If you add a new parameter to any resource in any `parameter.bicep` file, make sure that is is actually passed into the deployment inside the `deploy.bicep` files. For example, adding `Tags` to the resource group deployment would require you to update the module deployment's `params` block from
->
-> ```Bicep
-> params: {
->   name: rgParam.name
->   location: location
-> }
-> ```
-> to
-> ```Bicep
-> params: {
->   name: rgParam.name
->   location: location
->   tags: rgParam.tags
-> }
-> ```
 
 #### Special case: **Image Template**
 
@@ -91,17 +76,17 @@ The image template ultimately decides what happens during the image built. In th
 When you eventually trigger the pipeline, it will upload any script in the `Uploads` folder to a dedicated storage account for the image building process and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
 ```Bicep
-customizationSteps: [
+imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+      scriptUri: 'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+          'wget \'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
           'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
           'pwsh \'LinuxPrepareMachine.ps1\''
       ]

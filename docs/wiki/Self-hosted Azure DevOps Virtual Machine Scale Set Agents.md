@@ -72,16 +72,12 @@ You configure one primary parameter file: `scaleset.bicep`.
 
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
-- For the `imageReference` property of the `vmssParam` parameter you can choose to select a marketplace image, or a custom image. If you use a custom image from a Shared Image Gallery, you have the option to specify `latest` instead of a specific version. The pipeline has a task to automatically fetch `latest` for you
+- For the image reference you can choose an image from a Shared Image Gallery using both the `virtualMachineScaleSetComputeGalleryName` & `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameters. If you don't define the `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameter with a specific version, it will assume `latest`.
   Example
   ```Bicep
-  imageReference: {
-    id: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.25106.58241'
-  }
-  // or
-  imageReference: {
-    id: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/latest'
-  }
+  virtualMachineScaleSetComputeGalleryName: 'aibgallery'
+  virtualMachineScaleSetComputeGalleryImageDefinitionName: 'linux-sid'
+  virtualMachineScaleSetImageVersion: '0.24470.675' // (optional)
   ```
 - Make sure the scaling is configured as `'manual'` (as Azure DevOps will control the scaling)
 - Furthermore, for security reasons, the virtual Machine Scale Set module has [`encryptionAtHost`](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disks-enable-host-based-encryption-powershell) enabled by default. This feature must be enabled on the subscription prior to the deployment using the command:
@@ -89,29 +85,15 @@ The file comes with out-of-the box parameters that you can use aside from a few 
   # Mat take up to 20 minutes to complete
   Register-AzProviderFeature -FeatureName "EncryptionAtHost" -ProviderNamespace "Microsoft.Compute"
   ```
-  However, you can also opt-out by by setting the `vmssParam` parameter `encryptionAtHost` to `false` (in both the parameter file & template).
-- Also note, that you will have different parameter sets for the virtual machine scale set parameters, depending on the OS. For example, for windows, the solution currently requires you to use the `vmssAdminPassword` parameter specified on the bottom of the parameter file, while for Linux you can use a public key instead
+  However, you can also opt-out by explicitly defining the `encryptionAtHost` property with value `false` in the `scaleset.deploy.bicep` template's VMSS deployment.
+- Also note, that you will have different parameter sets for the virtual machine scale set parameters, depending on the OS. For example, for windows, the solution currently requires you to provide a value for the `virtualMachineScaleSetAdminPassword` parameter in the parameter file, while for Linux you can use a public key instead
+
+> **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
 The parameter file was created with Linux in mind. However, it also contains examples on how the same implementation would look like for Windows. Examples are always commented and can be used to replace the currently not commented values.
 
 As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to add specific rules to the network security group deployment. This and several other parameters are available and documented in the module's `readme.md`.
 
-> _**Note:**_ If you add a new parameter to any resource in any `parameter.bicep` file, make sure that is is actually passed into the deployment inside the `deploy.bicep` files. For example, adding `Tags` to the resource group deployment would require you to update the deployment's `params` block from
-
-> ```Bicep
-> params: {
->   name: rgParam.name
->   location: location
-> }
-> ```
-> to
-> ```Bicep
-> params: {
->   name: rgParam.name
->   location: location
->   tags: rgParam.tags
-> }
-> ```
 </details>
 
 <p>
