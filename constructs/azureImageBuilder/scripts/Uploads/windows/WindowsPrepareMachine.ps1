@@ -574,6 +574,36 @@ function Uninstall-AzureRM {
 
     LogInfo('Remaining installed AzureRMModule: {0}' -f ((Get-Module 'AzureRM.*' -ListAvailable).Name -join ' | '))
 }
+
+function Copy-FileAndFolderList {
+
+    param(
+        [string] $sourcePath,
+        [string] $targetPath
+    )
+
+    $itemsFrom = Get-ChildItem $sourcePath
+    foreach ($item in $itemsFrom) {
+        if ($item.PSIsContainer) {
+            $subsourcePath = $sourcePath + '\' + $item.BaseName
+            $subtargetPath = $targetPath + '\' + $item.BaseName
+            $null = Copy-FileAndFolderList -sourcePath $subsourcePath -targetPath $subtargetPath
+        } else {
+            $sourceItemPath = $sourcePath + '\' + $item.Name
+            $targetItemPath = $targetPath + '\' + $item.Name
+            if (-not (Test-Path $targetItemPath)) {
+                # only copies non-existing files
+                if (-not (Test-Path $targetPath)) {
+                    # if folder doesn't exist, creates it
+                    $null = New-Item -ItemType 'directory' -Path $targetPath
+                }
+                $null = Copy-Item $sourceItemPath $targetItemPath
+            } else {
+                Write-Verbose "[$sourceItemPath] already exists"
+            }
+        }
+    }
+}
 #endregion
 
 $StartTime = Get-Date
@@ -710,6 +740,20 @@ Foreach ($Module in $Modules) {
     $count++
 }
 LogInfo('Install-CustomModule end')
+
+#########################################
+##   Post Installation Configuration   ##
+#########################################
+LogInfo('Copy PS modules to expected location start')
+$targetPath = 'C:\program files\powershell\7\Modules'
+$sourcePaths = @('C:\Users\packer\Documents\PowerShell\Modules')
+foreach ($sourcePath in $sourcePaths) {
+    if (Test-Path $sourcePath) {
+        LogInfo("Copying from [$sourcePath] to [$targetPath]")
+        $null = Copy-FileAndFolderList -sourcePath $sourcePath -targetPath $targetPath
+    }
+}
+LogInfo('Copy PS modules end')
 
 #########################################
 ##   Post Installation Configuration   ##

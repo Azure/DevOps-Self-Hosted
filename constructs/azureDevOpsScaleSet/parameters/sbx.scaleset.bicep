@@ -80,14 +80,13 @@ var vmssParam = {
     id: '${subscription().id}/resourceGroups/${rgParam.name}/providers/Microsoft.Compute/galleries/aibgallery/images/windows-sid/versions/latest'
   }
   disablePasswordAuthentication: false
-  //adminPassword: kv.getSecret('adminPassword')
-  adminPassword: 'aad.NjYzYjE2NjAtM'
+  adminPassword: kv.getSecret('adminPassword')
 }
 // // For the Windows example
-// resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
-//   name: 'agent-vmss-core'
-//   scope: resourceGroup(subscription().subscriptionId, 'agents-vmss-rg')
-// }
+resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
+  name: 'agent-vmss-core'
+  scope: resourceGroup(subscription().subscriptionId, 'agents-vmss-rg')
+}
 
 /////////////////////////////
 //   Template Deployment   //
