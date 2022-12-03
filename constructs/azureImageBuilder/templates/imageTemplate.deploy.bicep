@@ -24,6 +24,7 @@ param imageTemplateManagedIdentityResourceGroupName string = resourceGroupName
 
 @description('Required. The image source to use for the Image Template.')
 param imageTemplateImageSource object
+
 @description('Required. The customization steps to use for the Image Template.')
 param imageTemplateCustomizationSteps array
 
