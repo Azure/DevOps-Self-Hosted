@@ -14,7 +14,7 @@ param deploymentScriptName string = 'triggerBuild-imageTemplate'
 
 // Image Template Parameters
 @description('Optional. The name of the Image Template.')
-param imageTemplateName string = 'lin_it'
+param imageTemplateName string = 'aibIt'
 
 @description('Optional. The name of the Image Template.')
 param imageTemplateManagedIdendityName string = 'aibMsi'

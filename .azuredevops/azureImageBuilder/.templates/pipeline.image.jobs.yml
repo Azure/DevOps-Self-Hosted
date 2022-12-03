@@ -69,8 +69,27 @@ jobs:
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
+                  # Get Image Template name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
+                    # Used explicit value
+                    $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
+                  } else {
+                    # Used default value
+                    $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
+                  }
+
+                  # Get Resource Group name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+                    # Used explicit value
+                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+                  } else {
+                    # Used default value
+                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+                  }
+
+
                   $functionInput = @{
-                    resourcegroupName   = $templateContent.variables.rgParam.name
+                    resourcegroupName   = $resourceGroupName
                     # imageTemplateName = $templateContent.variables.itParam.name
 
                     # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
@@ -102,9 +121,27 @@ jobs:
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
+                  # Get Deployment Script prefix name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'deploymentScriptName') {
+                    # Used explicit value
+                    $deploymentScriptName = $templateContent.resources[-1].properties.parameters['deploymentScriptName'].value
+                  } else {
+                    # Used default value
+                    $deploymentScriptName = $templateContent.resources[-1].properties.template.parameters['deploymentScriptName'].defaultValue
+                  }
+
+                  # Get Resource Group name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+                    # Used explicit value
+                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+                  } else {
+                    # Used default value
+                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+                  }
+
                   $functionInput = @{
-                    resourcegroupName      = $templateContent.variables.rgParam.name
-                    deploymentScriptPrefix = $templateContent.variables.dsParam.defaultPrefix
+                    resourcegroupName      = $resourceGroupName
+                    deploymentScriptPrefix = $deploymentScriptName
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -224,8 +261,17 @@ jobs:
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
+                  # Get Storage Account name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'storageAccountName') {
+                    # Used explicit value
+                    $storageAccountName = $templateContent.resources[-1].properties.parameters['storageAccountName'].value
+                  } else {
+                    # Used default value
+                    $storageAccountName = $templateContent.resources[-1].properties.template.parameters['storageAccountName'].defaultValue
+                  }
+
                   $functionInput = @{
-                    storageAccountName =  $templateContent.variables.saParam.name
+                    StorageAccountName = $storageAccountName
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -312,8 +358,17 @@ jobs:
                   $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
+                  # Get Resource Group name
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+                    # Used explicit value
+                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+                  } else {
+                    # Used default value
+                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+                  }
+
                   $functionInput = @{
-                    ResourceGroupName = $templateContent.variables.rgParam.name
+                    ResourceGroupName = $resourceGroupName
                     ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
                   }
 

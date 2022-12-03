@@ -128,7 +128,7 @@ jobs:
                   }
 
                   # Get VMMS RG name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'virtualMachineScaleSetName') {
+                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
                     # Used explicit value
                     $VMSSResourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
                   } else {
