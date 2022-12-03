@@ -38,9 +38,6 @@ param virtualMachineScaleSetOsType string
 @description('Required. The SKU Size of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetSKUSize string
 
-@description('Optional. The SKU capacity of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetCapacity int = 0
-
 @description('Required. Disable/Enable password authentication of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetDisablePasswordAuthentication bool
 
@@ -147,7 +144,7 @@ module vmss '../../../CARML0.8/Microsoft.Compute/virtualMachineScaleSets/deploy.
     name: virtualMachineScaleSetName
     vmNamePrefix: virtualMachineScaleSetVMNamePrefix
     skuName: virtualMachineScaleSetSKUSize
-    skuCapacity: virtualMachineScaleSetCapacity
+    skuCapacity: 0
     upgradePolicyMode: 'Manual'
     vmPriority: 'Regular'
     osDisk: {
