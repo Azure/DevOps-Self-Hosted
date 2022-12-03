@@ -5,38 +5,38 @@ targetScope = 'subscription'
 // ================ //
 
 // Resource Group Parameters
-@description('Required. The name of the Resource Group.')
-param resourceGroupName string
+@description('Optional. The name of the Resource Group.')
+param resourceGroupName string = 'agents-vmss-rg'
 
 // Network Security Group Parameters
-@description('Required. The name of the Network Security Group.')
-param networkSecurityGroupName string
+@description('Optional. The name of the Network Security Group.')
+param networkSecurityGroupName string = 'vmss-nsg'
 
 // Virtual Network Parameters
-@description('Required. The name of the Virtual Network.')
-param virtualNetworkName string
+@description('Optional. The name of the Virtual Network.')
+param virtualNetworkName string = 'vmss-vnet'
 
-@description('Required. The address space of the Virtual Network.')
-param virtualNetworkAddressPrefix string
+@description('Optional. The address space of the Virtual Network.')
+param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
-@description('Required. The name of the Virtual Network Subnet.')
-param virutalNetworkSubnetName string
+@description('Optional. The name of the Virtual Network Subnet.')
+param virutalNetworkSubnetName string = 'vmsssubnet'
 
-@description('Required. The address space of the Virtual Network Subnet.')
-param virutalNetworkSubnetAddressPrefix string
+@description('Optional. The address space of the Virtual Network Subnet.')
+param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
 
 // Virtual Machine Scale Set Parameters
-@description('Required. The name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetName string
+@description('Optional. The name of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetName string = 'agent-scaleset'
 
-@description('Required. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetVMNamePrefix string
+@description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
 
 @description('Required. The OS type of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetOsType string
 
-@description('Required. The SKU Size of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetSKUSize string
+@description('Optional. The SKU Size of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetSKUSize string = 'Standard_B2s'
 
 @description('Required. Disable/Enable password authentication of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetDisablePasswordAuthentication bool
@@ -48,8 +48,8 @@ param virtualMachineScaleSetPublicKeys array = []
 @secure()
 param virtualMachineScaleSetAdminPassword string = ''
 
-@description('Required. The admin user name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetAdminUserName string
+@description('Optional. The admin user name of the Virtual Machine Scale Set.')
+param virtualMachineScaleSetAdminUserName string = 'scaleSetAdmin'
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetComputeGalleryName string
@@ -57,8 +57,8 @@ param virtualMachineScaleSetComputeGalleryName string
 @description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetComputeGalleryImageDefinitionName string
 
-@description('Required. The version of the image to use in the Virtual Machine Scale Set.')
-param virtualMachineScaleSetImageVersion string
+@description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
+param virtualMachineScaleSetImageVersion string = 'latest'
 
 // Shared Parameters
 @description('Optional. The location to deploy into')

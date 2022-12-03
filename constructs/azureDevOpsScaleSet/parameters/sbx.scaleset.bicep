@@ -31,22 +31,7 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
   params: {
     location: location
     deploymentsToPerform: deploymentsToPerform
-
-    resourceGroupName: 'agents-vmss-rg'
-
-    networkSecurityGroupName: 'vmss-nsg'
-
-    virtualNetworkName: 'vmss-vnet'
-    virtualNetworkAddressPrefix: '10.0.0.0/16'
-    virutalNetworkSubnetAddressPrefix: '10.0.0.0/24'
-    virutalNetworkSubnetName: 'vmsssubnet'
-
-    virtualMachineScaleSetName: 'agent-scaleset'
-    virtualMachineScaleSetVMNamePrefix: 'vmssvm'
-    virtualMachineScaleSetSKUSize: 'Standard_B2s'
-    virtualMachineScaleSetAdminUserName: 'scaleSetAdmin'
     virtualMachineScaleSetComputeGalleryName: 'aibgallery'
-    virtualMachineScaleSetImageVersion: 'latest'
 
     // Linux example
     // virtualMachineScaleSetOsType: 'Linux'
