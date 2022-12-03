@@ -566,8 +566,10 @@ function Uninstall-AzureRM {
 
     try {
         $AzureRMModuleFolder = 'C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ResourceManager\AzureResourceManager'
-        $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
-        LogInfo("Removed $AzureRMModuleFolder")
+        if (Test-Path $AzureRMModuleFolder) {
+            $null = Remove-Item $AzureRMModuleFolder -Force -Recurse
+            LogInfo("Removed $AzureRMModuleFolder")
+        }
     } catch {
         LogError("Unable to remove $AzureRMModuleFolder")
     }
