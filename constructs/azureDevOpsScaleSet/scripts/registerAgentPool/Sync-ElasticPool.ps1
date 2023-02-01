@@ -45,24 +45,6 @@ function Sync-ElasticPool {
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
-        # Install required modules
-        $currentVerbosePreference = $VerbosePreference
-        $VerbosePreference = 'SilentlyContinue'
-        $requiredModules = @(
-            'Az.Compute'
-        )
-        foreach ($moduleName in $requiredModules) {
-            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
-                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
-                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
-                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
-                }
-            } else {
-                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
-            }
-        }
-        $VerbosePreference = $currentVerbosePreference
-
         # Load helper
         . (Join-Path -Path $PSScriptRoot 'Get-Project.ps1')
         . (Join-Path -Path $PSScriptRoot 'Get-Endpoint.ps1')
@@ -113,8 +95,10 @@ function Sync-ElasticPool {
             $env:AZURE_DEVOPS_EXT_PAT = $PAT
         }
 
-        if (-not ($vmss = Get-AzVmss -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName)) {
-            throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)
+        $getVMSSUri = 'https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachineScaleSets/{2}?api-version=2022-11-01' -f (Get-AzContext).Subscription.Id, $VMSSResourceGroupName, $VMSSName
+        $vmss = (Invoke-AzRestMethod -Method 'GET' -Uri $getVMSSUri).Content | ConvertFrom-Json -AsHashtable
+        if ($vmss.Keys -contains 'error') {
+            throw $vmss.error.message
         } else {
             Write-Verbose ('Found virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName) -Verbose
         }
@@ -140,8 +124,8 @@ function Sync-ElasticPool {
                 ProjectId         = $foundProject.id
                 PoolName          = $AgentPoolProperties.ScaleSetPoolName
                 ServiceEndpointId = $serviceEndpoint.id
-                VMSSResourceID    = $vmss.Id
-                VMSSOSType        = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
+                VMSSResourceID    = $vmss.id
+                VMSSOSType        = $vmss.properties.virtualMachineProfile.storageProfile.osDisk.osType
             }
             if ($AgentPoolProperties.ContainsKey('AuthorizeAllPipelines')) { $inputObject['AuthorizeAllPipelines'] = $AgentPoolProperties.AuthorizeAllPipelines }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
@@ -182,7 +166,7 @@ function Sync-ElasticPool {
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId
                 VMSSResourceID = $vmss.Id
-                VMSSOSType     = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
+                VMSSOSType     = $vmss.properties.virtualMachineProfile.storageProfile.osDisk.osType
             }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
             if ($AgentPoolProperties.ContainsKey('DesiredIdle')) { $inputObject['DesiredIdle'] = $AgentPoolProperties.DesiredIdle }
