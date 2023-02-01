@@ -85,13 +85,9 @@ jobs:
                     $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
                   }
 
-
                   $functionInput = @{
-                    resourcegroupName   = $resourceGroupName
-                    # imageTemplateName = $templateContent.variables.itParam.name
-
-                    # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
-                    imageTemplateName   =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
+                    resourcegroupName = $resourceGroupName
+                    imageTemplateName = $imageTemplateName
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
