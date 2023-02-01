@@ -29,34 +29,17 @@ function Remove-DeploymentScript {
 
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
-
-        # Install required modules
-        $currentVerbosePreference = $VerbosePreference
-        $VerbosePreference = 'SilentlyContinue'
-        $requiredModules = @(
-            'Az.Resources'
-        )
-        foreach ($moduleName in $requiredModules) {
-            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
-                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
-                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
-                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
-                }
-            } else {
-                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule[0].Name, $installedModule[0].Version) -Verbose
-            }
-        }
-        $VerbosePreference = $currentVerbosePreference
     }
 
     process {
-        $deploymentScripts = Get-AzDeploymentScript -ResourceGroupName $ResourceGroupName
+        $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.Resources/deploymentScripts' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $DeploymentScriptPrefix
+        [array] $deploymentScripts = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
 
-        $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.Name -like "$DeploymentScriptPrefix*" -and $_.ProvisioningState -ne 'Running' }
+        $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.ProvisioningState -ne 'Running' }
 
         $deploymentScriptsToRemove | ForEach-Object -ThrottleLimit 5 -Parallel {
-            $null = Remove-AzResource -ResourceId $_.Id -Force
-            Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.ResourceId) -Verbose
+            $null = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com/{0}?api-version=2021-04-01' -f $_.Id)
+            Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.Id) -Verbose
         }
     }
 
