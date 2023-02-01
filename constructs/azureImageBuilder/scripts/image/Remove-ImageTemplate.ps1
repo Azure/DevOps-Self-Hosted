@@ -5,32 +5,20 @@ Remove the image templates and their temporary generated resource groups
 .DESCRIPTION
 Remove the image templates and their temporary generated resource groups
 
-.PARAMETER resourcegroupName
-Required. The resource group name the image template is deployed into
-
-.PARAMETER imageTemplateName
-Required. The name of the image template.
-
-.PARAMETER Confirm
-Request the user to confirm whether to actually execute any should process
-
-.PARAMETER WhatIf
-Perform a dry run of the script. Runs everything but the content of any should process
+.PARAMETER TemplateFilePath
+Required. The path to the Template File to fetch the Image Template information from that are used to identify and remove the correct Image Templates.
 
 .EXAMPLE
-Remove-ImageTemplate -resourcegroupName 'My-RG' -imageTemplateName '19h2NoOffice'
+Remove-ImageTemplate -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\parameters\sbx.imageTemplate.bicep'
 
-Search and remove the image template '19h2NoOffice' and its generated resource group 'IT_My-RG_19h2NoOffice*'
+Search and remove the image template specified in the deployment file 'sbx.imageTemplate.bicep
 #>
 function Remove-ImageTemplate {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true)]
-        [string] $resourcegroupName,
-
-        [Parameter(Mandatory = $true)]
-        [string] $imageTemplateName
+        [string] $TemplateFilePath
     )
 
     begin {
@@ -41,6 +29,27 @@ function Remove-ImageTemplate {
     }
 
     process {
+        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
+
+        # Get Image Template name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
+            # Used explicit value
+            $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
+        } else {
+            # Used default value
+            $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
+        }
+
+        # Get Resource Group name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+            # Used explicit value
+            $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+        } else {
+            # Used default value
+            $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+        }
+
+
         $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.VirtualMachineImages/imageTemplates' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $imageTemplateName
         [array] $imageTemplateResources = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
         [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -TemplateResourceGroup $resourcegroupName -TemplateName $_.name).runState -notIn @('running', 'new') }

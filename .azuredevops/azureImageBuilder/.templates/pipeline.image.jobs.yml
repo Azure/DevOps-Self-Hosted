@@ -64,30 +64,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Image Template name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
-                    # Used explicit value
-                    $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
-                  } else {
-                    # Used default value
-                    $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
-                  }
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    resourcegroupName = $resourceGroupName
-                    imageTemplateName = $imageTemplateName
+                    TemplateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -112,30 +90,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Deployment Script prefix name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'deploymentScriptName') {
-                    # Used explicit value
-                    $deploymentScriptName = $templateContent.resources[-1].properties.parameters['deploymentScriptName'].value
-                  } else {
-                    # Used default value
-                    $deploymentScriptName = $templateContent.resources[-1].properties.template.parameters['deploymentScriptName'].defaultValue
-                  }
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    resourcegroupName      = $resourceGroupName
-                    deploymentScriptPrefix = $deploymentScriptName
+                    TemplateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
