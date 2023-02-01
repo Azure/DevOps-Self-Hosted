@@ -72,7 +72,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
+                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -115,7 +115,7 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   # Get scale set properties
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.scaleset.bicep'
+                  $templateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
                   $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
                   # Get VMSS name
@@ -137,7 +137,7 @@ jobs:
                   }
 
                   # Get agent  pool properties
-                  $agentsParameterFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.agentpool.config.json'
+                  $agentsParameterFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.agentpool.config.json'
                   $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $agentsParameterFilePath -Raw) -AsHashTable
 
                   $functionInput = @{

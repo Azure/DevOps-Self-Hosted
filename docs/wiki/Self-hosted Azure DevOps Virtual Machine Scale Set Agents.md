@@ -56,7 +56,7 @@ To prepare the construct for deployment you have to perform two fundamental step
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureDevOpsScaleSet\variables.yml`
-- `constructs\azureDevOpsScaleSet\parameters\scaleset.bicep`
+- `constructs\azureDevOpsScaleSet\deploymentFiles\scaleset.bicep`
 
 ### Variables
 

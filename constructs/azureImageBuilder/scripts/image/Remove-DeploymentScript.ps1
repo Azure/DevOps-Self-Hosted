@@ -9,7 +9,7 @@ Remove a deployment script matching the given prefix in the given resource group
 Required. The path to the Template File to fetch the Image Template information from that are used to identify and remove the correct Image Templates.
 
 .EXAMPLE
-Remove-DeploymentScript -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\parameters\sbx.imageTemplate.bicep'
+Remove-DeploymentScript -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\sbx.imageTemplate.bicep'
 
 Search and remove the deployment script specified in the deployment file 'sbx.imageTemplate.bicep
 #>
