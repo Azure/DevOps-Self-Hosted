@@ -5,105 +5,41 @@ Register or update a given agent pool that links to a virtual machine scale set
 .DESCRIPTION
 Register or update a given agent pool that links to a virtual machine scale set
 
+.PARAMETER TemplateFilePath
+Required. The template file to fetch deployment information from (e.g. the used Virtual Machine Scale Set name)
+
+.PARAMETER AgentParametersFilePath
+Required. The path to the agents configuration file to fetch information from (e.g., the Service Connection name)
+
 .PARAMETER PAT
 Mandatory. The PAT token to use to interact with Azure DevOps.
 If using the $(System.AccessToken), the 'Project Collection Build Service (<org>)' must at least:
 - Be added with level 'User' to the 'Project Settings / Pipelines / Service Connections' security
 - Be added with level 'Creator' to the 'Project Settings / Pipelines / Agent pools' security
 
-.PARAMETER Organization
-Mandatory. The organization to register/update the agent pool in
-
-.PARAMETER ProjectId
-Mandatory. The project to register/update the agent pool in
-
-.PARAMETER VMSSName
-Mandatory. The name of the virtual machine scale set to register with
-
-.PARAMETER VMSSResourceGroupName
-Mandatory. The name of the resource group containing virtual machine scale set to register with
-
-.PARAMETER ServiceConnectionName
-Mandatory. The name of the service connection with access to the subscription containing the virtual machine scale set to register with
-
-.PARAMETER AgentPoolProperties
-Mandatory. The agent pool configuration. For example the desired idle time, maximum scale out, etc.
-Must be in format:
-
-@{
-    ScaleSetPoolName      = 'myPool'
-    DesiredIdle           = 1
-    MaxCapacity           = 10
-    TimeToLiveMinutes     = 15
-    MaxSavedNodeCount     = 0
-    RecycleAfterEachUse   = $false
-    AgentInteractiveUI    = $false
-    AuthorizeAllPipelines = $true
-}
-
 .EXAMPLE
 $inputObject = @{
-    PAT                   = '$(System.AccessToken)'
-    Organization          = 'contoso'
-    Project               = 'myProject'
-    ServiceConnectionName = 'myConnection'
-    VMSSName              = 'my-scaleset'
-    VMSSResourceGroupName = 'my-scaleset-rg'
-    AgentPoolProperties   = @{
-        ScaleSetPoolName      = 'myPool'
-        DesiredIdle           = 1
-        MaxCapacity           = 10
-        TimeToLiveMinutes     = 15
-        MaxSavedNodeCount     = 0
-        RecycleAfterEachUse   = $false
-        AgentInteractiveUI    = $false
-        AuthorizeAllPipelines = $true
+    TemplateFilePath        = 'C:\dev\ip\DevOps-Self-Hosted\constructs\azureDevOpsScaleSet\deploymentFiles\scaleset.bicep'
+    AgentParametersFilePath = 'C:\dev\ip\DevOps-Self-Hosted\constructs\azureDevOpsScaleSet\deploymentFiles\agentpool.config.json'
+    PAT                     = '$(System.AccessToken)'
     }
 }
 Sync-ElasticPool @inputObject
 
-Register/update scale set agent pool 'myPool', using scale set [my-scaleset-rg|my-scaleset] and the provided configuration, in Azure DevOps project [contoso|myProject]
-
-.EXAMPLE
-$inputObject = @{
-    PAT                   = '$(System.AccessToken)'
-    Organization          = 'contoso'
-    Project               = 'myProject'
-    ServiceConnectionName = 'myConnection'
-    VMSSName              = 'my-scaleset'
-    VMSSResourceGroupName = 'my-scaleset-rg'
-    AgentPoolProperties   = @{
-        ScaleSetPoolName      = 'myPool'
-    }
-}
-Sync-ElasticPool @inputObject
-
-Register/update scale set agent pool 'myPool', using scale set [my-scaleset-rg|my-scaleset] with the default configuration, in Azure DevOps project [contoso|myProject]
+Register/update a scale set agent pool as it is configured in both the 'scaleset.bicep' deployment file & 'agentpool.config.json' configuration file
 #>
 function Sync-ElasticPool {
 
     [CmdletBinding(SupportsShouldProcess)]
     param (
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFilePath,
+
+        [Parameter(Mandatory = $true)]
+        [string] $AgentParametersFilePath,
+
         [Parameter(Mandatory = $false)]
-        [string] $PAT,
-
-        [Parameter(Mandatory = $true)]
-        [string] $Organization,
-
-        [Parameter(Mandatory = $true)]
-        [string] $Project,
-
-        [Parameter(Mandatory = $true)]
-        [string] $VMSSName,
-
-        [Parameter(Mandatory = $true)]
-        [string] $VMSSResourceGroupName,
-
-        [Parameter(Mandatory = $true)]
-        [string] $ServiceConnectionName,
-
-        [Parameter(Mandatory = $true)]
-        [hashtable] $AgentPoolProperties
+        [string] $PAT
     )
 
     begin {
@@ -139,6 +75,39 @@ function Sync-ElasticPool {
 
     process {
 
+        # Fetch information
+        # -----------------
+
+        # Get Scale Set propoerties
+        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
+
+        ## Get VMSS name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'virtualMachineScaleSetName') {
+            # Used explicit value
+            $VMSSName = $templateContent.resources[-1].properties.parameters['virtualMachineScaleSetName'].value
+        } else {
+            # Used default value
+            $VMSSName = $templateContent.resources[-1].properties.template.parameters['virtualMachineScaleSetName'].defaultValue
+        }
+
+        ## Get VMMS RG name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+            # Used explicit value
+            $VMSSResourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+        } else {
+            # Used default value
+            $VMSSResourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+        }
+
+        # Get agent  pool properties
+        $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $AgentParametersFilePath -Raw) -AsHashtable
+        $Organization = $agentPoolParameterFileContent.Organization
+        $Project = $agentPoolParameterFileContent.Project
+        $ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
+        $AgentPoolProperties = $agentPoolParameterFileContent.AgentPoolProperties
+
+        # Logic
+        # ----
         if (-not [String]::IsNullOrEmpty($PAT)) {
             Write-Verbose 'Login to AzureDevOps via PAT token' -Verbose
             $env:AZURE_DEVOPS_EXT_PAT = $PAT

@@ -5,23 +5,23 @@ Fetch the latest build status for the provided image template
 .DESCRIPTION
 Fetch the latest build status for the provided image template
 
-.PARAMETER ResourceGroupName
-Required. The resource group the image template was deployed into.
+.PARAMETER TemplateFilePath
+Required. The template file to fetch deployment information from (e.g. the used Resource Group name)
 
 .PARAMETER ImageTemplateName
 Required. The name of the image template to query to build status for. E.g. 'lin_it-2022-02-20-16-17-38'
 
 .EXAMPLE
-Wait-ForImageBuild -ResourceGroupName 'agents-vmss-rg' -ImageTemplateName 'lin_it-2022-02-20-16-17-38'
+Wait-ForImageBuild -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\imageTemplate.bicep' -ImageTemplateName 'lin_it-2022-02-20-16-17-38'
 
-Check the current build status of image template 'lin_it-2022-02-20-16-17-38' that was deployed into resource group 'agents-vmss-rg'
+Check the current build status of image template 'lin_it-2022-02-20-16-17-38' that was deployed into the Resource Group specified in the template 'imageTemplate.bicep'
 #>
 function Wait-ForImageBuild {
 
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $ResourceGroupName,
+        [string] $TemplateFilePath,
 
         [Parameter(Mandatory)]
         [string] $ImageTemplateName
@@ -35,13 +35,28 @@ function Wait-ForImageBuild {
     }
 
     process {
+        # Fetch information
+        # -----------------
+        $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
+
+        # Get Resource Group name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+            # Used explicit value
+            $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+        } else {
+            # Used default value
+            $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+        }
+
+        # Logic
+        # -----
         $currentRetry = 1
         $maximumRetries = 720
         $timeToWait = 15
         $maxTimeCalc = '{0:hh\:mm\:ss}' -f [timespan]::fromseconds($maximumRetries * $timeToWait)
 
         do {
-            $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $ResourceGroupName -templateName $ImageTemplateName
+            $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $resourceGroupName -templateName $ImageTemplateName
             $runState = $latestStatus.runState.ToLower()
             if ($runState -notIn @('running', 'new')) {
 

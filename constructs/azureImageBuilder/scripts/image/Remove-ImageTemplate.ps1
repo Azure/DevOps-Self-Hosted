@@ -9,9 +9,9 @@ Remove the image templates and their temporary generated resource groups
 Required. The path to the Template File to fetch the Image Template information from that are used to identify and remove the correct Image Templates.
 
 .EXAMPLE
-Remove-ImageTemplate -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\sbx.imageTemplate.bicep'
+Remove-ImageTemplate -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\imageTemplate.bicep'
 
-Search and remove the image template specified in the deployment file 'sbx.imageTemplate.bicep
+Search and remove the image template specified in the deployment file 'imageTemplate.bicep
 #>
 function Remove-ImageTemplate {
 
@@ -29,6 +29,8 @@ function Remove-ImageTemplate {
     }
 
     process {
+        # Fetch information
+        # -----------------
         $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
         # Get Image Template name
@@ -49,7 +51,8 @@ function Remove-ImageTemplate {
             $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
         }
 
-
+        # Logic
+        # -----
         $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.VirtualMachineImages/imageTemplates' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $imageTemplateName
         [array] $imageTemplateResources = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
         [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -TemplateResourceGroup $resourcegroupName -TemplateName $_.name).runState -notIn @('running', 'new') }

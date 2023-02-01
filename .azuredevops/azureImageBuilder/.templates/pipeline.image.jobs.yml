@@ -208,20 +208,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                  $templateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Storage Account name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'storageAccountName') {
-                    # Used explicit value
-                    $storageAccountName = $templateContent.resources[-1].properties.parameters['storageAccountName'].value
-                  } else {
-                    # Used default value
-                    $storageAccountName = $templateContent.resources[-1].properties.template.parameters['storageAccountName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    StorageAccountName = $storageAccountName
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -305,20 +293,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                  $templateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    ResourceGroupName = $resourceGroupName
+                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                     ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
                   }
 
