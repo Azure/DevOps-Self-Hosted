@@ -12,8 +12,16 @@ Required. The resource group the image template was deployed into
 Required. The name of the image template
 
 .EXAMPLE
-Get-ImageTemplateStatus -templateResourceGroup 'agent-vmss-rg' -templateName ''
+Get-ImageTemplateStatus -templateResourceGroup 'agent-vmss-rg' -templateName 'aibIt-2023-02-01-14-24-34'
 
+Get the status of Image Template 'aibIt-2023-02-01-14-24-34'. Returns an object such as
+
+@{
+  startTime = "2023-02-01T14:26:51.477558858Z"
+  endTime   = "2023-02-01T14:55:27.021969106Z"
+  runState  = "Succeeded"
+  message   = ""
+}
 #>
 function Get-ImageTemplateStatus {
 

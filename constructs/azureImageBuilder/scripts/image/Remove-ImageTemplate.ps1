@@ -41,9 +41,9 @@ function Remove-ImageTemplate {
     }
 
     process {
-        $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.Resources/deploymentScripts' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $imageTemplateName
+        $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.VirtualMachineImages/imageTemplates' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $imageTemplateName
         [array] $imageTemplateResources = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
-        [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -templateResourceGroup $resourcegroupName -templateName $_.name) -notIn @('running', 'new') }
+        [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -TemplateResourceGroup $resourcegroupName -TemplateName $_.name).runState -notIn @('running', 'new') }
         Write-Verbose ('Found [{0}] image templates to remove.' -f $filteredTemplateResource.Count)
         if ($imageTemplateResources.Count -gt $filteredTemplateResource.Count) {
             Write-Verbose ("[{0}] instances are filtered as they are still in state 'running'." -f ($imageTemplateResources.Count - $filteredTemplateResource.Count))
