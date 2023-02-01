@@ -100,13 +100,13 @@ function Sync-ElasticPool {
         if ($vmss.Keys -contains 'error') {
             throw $vmss.error.message
         } else {
-            Write-Verbose ('Found virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName) -Verbose
+            Write-Verbose "Found virtual machine scale set [$VMSSName] in resource group [$VMSSResourceGroupName]" -Verbose
         }
 
         if (-not ($foundProject = Get-Project -Organization $Organization -Project $project)) {
-            throw ('Unable to find Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization)
+            throw "Unable to find Azure DevOps project [$project] in organization [$Organization]"
         } else {
-            Write-Verbose ('Found Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization) -Verbose
+            Write-Verbose "Found Azure DevOps project [$project] in organization [$Organization]" -Verbose
         }
 
         $serviceEndpoints = Get-Endpoint -Organization $Organization -Project $project
@@ -118,7 +118,7 @@ function Sync-ElasticPool {
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
         if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.Id })) {
-            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName) -Verbose
+            Write-Verbose "Agent pool for scale set [$VMSSName] in resource group [$VMSSResourceGroupName] not registered, creating new." -Verbose
             $inputObject = @{
                 Organization      = $Organization
                 ProjectId         = $foundProject.id
