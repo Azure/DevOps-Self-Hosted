@@ -110,13 +110,12 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
       {
         name: virutalNetworkSubnetName
         addressPrefix: virutalNetworkSubnetAddressPrefix
-        networkSecurityGroupName: 'vmss-nsg'
+        networkSecurityGroupId: nsg.outputs.resourceId
       }
     ]
     location: location
   }
   dependsOn: [
-    nsg
     rg
   ]
 }
