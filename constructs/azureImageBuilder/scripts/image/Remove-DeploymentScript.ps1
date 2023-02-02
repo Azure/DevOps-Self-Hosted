@@ -58,12 +58,12 @@ function Remove-DeploymentScript {
 
         foreach ($deploymentScript in $deploymentScriptsToRemove) {
             if ($PSCmdlet.ShouldProcess('Deplyoment Script [{0}]' -f $deploymentScript.name, 'Remove')) {
-                $res = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com{0}?api-version=2022-02-14' -f $deploymentScript.id)
+                $res = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com{0}?api-version=2020-10-01' -f $deploymentScript.id)
                 if ($res.StatusCode -like '2*') {
                     Write-Verbose ('Removed Deplyoment Script [{0}]' -f $deploymentScript.id) -Verbose
                 } else {
                     $restError = ($res.content | ConvertFrom-Json).error
-                    throw ('The removal of Deplyoment Script [{0}] failed with error code [{1}] and message [2}]' -f $_.name, $restError.code, $restError.message)
+                    throw ('The removal of Deplyoment Script [{0}] failed with error code [{1}] and message [2}]' -f $deploymentScript.name, $restError.code, $restError.message)
                 }
             }
         }
