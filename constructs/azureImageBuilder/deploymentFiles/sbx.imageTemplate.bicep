@@ -25,7 +25,7 @@ param baseTime string = utcNow('u')
 
 // Misc
 resource existingStorage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
-    name: 'shaibstorage'
+    name: '<YourStorageAccount>'
     scope: resourceGroup(subscription().subscriptionId, 'agents-vmss-rg')
 }
 var sasConfig = {
@@ -62,13 +62,13 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+                scriptUri: 'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
             }
             {
                 type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+                    'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
                     'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
@@ -91,7 +91,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}\' -O \'WindowsInstallPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'WindowsInstallPowerShell.ps1\''
         //         ]
@@ -101,7 +101,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         //         type: 'PowerShell'
         //         name: 'Software installation'
         //         inline: [
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+        //             'wget \'https://<YourStorageAccount>.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
         //             'pwsh \'WindowsPrepareMachine.ps1\''
         //         ]
         //         runElevated: true
