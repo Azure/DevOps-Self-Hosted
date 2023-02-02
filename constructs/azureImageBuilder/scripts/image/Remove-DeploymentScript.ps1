@@ -11,7 +11,7 @@ Required. The path to the Template File to fetch the Deplyoment Script informati
 .EXAMPLE
 Remove-DeploymentScript -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\imageTemplate.bicep'
 
-Search and remove the deployment script specified in the deployment file 'imageTemplate.bicep
+Search and remove the deployment script specified in the deployment file 'imageTemplate.bicep'
 #>
 function Remove-DeploymentScript {
 
