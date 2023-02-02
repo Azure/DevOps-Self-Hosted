@@ -6,50 +6,63 @@ Run the Post-Deployment for the storage account deployment
 Run the Post-Deployment for the storage account deployment
 - Upload required data to the storage account
 
-.PARAMETER storageAccountName
-Mandatory. Name of the storage account to host the deployment files
+.PARAMETER TemplateFilePath
+Required. The template file to fetch deployment information from (e.g. the used Storage Account name)
 
-.PARAMETER Confirm
-Will promt user to confirm the action to create invasible commands
-
-.PARAMETER WhatIf
-Dry run of the script
+.PARAMETER ContentToUpload
+Required. The map of source paths & target container tuples. For example:
+$(
+    @{
+        sourcePath = 'windows'
+        targetContainer = 'aibscripts'
+    },
+    @{
+        sourcePath = 'linux'
+        targetContainer = 'aibscripts'
+    }
+)
 
 .EXAMPLE
-Invoke-StorageAccountPostDeployment -orchestrationFunctionsPath $currentDir -storageAccountName "wvdStorageAccount"
+Invoke-StorageAccountPostDeployment -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\sbx.imageTemplate.bicep'
 
-Upload any required data to the storage account
+Upload any required data to the storage account specified in the template file 'sbx.imageTemplate.bicep' to the default containers.
 #>
 function Invoke-StorageAccountPostDeployment {
 
     [CmdletBinding(SupportsShouldProcess = $True)]
     param(
-        [Parameter(
-            Mandatory,
-            HelpMessage = 'Specifies the name of the Storage account to update.'
-        )]
-        [string] $StorageAccountName,
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFilePath,
 
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Map of source/target tuples for upload'
-        )]
-        [Hashtable[]] $contentToUpload = $(
+        [Parameter(Mandatory = $false)]
+        [Hashtable[]] $ContentToUpload = $(
             @{
-                sourcePath = 'windows'
-                targetBlob = 'aibscripts'
+                sourcePath      = 'windows'
+                targetContainer = 'aibscripts'
             },
             @{
-                sourcePath = 'linux'
-                targetBlob = 'aibscripts'
+                sourcePath      = 'linux'
+                targetContainer = 'aibscripts'
             }
         )
     )
 
-    Write-Verbose 'Getting storage account context.'
-    $saResource = Get-AzResource -Name $StorageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
+    $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
-    $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $StorageAccountName -ErrorAction Stop
+    # Get Storage Account name
+    if ($templateContent.resources[-1].properties.parameters.Keys -contains 'storageAccountName') {
+        # Used explicit value
+        $storageAccountName = $templateContent.resources[-1].properties.parameters['storageAccountName'].value
+    } else {
+        # Used default value
+        $storageAccountName = $templateContent.resources[-1].properties.template.parameters['storageAccountName'].defaultValue
+    }
+
+
+    Write-Verbose 'Getting storage account context.'
+    $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
+
+    $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
     $ctx = $storageAccount.Context
 
     Write-Verbose 'Building paths to the local folders to upload.'
@@ -60,7 +73,7 @@ function Invoke-StorageAccountPostDeployment {
     foreach ($contentObject in $contentToUpload) {
 
         $sourcePath = $contentObject.sourcePath
-        $targetBlob = $contentObject.targetBlob
+        $targetContainer = $contentObject.targetContainer
 
         try {
             $pathToContentToUpload = Join-Path $contentDirectory $sourcePath
@@ -78,11 +91,11 @@ function Invoke-StorageAccountPostDeployment {
             $scriptsToUpload.Name | ForEach-Object { Write-Verbose "- $_" }
 
             Write-Verbose 'Testing blob container'
-            Get-AzStorageContainer -Name $targetBlob -Context $ctx -ErrorAction Stop
+            Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
             Write-Verbose 'Testing blob container SUCCEEDED'
 
-            if ($PSCmdlet.ShouldProcess("Files to the '$targetBlob' container", 'Upload')) {
-                $scriptsToUpload | Set-AzStorageBlobContent -Container $targetBlob -Context $ctx -Force -ErrorAction 'Stop' | Out-Null
+            if ($PSCmdlet.ShouldProcess("Files to the '$targetContainer' container", 'Upload')) {
+                $scriptsToUpload | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop' | Out-Null
             }
         } catch {
             Write-Error "Upload FAILED: $_"

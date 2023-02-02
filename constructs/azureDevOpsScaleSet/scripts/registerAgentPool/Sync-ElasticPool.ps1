@@ -5,127 +5,45 @@ Register or update a given agent pool that links to a virtual machine scale set
 .DESCRIPTION
 Register or update a given agent pool that links to a virtual machine scale set
 
+.PARAMETER TemplateFilePath
+Required. The template file to fetch deployment information from (e.g. the used Virtual Machine Scale Set name)
+
+.PARAMETER AgentParametersFilePath
+Required. The path to the agents configuration file to fetch information from (e.g., the Service Connection name)
+
 .PARAMETER PAT
 Mandatory. The PAT token to use to interact with Azure DevOps.
 If using the $(System.AccessToken), the 'Project Collection Build Service (<org>)' must at least:
 - Be added with level 'User' to the 'Project Settings / Pipelines / Service Connections' security
 - Be added with level 'Creator' to the 'Project Settings / Pipelines / Agent pools' security
 
-.PARAMETER Organization
-Mandatory. The organization to register/update the agent pool in
-
-.PARAMETER ProjectId
-Mandatory. The project to register/update the agent pool in
-
-.PARAMETER VMSSName
-Mandatory. The name of the virtual machine scale set to register with
-
-.PARAMETER VMSSResourceGroupName
-Mandatory. The name of the resource group containing virtual machine scale set to register with
-
-.PARAMETER ServiceConnectionName
-Mandatory. The name of the service connection with access to the subscription containing the virtual machine scale set to register with
-
-.PARAMETER AgentPoolProperties
-Mandatory. The agent pool configuration. For example the desired idle time, maximum scale out, etc.
-Must be in format:
-
-@{
-    ScaleSetPoolName      = 'myPool'
-    DesiredIdle           = 1
-    MaxCapacity           = 10
-    TimeToLiveMinutes     = 15
-    MaxSavedNodeCount     = 0
-    RecycleAfterEachUse   = $false
-    AgentInteractiveUI    = $false
-    AuthorizeAllPipelines = $true
-}
-
 .EXAMPLE
 $inputObject = @{
-    PAT                   = '$(System.AccessToken)'
-    Organization          = 'contoso'
-    Project               = 'myProject'
-    ServiceConnectionName = 'myConnection'
-    VMSSName              = 'my-scaleset'
-    VMSSResourceGroupName = 'my-scaleset-rg'
-    AgentPoolProperties   = @{
-        ScaleSetPoolName      = 'myPool'
-        DesiredIdle           = 1
-        MaxCapacity           = 10
-        TimeToLiveMinutes     = 15
-        MaxSavedNodeCount     = 0
-        RecycleAfterEachUse   = $false
-        AgentInteractiveUI    = $false
-        AuthorizeAllPipelines = $true
+    TemplateFilePath        = 'C:\dev\ip\DevOps-Self-Hosted\constructs\azureDevOpsScaleSet\deploymentFiles\scaleset.bicep'
+    AgentParametersFilePath = 'C:\dev\ip\DevOps-Self-Hosted\constructs\azureDevOpsScaleSet\deploymentFiles\agentpool.config.json'
+    PAT                     = '$(System.AccessToken)'
     }
 }
 Sync-ElasticPool @inputObject
 
-Register/update scale set agent pool 'myPool', using scale set [my-scaleset-rg|my-scaleset] and the provided configuration, in Azure DevOps project [contoso|myProject]
-
-.EXAMPLE
-$inputObject = @{
-    PAT                   = '$(System.AccessToken)'
-    Organization          = 'contoso'
-    Project               = 'myProject'
-    ServiceConnectionName = 'myConnection'
-    VMSSName              = 'my-scaleset'
-    VMSSResourceGroupName = 'my-scaleset-rg'
-    AgentPoolProperties   = @{
-        ScaleSetPoolName      = 'myPool'
-    }
-}
-Sync-ElasticPool @inputObject
-
-Register/update scale set agent pool 'myPool', using scale set [my-scaleset-rg|my-scaleset] with the default configuration, in Azure DevOps project [contoso|myProject]
+Register/update a scale set agent pool as it is configured in both the 'scaleset.bicep' deployment file & 'agentpool.config.json' configuration file
 #>
 function Sync-ElasticPool {
 
     [CmdletBinding(SupportsShouldProcess)]
     param (
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFilePath,
+
+        [Parameter(Mandatory = $true)]
+        [string] $AgentParametersFilePath,
+
         [Parameter(Mandatory = $false)]
-        [string] $PAT,
-
-        [Parameter(Mandatory = $true)]
-        [string] $Organization,
-
-        [Parameter(Mandatory = $true)]
-        [string] $Project,
-
-        [Parameter(Mandatory = $true)]
-        [string] $VMSSName,
-
-        [Parameter(Mandatory = $true)]
-        [string] $VMSSResourceGroupName,
-
-        [Parameter(Mandatory = $true)]
-        [string] $ServiceConnectionName,
-
-        [Parameter(Mandatory = $true)]
-        [hashtable] $AgentPoolProperties
+        [string] $PAT
     )
 
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
-
-        # Install required modules
-        $currentVerbosePreference = $VerbosePreference
-        $VerbosePreference = 'SilentlyContinue'
-        $requiredModules = @(
-            'Az.Compute'
-        )
-        foreach ($moduleName in $requiredModules) {
-            if (-not ($installedModule = Get-Module $moduleName -ListAvailable)) {
-                Install-Module $moduleName -Repository 'PSGallery' -Force -Scope 'CurrentUser'
-                if ($installed = Get-Module -Name $moduleName -ListAvailable) {
-                    Write-Verbose ('Installed module [{0}] with version [{1}]' -f $installed.Name, $installed.Version) -Verbose
-                }
-            } else {
-                Write-Verbose ('Module [{0}] already installed in version [{1}]' -f $installedModule.Name, $installedModule.Version) -Verbose
-            }
-        }
-        $VerbosePreference = $currentVerbosePreference
 
         # Load helper
         . (Join-Path -Path $PSScriptRoot 'Get-Project.ps1')
@@ -139,21 +57,56 @@ function Sync-ElasticPool {
 
     process {
 
+        # Fetch information
+        # -----------------
+
+        # Get Scale Set propoerties
+        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
+
+        ## Get VMSS name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'virtualMachineScaleSetName') {
+            # Used explicit value
+            $VMSSName = $templateContent.resources[-1].properties.parameters['virtualMachineScaleSetName'].value
+        } else {
+            # Used default value
+            $VMSSName = $templateContent.resources[-1].properties.template.parameters['virtualMachineScaleSetName'].defaultValue
+        }
+
+        ## Get VMMS RG name
+        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
+            # Used explicit value
+            $VMSSResourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
+        } else {
+            # Used default value
+            $VMSSResourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+        }
+
+        # Get agent  pool properties
+        $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $AgentParametersFilePath -Raw) -AsHashtable
+        $Organization = $agentPoolParameterFileContent.Organization
+        $Project = $agentPoolParameterFileContent.Project
+        $ServiceConnectionName = $agentPoolParameterFileContent.ServiceConnectionName
+        $AgentPoolProperties = $agentPoolParameterFileContent.AgentPoolProperties
+
+        # Logic
+        # ----
         if (-not [String]::IsNullOrEmpty($PAT)) {
             Write-Verbose 'Login to AzureDevOps via PAT token' -Verbose
             $env:AZURE_DEVOPS_EXT_PAT = $PAT
         }
 
-        if (-not ($vmss = Get-AzVmss -Name $VMSSName -ResourceGroupName $VMSSResourceGroupName)) {
-            throw ('Unable to find virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName)
+        $getVMSSUri = 'https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachineScaleSets/{2}?api-version=2022-11-01' -f (Get-AzContext).Subscription.Id, $VMSSResourceGroupName, $VMSSName
+        $vmss = (Invoke-AzRestMethod -Method 'GET' -Uri $getVMSSUri).Content | ConvertFrom-Json -AsHashtable
+        if ($vmss.Keys -contains 'error') {
+            throw $vmss.error.message
         } else {
-            Write-Verbose ('Found virtual machine scale set [{0}] in resource group [{1}]' -f $VMSSName, $VMSSResourceGroupName) -Verbose
+            Write-Verbose "Found virtual machine scale set [$VMSSName] in resource group [$VMSSResourceGroupName]" -Verbose
         }
 
         if (-not ($foundProject = Get-Project -Organization $Organization -Project $project)) {
-            throw ('Unable to find Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization)
+            throw "Unable to find Azure DevOps project [$project] in organization [$Organization]"
         } else {
-            Write-Verbose ('Found Azure DevOps project [{0}] in organization [{1}]' -f $project, $Organization) -Verbose
+            Write-Verbose "Found Azure DevOps project [$project] in organization [$Organization]" -Verbose
         }
 
         $serviceEndpoints = Get-Endpoint -Organization $Organization -Project $project
@@ -165,14 +118,14 @@ function Sync-ElasticPool {
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
         if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.Id })) {
-            Write-Verbose ('Agent pool for scale set [{0}] in resource group [{1}] not registered, creating new.' -f $vmss.Name, $vmss.ResourceGroupName) -Verbose
+            Write-Verbose "Agent pool for scale set [$VMSSName] in resource group [$VMSSResourceGroupName] not registered, creating new." -Verbose
             $inputObject = @{
                 Organization      = $Organization
                 ProjectId         = $foundProject.id
                 PoolName          = $AgentPoolProperties.ScaleSetPoolName
                 ServiceEndpointId = $serviceEndpoint.id
-                VMSSResourceID    = $vmss.Id
-                VMSSOSType        = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
+                VMSSResourceID    = $vmss.id
+                VMSSOSType        = $vmss.properties.virtualMachineProfile.storageProfile.osDisk.osType
             }
             if ($AgentPoolProperties.ContainsKey('AuthorizeAllPipelines')) { $inputObject['AuthorizeAllPipelines'] = $AgentPoolProperties.AuthorizeAllPipelines }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
@@ -213,7 +166,7 @@ function Sync-ElasticPool {
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId
                 VMSSResourceID = $vmss.Id
-                VMSSOSType     = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.OsType
+                VMSSOSType     = $vmss.properties.virtualMachineProfile.storageProfile.osDisk.osType
             }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
             if ($AgentPoolProperties.ContainsKey('DesiredIdle')) { $inputObject['DesiredIdle'] = $AgentPoolProperties.DesiredIdle }

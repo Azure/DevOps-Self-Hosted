@@ -39,9 +39,7 @@ jobs:
 
                   # Define PS modules to install on the runner
                   $Modules = @(
-                      @{ Name = 'Az.Accounts' },
-                      @{ Name = 'Az.Resources' },
-                      @{ Name = 'Az.ResourceGraph' }
+                    @{ Name = 'Az.Accounts' }
                   )
 
                   # Set agent up
@@ -66,34 +64,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Image Template name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
-                    # Used explicit value
-                    $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
-                  } else {
-                    # Used default value
-                    $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
-                  }
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
-
                   $functionInput = @{
-                    resourcegroupName   = $resourceGroupName
-                    # imageTemplateName = $templateContent.variables.itParam.name
-
-                    # Workaround until 'https://github.com/Azure/bicep/issues/6955' is resolved. Then the above snippet can be used
-                    imageTemplateName   =  ((Get-Content $templateFilePath -Raw) -replace "`r") | Select-String '(?m)^var itParam = \{\n\s*name:\s*''(.+)''$' | Foreach-Object { $_.Matches.Groups[1].Value }
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -118,30 +90,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Deployment Script prefix name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'deploymentScriptName') {
-                    # Used explicit value
-                    $deploymentScriptName = $templateContent.resources[-1].properties.parameters['deploymentScriptName'].value
-                  } else {
-                    # Used default value
-                    $deploymentScriptName = $templateContent.resources[-1].properties.template.parameters['deploymentScriptName'].defaultValue
-                  }
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    resourcegroupName      = $resourceGroupName
-                    deploymentScriptPrefix = $deploymentScriptName
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -218,7 +168,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
+                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
                   }
@@ -258,20 +208,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageInfra.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Storage Account name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'storageAccountName') {
-                    # Used explicit value
-                    $storageAccountName = $templateContent.resources[-1].properties.parameters['storageAccountName'].value
-                  } else {
-                    # Used default value
-                    $storageAccountName = $templateContent.resources[-1].properties.template.parameters['storageAccountName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    StorageAccountName = $storageAccountName
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -305,7 +243,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                    templateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                     location         = '$(location)'
                     subscriptionId   = (Get-AzContext).Subscription.Id
                   }
@@ -355,20 +293,8 @@ jobs:
                   Write-Verbose "Load function" -Verbose
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
-                  $templateFilePath = Join-Path '$(parametersPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                  $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-                  # Get Resource Group name
-                  if($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-                    # Used explicit value
-                    $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-                  } else {
-                    # Used default value
-                    $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-                  }
-
                   $functionInput = @{
-                    ResourceGroupName = $resourceGroupName
+                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
                     ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
                   }
 

@@ -57,7 +57,7 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 - `location`: The location to store deployment metadata in. This variable is also used as a default location to deploy into, if no location is provided in the parameter files.
 
 ### Parameters
-Next, we have two parameter files, `imageInfra.bicep` & `imageTemplate.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
+Next, we have two deployment files, `imageInfra.bicep` & `imageTemplate.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
 
 Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any name of a resource that is deployed and must be globally unique (for example storage accounts).

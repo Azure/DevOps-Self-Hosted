@@ -4,7 +4,7 @@
 ## - These variables are used to configure the pipeline and provide  ##
 ##   variables to pipeline scripts                                   ##
 ## - Parameters used for resource deployments are located in the     ##
-##   parameter files in the '.\Parameters' folder                    ##
+##   deployment files in the '.\deploymentFiles' folder              ##
 #######################################################################
 
 variables:
@@ -27,7 +27,7 @@ variables:
 
   #region specific
   templatesPath: 'constructs/azureDevOpsScaleSet/templates'
-  parametersPath: 'constructs/azureDevOpsScaleSet/parameters'
+  deploymentFilesPath: 'constructs/azureDevOpsScaleSet/deploymentFiles'
   orchestrationFunctionsPath: 'constructs/azureDevOpsScaleSet/scripts'
   sharedOrchestrationFunctionsPath: 'sharedScripts'
   location: westeurope
