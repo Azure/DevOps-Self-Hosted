@@ -6,7 +6,7 @@ Remove a deployment script matching the given prefix in the given resource group
 Remove a deployment script matching the given prefix in the given resource group
 
 .PARAMETER TemplateFilePath
-Required. The path to the Template File to fetch the Image Template information from that are used to identify and remove the correct Image Templates.
+Required. The path to the Template File to fetch the Deplyoment Script information from that are used to identify and remove the correct Deplyoment Scripts.
 
 .EXAMPLE
 Remove-DeploymentScript -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\imageTemplate.bicep'
@@ -56,11 +56,15 @@ function Remove-DeploymentScript {
 
         $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.ProvisioningState -ne 'Running' }
 
-        $deploymentScriptsToRemove | ForEach-Object -ThrottleLimit 5 -Parallel {
-            if ($PSCmdlet.ShouldProcess('Deployment script [{0}]' -f $_.name, 'Remove')) {
-                $null = Invoke-AzRestMethod -Method 'DELETE' -Path ('https://management.azure.com/{0}?api-version=2021-04-01' -f $_.Id) -ErrorAction 'Stop'
+        foreach ($deploymentScript in $deploymentScriptsToRemove) {
+            if ($PSCmdlet.ShouldProcess('Deplyoment Script [{0}]' -f $deploymentScript.name, 'Remove')) {
+                $res = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com{0}?api-version=2022-02-14' -f $imageTemplateResource.id) if ($res.StatusCode -like '2*') {
+                    Write-Verbose ('Removed Deplyoment Script [{0}]' -f $deploymentScript.id) -Verbose
+                } else {
+                    $restError = ($res.content | ConvertFrom-Json).error
+                    throw ('The removal of Deplyoment Script [{0}] failed with error code [{1}] and message [2}]' -f $_.name, $restError.code, $restError.message)
+                }
             }
-            Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.Id) -Verbose
         }
     }
 
