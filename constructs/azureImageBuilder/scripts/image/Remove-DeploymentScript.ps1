@@ -57,7 +57,7 @@ function Remove-DeploymentScript {
         $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.ProvisioningState -ne 'Running' }
 
         $deploymentScriptsToRemove | ForEach-Object -ThrottleLimit 5 -Parallel {
-            $null = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com/{0}?api-version=2021-04-01' -f $_.Id)
+            $null = Invoke-AzRestMethod -Method 'DELETE' -Path ('https://management.azure.com/{0}?api-version=2021-04-01' -f $_.Id) -ErrorAction 'Stop'
             Write-Verbose ('Removed Deployment Script with resource ID [{0}]' -f $_.Id) -Verbose
         }
     }

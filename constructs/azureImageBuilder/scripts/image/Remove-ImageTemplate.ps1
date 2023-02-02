@@ -63,7 +63,7 @@ function Remove-ImageTemplate {
 
         foreach ($imageTemplateResource in $filteredTemplateResource) {
             if ($PSCmdlet.ShouldProcess('Image template [{0}]' -f $imageTemplateResource.Name, 'Remove')) {
-                $null = Invoke-AzRestMethod -Method 'DELETE' -Uri ('https://management.azure.com/{0}?api-version=2021-04-01' -f $imageTemplateResource.Id)
+                $null = Invoke-AzRestMethod -Method 'DELETE' -Path ('https://management.azure.com/{0}?api-version=2021-04-01' -f $imageTemplateResource.Id) -ErrorAction 'Stop'
                 Write-Verbose ('Removed image template [{0}]' -f $imageTemplateResource.id) -Verbose
             }
         }
