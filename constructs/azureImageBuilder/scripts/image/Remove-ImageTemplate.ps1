@@ -11,7 +11,7 @@ Required. The path to the Template File to fetch the Image Template information 
 .EXAMPLE
 Remove-ImageTemplate -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\imageTemplate.bicep'
 
-Search and remove the Image Template specified in the deployment file 'imageTemplate.bicep
+Search and remove the Image Template specified in the deployment file 'imageTemplate.bicep'
 #>
 function Remove-ImageTemplate {
 
