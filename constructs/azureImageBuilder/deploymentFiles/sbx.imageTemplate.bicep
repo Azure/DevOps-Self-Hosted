@@ -45,7 +45,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        imageTemplateComputeGalleryName: '<YourComputeGallery>'
+        imageTemplateComputeGalleryName: 'aibgallery'
 
         // Linux Example
         imageTemplateImageSource: {
@@ -56,7 +56,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
             version: 'latest'
             // Custom image example
             // type: 'SharedImageVersion'
-            // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<YourComputeGallery>/images/linux-sid/versions/0.24470.675'
+            // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
         }
         imageTemplateCustomizationSteps: [
             {
