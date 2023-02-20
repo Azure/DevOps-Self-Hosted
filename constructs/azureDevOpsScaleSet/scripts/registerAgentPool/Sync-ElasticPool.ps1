@@ -95,7 +95,7 @@ function Sync-ElasticPool {
             $env:AZURE_DEVOPS_EXT_PAT = $PAT
         }
 
-        $getVMSSUri = 'https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachineScaleSets/{2}?api-version=2022-11-01' -f (Get-AzContext).Subscription.Id, $VMSSResourceGroupName, $VMSSName
+        $getVMSSUri = 'https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Compute/virtualMachineScaleSets/{2}?api-version=2022-11-01' -f (Get-AzContext).Subscription.id, $VMSSResourceGroupName, $VMSSName
         $vmss = (Invoke-AzRestMethod -Method 'GET' -Uri $getVMSSUri).Content | ConvertFrom-Json -AsHashtable
         if ($vmss.Keys -contains 'error') {
             throw $vmss.error.message
@@ -117,7 +117,7 @@ function Sync-ElasticPool {
         }
 
         $elasticPools = Get-ElasticPool -Organization $Organization -Project $project
-        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.Id })) {
+        if (-not ($elasticPool = $elasticPools | Where-Object { $_.azureId -eq $vmss.id })) {
             Write-Verbose "Agent pool for scale set [$VMSSName] in resource group [$VMSSResourceGroupName] not registered, creating new." -Verbose
             $inputObject = @{
                 Organization      = $Organization
@@ -160,12 +160,12 @@ function Sync-ElasticPool {
             } else {
                 Write-Verbose ('The agent pool [{0}] exists and is registered in project [{1}].' -f $poolInProjectScope.name, $Project) -Verbose
             }
-            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.Name, $vmss.ResourceGroupName, $Organization) -Verbose
+            Write-Verbose ('An agent pool [{0}] with ID [{1}] for scale set [{2}] in resource group [{3}] already exists in organization [{4}]. Updating.' -f $AgentPoolProperties.ScaleSetPoolName, $elasticPool.poolId, $vmss.name, $VMSSResourceGroupName, $Organization) -Verbose
 
             $inputObject = @{
                 Organization   = $Organization
                 ScaleSetPoolId = $elasticPool.poolId
-                VMSSResourceID = $vmss.Id
+                VMSSResourceID = $vmss.id
                 VMSSOSType     = $vmss.properties.virtualMachineProfile.storageProfile.osDisk.osType
             }
             if ($AgentPoolProperties.ContainsKey('MaxCapacity')) { $inputObject['MaxCapacity'] = $AgentPoolProperties.MaxCapacity }
