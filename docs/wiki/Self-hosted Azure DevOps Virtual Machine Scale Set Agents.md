@@ -29,11 +29,11 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 
 The scale set agents deployment includes several components:
 
-| &nbsp;&nbsp;&nbsp;                                                                                   | Resource                  | Description                                                                                     |
-| ---------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------- |
-| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12">                        | Resource Group            | The resource group hosting our Virtual Machine Scale Set resources                              |
-| <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12">       | Network Security Group    | The network security group linked to the Virtual Machine Scale Set's virtual network subnet     |
-| <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12">                     | Virtual Network           | The virtual network (and subnet) used by the Virtual Machine Scale Set to deploy instances into |
+| &nbsp;&nbsp;&nbsp; | Resource | Description |
+| - | - | - |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our Virtual Machine Scale Set |
+| <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12"> | Network Security Group | The network security group linked to the Virtual Machine Scale Set's virtual network subnet |
+| <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12"> | Virtual Network | The virtual network (and subnet) used by the Virtual Machine Scale Set to deploy instances into |
 | <img src="./media/icons/Virtual-Machine-Scale-Sets.svg" alt="Virtual Machine Scale Set" height="12"> | Virtual Machine Scale Set | The Virtual Machine Scale Set that will host our pipeline agents on its agents                  |
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
@@ -126,19 +126,19 @@ As the parameter file is not used in a template deployment, it has a slightly di
 
 Use the following table to configure the values according to your requirements:
 
-| Parameter                                   | Default Value | Description                                                                                                                  |
-| ------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Project`                                   |               | The name of the Azure DevOps project to register/update the agent pool in                                                    |
-| `Organization`                              |               | The name of the Azure DevOps organization that contains the project to register/update the agent pool in                     |
-| `ServiceConnectionName`                     |               | The name of the service connection with access to the subscription containing the virtual machine scale set to register with |
-| `AgentPoolProperties.ScaleSetPoolName`      |               | The name of the agent pool the register in the Azure DevOps project                                                          |
-| `AgentPoolProperties.RecycleAfterEachUse`   | `false`       | Discard node after each job completes                                                                                        |
-| `AgentPoolProperties.MaxSavedNodeCount`     | `0`           | Keep nodes in the pool on failure for investigation                                                                          |
-| `AgentPoolProperties.MaxCapacity`           | `10`          | Maximum number of nodes that will exist in the elastic pool                                                                  |
-| `AgentPoolProperties.DesiredIdle`           | `1`           | Number of agents to have ready waiting for jobs                                                                              |
-| `AgentPoolProperties.TimeToLiveMinutes`     | `15`          | The minimum time in minutes to keep idle agents alive                                                                        |
-| `AgentPoolProperties.AgentInteractiveUI`    | `false`       | Set whether agents should be configured to run with interactive UI                                                           |
-| `AgentPoolProperties.AuthorizeAllPipelines` | `true`        | Setting to determine if all pipelines are authorized to use this agent pool by default. Only considered during creation.     |
+| Parameter | Default Value | Description |
+| - | - | - |
+| `Project` | | The name of the Azure DevOps project to register/update the agent pool in |
+| `Organization` | | The name of the Azure DevOps organization that contains the project to register/update the agent pool in |
+| `ServiceConnectionName` | | The name of the service connection with access to the subscription containing the virtual machine scale set to register with |
+| `AgentPoolProperties.ScaleSetPoolName` | | The name of the agent pool the register in the Azure DevOps project |
+| `AgentPoolProperties.RecycleAfterEachUse` | `false` | Discard node after each job completes |
+| `AgentPoolProperties.MaxSavedNodeCount` | `0` | Keep nodes in the pool on failure for investigation |
+| `AgentPoolProperties.MaxCapacity` | `10` | Maximum number of nodes that will exist in the elastic pool |
+| `AgentPoolProperties.DesiredIdle` | `1` | Number of agents to have ready waiting for jobs |
+| `AgentPoolProperties.TimeToLiveMinutes` | `15` | The minimum time in minutes to keep idle agents alive |
+| `AgentPoolProperties.AgentInteractiveUI` | `false` | Set whether agents should be configured to run with interactive UI |
+| `AgentPoolProperties.AuthorizeAllPipelines` | `true` | Setting to determine if all pipelines are authorized to use this agent pool by default. Only considered during creation. |
 
 </details>
 
@@ -216,7 +216,7 @@ Also, when triggering the pipeline you have several configuration options to cho
   <img src="./media/scaleSet/scaleSetPipelineParameters.png" alt="Scale Set Runtime parameters" height="250">
 
 | Runtime Parameter           | Description                                                                                                                                  | On first deployment                          | Additional notes                                                                                                                                                                                                                                                                                                                                                            |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| - | ---------- | ----- | ------------ |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)                                           | Set to `SBX`                                 |                                                                                                                                                                                                                                                                                                                                                                             |
 | `Scope of deployment`       | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured)                         | Set to `All`                                 | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only executes the agent pool registration (if enabled)</li> |
 | `Add/Update agent pool`     | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'.                                                                                                                                                                              |
