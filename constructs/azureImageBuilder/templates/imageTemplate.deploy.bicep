@@ -112,4 +112,4 @@ module ds '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep'
 }
 
 @description('The generated name of the image template')
-output imageTempateName string = it.outputs.name
+output IMAGETEMPLATENAME string = it.outputs.name
