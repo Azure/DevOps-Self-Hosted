@@ -31,7 +31,7 @@ The scale set agents deployment includes several components:
 
 | &nbsp;&nbsp;&nbsp; | Resource | Description |
 | - | - | - |
-| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our Virtual Machine Scale Set |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our Virtual Machine Scale Set resources |
 | <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12"> | Network Security Group | The network security group linked to the Virtual Machine Scale Set's virtual network subnet |
 | <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12"> | Virtual Network | The virtual network (and subnet) used by the Virtual Machine Scale Set to deploy instances into |
 | <img src="./media/icons/Virtual-Machine-Scale-Sets.svg" alt="Virtual Machine Scale Set" height="12"> | Virtual Machine Scale Set | The Virtual Machine Scale Set that will host our pipeline agents on its agents                  |
