@@ -157,7 +157,7 @@ Since the pipeline uses the `$(System.AccessToken)` to interact with the environ
     1. Now, select the `+ Add` button on the top of the security menu
     1. Finally, in the opening popup, add the `<Project Name> Build Service (<Organization Name>)` user with role `User` and select `Add`
 
-       <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="500">
+       <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="400">
 
 1.  Enable the build service to create agent pools
 
