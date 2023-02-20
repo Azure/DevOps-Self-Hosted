@@ -1,6 +1,7 @@
 This sections gives you an overview on how to use the Virtual Machine Scale Set pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Virtual Machine Scale Sets](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/scale-set-agents?view=azure-devops).
 
 ### _Navigation_
+
 - [Overview](#overview)
   - [Advantages](#Advantages)
 - [Process](#process)
@@ -14,7 +15,9 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 # Overview
 
 ## Advantages
+
 > Compared to a classic single build host (with multiple agents installed) or a set of permanent deployed containers / virtual machines
+
 - Each pipeline job can use a dedicated new host (if configured accordingly)
 - Saving money
   - As the Virtual Machine Scale Set can be configured to e.g. scale in to 0 and spin up a new VM only if a job is scheduled
@@ -26,12 +29,12 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 
 The scale set agents deployment includes several components:
 
-| &nbsp;&nbsp;&nbsp; | Resource | Description |
-|--|--|--|
-| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our Virtual Machine Scale Set resources |
-| <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12"> | Network Security Group | The network security group linked to the Virtual Machine Scale Set's virtual network subnet |
-| <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12"> | Virtual Network | The virtual network (and subnet) used by the Virtual Machine Scale Set to deploy instances into |
-| <img src="./media/icons/Virtual-Machine-Scale-Sets.svg" alt="Virtual Machine Scale Set" height="12"> | Virtual Machine Scale Set | The Virtual Machine Scale Set that will host our pipeline agents on its agents |
+| &nbsp;&nbsp;&nbsp;                                                                                   | Resource                  | Description                                                                                     |
+| ---------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12">                        | Resource Group            | The resource group hosting our Virtual Machine Scale Set resources                              |
+| <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12">       | Network Security Group    | The network security group linked to the Virtual Machine Scale Set's virtual network subnet     |
+| <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12">                     | Virtual Network           | The virtual network (and subnet) used by the Virtual Machine Scale Set to deploy instances into |
+| <img src="./media/icons/Virtual-Machine-Scale-Sets.svg" alt="Virtual Machine Scale Set" height="12"> | Virtual Machine Scale Set | The Virtual Machine Scale Set that will host our pipeline agents on its agents                  |
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
@@ -55,12 +58,14 @@ To prepare the construct for deployment you have to perform two fundamental step
 <summary>1. Configure the deployment parameters</summary>
 
 For this step you have to update these files to your needs:
+
 - `.azuredevops\azureDevOpsScaleSet\variables.yml`
 - `constructs\azureDevOpsScaleSet\deploymentFiles\scaleset.bicep`
 
 ### Variables
 
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
+
 - `vmImage`: Set this to for example `ubuntu-latest` to leverage Microsoft-hosted agents. Leave it empty (`''`) if you use self-hosted agents. Do not remove it.
 - `poolName`: Set this to for example `myHostPool` to leverage your self-hosted agent pool. Leave it empty (`''`) if you use Microsoft-hosted agents. Do not remove it.
 - `serviceConnection`: This refers to your Azure DevOps service connection you use for your deployments. It should point into the subscription you want to deploy into.
@@ -71,6 +76,7 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 You configure one primary parameter file: `scaleset.bicep`.
 
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
+
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
 - For the image reference you can choose an image from a Shared Image Gallery using both the `virtualMachineScaleSetComputeGalleryName` & `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameters. If you don't define the `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameter with a specific version, it will assume `latest`.
   Example
@@ -107,59 +113,61 @@ Depending on whether you want to register the agent pool automatically (via the 
 <details>
 <summary>1.1.1 Configure the parameter file</summary>
 
-   As the parameter file is not used in a template deployment, it has a slightly different format:
+As the parameter file is not used in a template deployment, it has a slightly different format:
 
-   ```json
-   {
-      "Project": "<Project>",
-      "Organization": "<>",
-      "ServiceConnectionName": "<ServiceConnectionName>",
-      "AgentPoolProperties": { <AgentPoolPoperties> }
-   }
-   ```
+```json
+{
+   "Project": "<Project>",
+   "Organization": "<>",
+   "ServiceConnectionName": "<ServiceConnectionName>",
+   "AgentPoolProperties": { <AgentPoolPoperties> }
+}
+```
 
-   Use the following table to configure the values according to your requirements:
+Use the following table to configure the values according to your requirements:
 
-   | Parameter | Default Value | Description |
-   | - | - | - |
-   | `Project` | | The name of the Azure DevOps project to register/update the agent pool in |
-   | `Organization` | | The name of the Azure DevOps organization that contains the project to register/update the agent pool in |
-   | `ServiceConnectionName` | | The name of the service connection with access to the subscription containing the virtual machine scale set to register with  |
-   | `AgentPoolProperties.ScaleSetPoolName` | | The name of the agent pool the register in the Azure DevOps project |
-   | `AgentPoolProperties.RecycleAfterEachUse` | `false` | Discard node after each job completes |
-   | `AgentPoolProperties.MaxSavedNodeCount` | `0` | Keep nodes in the pool on failure for investigation |
-   | `AgentPoolProperties.MaxCapacity` | `10` | Maximum number of nodes that will exist in the elastic pool |
-   | `AgentPoolProperties.DesiredIdle` | `1` | Number of agents to have ready waiting for jobs |
-   | `AgentPoolProperties.TimeToLiveMinutes` | `15` | The minimum time in minutes to keep idle agents alive |
-   | `AgentPoolProperties.AgentInteractiveUI` | `false` | Set whether agents should be configured to run with interactive UI |
-   | `AgentPoolProperties.AuthorizeAllPipelines` | `true` | Setting to determine if all pipelines are authorized to use this agent pool by default. Only considered during creation. |
+| Parameter                                   | Default Value | Description                                                                                                                  |
+| ------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `Project`                                   |               | The name of the Azure DevOps project to register/update the agent pool in                                                    |
+| `Organization`                              |               | The name of the Azure DevOps organization that contains the project to register/update the agent pool in                     |
+| `ServiceConnectionName`                     |               | The name of the service connection with access to the subscription containing the virtual machine scale set to register with |
+| `AgentPoolProperties.ScaleSetPoolName`      |               | The name of the agent pool the register in the Azure DevOps project                                                          |
+| `AgentPoolProperties.RecycleAfterEachUse`   | `false`       | Discard node after each job completes                                                                                        |
+| `AgentPoolProperties.MaxSavedNodeCount`     | `0`           | Keep nodes in the pool on failure for investigation                                                                          |
+| `AgentPoolProperties.MaxCapacity`           | `10`          | Maximum number of nodes that will exist in the elastic pool                                                                  |
+| `AgentPoolProperties.DesiredIdle`           | `1`           | Number of agents to have ready waiting for jobs                                                                              |
+| `AgentPoolProperties.TimeToLiveMinutes`     | `15`          | The minimum time in minutes to keep idle agents alive                                                                        |
+| `AgentPoolProperties.AgentInteractiveUI`    | `false`       | Set whether agents should be configured to run with interactive UI                                                           |
+| `AgentPoolProperties.AuthorizeAllPipelines` | `true`        | Setting to determine if all pipelines are authorized to use this agent pool by default. Only considered during creation.     |
 
 </details>
 
 <details>
 <summary>1.1.2 Configure the Azure DevOps environment to enable the pipeline to read & register the resources</summary>
 
-   Since the pipeline uses the `$(System.AccessToken)` to interact with the environment, and its principal `Project Collection Build Service (<Organization>)` does not have the required permissions by default, you need to set two permissions in the project's settings to enable the automatic agent pool registration:
+Since the pipeline uses the `$(System.AccessToken)` to interact with the environment, and its principal `<Project Name> Build Service (<Organization Name>)` (for example: `My Contoso Project Build (Contoso)`) does not have the required permissions by default, you need to set two permissions in the project's settings to enable the automatic agent pool registration:
 
-   1. Enable the build service to list service connections
+> Note: The `<Project Name> Build Service (<Organization Name>)` is created on the organizational level for every new Azure DevOps project. You can find it when you navigate to your 'Organization Settings', Permissions (`'Security'` section), in the `Users` tab.
 
-      1. Navigate to the Azure DevOps's `Project settings`
-      1. In the left menu, select `Service connections` of the `Pipelines` section
-      1. Then, next to the `New service conncection` button on the top right of the view, select the three `...` and further choose `Security`
-      1. Now, select the `+ Add` button on the top of the security menu
-      1. Finally, in the opening popup, add the `Project Collection Build Service (<Organization>)` user with role `User` and select `Add`
+1.  Enable the build service to list service connections
 
-         <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="500">
+    1. Navigate to the Azure DevOps's `Project settings`
+    1. In the left menu, select `Service connections` of the `Pipelines` section
+    1. Then, next to the `New service conncection` button on the top right of the view, select the three `...` and further choose `Security`
+    1. Now, select the `+ Add` button on the top of the security menu
+    1. Finally, in the opening popup, add the `<Project Name> Build Service (<Organization Name>)` user with role `User` and select `Add`
 
-   1. Enable the build service to create agent pools
+       <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="500">
 
-      1. Navigate to the Azure DevOps's `Project settings`
-      1. In the left menu, select `Agent pools` of the `Pipelines` section
-      1. Select the `Security` button on the top right
-      1. Now, select the `+ Add` button on the top of the security menu
-      1. Finally, in the opening popup, add the `Project Collection Build Service (<Organization>)` user with role `Creator` and select `Add`
+1.  Enable the build service to create agent pools
 
-         <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="350">
+    1. Navigate to the Azure DevOps's `Project settings`
+    1. In the left menu, select `Agent pools` of the `Pipelines` section
+    1. Select the `Security` button on the top right
+    1. Now, select the `+ Add` button on the top of the security menu
+    1. Finally, in the opening popup, add the `<Project Name> Build Service (<Organization Name>)` user with role `Creator` and select `Add`
+
+       <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="350">
 
 </details>
 
@@ -199,7 +207,6 @@ To do so, you have to perform the following steps:
 
 </details>
 
-
 ## Deployment
 
 The creation of the scale set alongside its resources is handled by the `.azuredevops\azureDevOpsScaleSet\pipeline.yml` pipeline. Given a proper configuration, it creates all required resources in the designated environment. However, if you did not optionally configure the agent-pool parameter file & environment described the [parameters](#parameters) section 'Configure the agent pool parameters & environment', you need to perform an additional manual step afterwards to use the scale set for your agents.
@@ -208,12 +215,11 @@ Also, when triggering the pipeline you have several configuration options to cho
 
   <img src="./media/scaleSet/scaleSetPipelineParameters.png" alt="Scale Set Runtime parameters" height="250">
 
-
-| Runtime Parameter | Description | On first deployment | Additional notes |
-| - | - | - | - |
-| `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured) | Set to `All` | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only executes the agent pool registration (if enabled)</li>|
-| `Add/Update agent pool` | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'. |
+| Runtime Parameter           | Description                                                                                                                                  | On first deployment                          | Additional notes                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)                                           | Set to `SBX`                                 |                                                                                                                                                                                                                                                                                                                                                                             |
+| `Scope of deployment`       | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured)                         | Set to `All`                                 | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only executes the agent pool registration (if enabled)</li> |
+| `Add/Update agent pool`     | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'.                                                                                                                                                                              |
 
 ### First deployment
 
@@ -240,13 +246,12 @@ Navigate to the pipeline described & registered before, set the `Scope of the de
    - You can also configure its scaling behavior, such as
      - The amount of instances at rest (can be 0)
        > We suggest at least `1`
-      - The maximum number of instances the scaling can create
-        > We suggest at least `10` for regular used environments
+     - The maximum number of instances the scaling can create
+       > We suggest at least `10` for regular used environments
      - The time to keep agents up and running before scaling down
        > We suggest at least `15` minutes
-     - That each agent is torn down after every use (for that to work make sure the MaxCount is sufficiently high - otherwise it still reuses idle agents)
-        > We suggest `No` if you don't store information that must not be accessible among jobs
-   > Once confirmed, an extension is applied by Azure DevOps to the Virtual Machine Scale Set that takes care of registering the agents. Azure DevOps will also take care of the scaling as per the configured values.
+     - That each agent is torn down after every use (for that to work make sure the MaxCount is sufficiently high - otherwise it still reuses idle agents) > We suggest `No` if you don't store information that must not be accessible among jobs
+       > Once confirmed, an extension is applied by Azure DevOps to the Virtual Machine Scale Set that takes care of registering the agents. Azure DevOps will also take care of the scaling as per the configured values.
 1. You can now reference the created pool in your pipelines as per the name you gave the pool in the previous step
 
 </details>
@@ -258,6 +263,7 @@ Navigate to the pipeline described & registered before, set the `Scope of the de
 You will usually perform idempotent deployments to update a property, or update the image the Scale Set is using.
 
 The image used in the Virtual Machine Scale Set can be idempotently updated. Once a new image is available just restart the ScaleSet deployment pipeline (you can set the `Scope of the deployment` to `Only Scale Set`) and wait for it to complete. New instances will be based on the new image.
+
 > **Note:** Instances that are already deployed are not automatically replaced. For this to happen you may need to trigger an agent refresh on the ScaleSet resource
 
 # Additional considerations
@@ -265,13 +271,16 @@ The image used in the Virtual Machine Scale Set can be idempotently updated. Onc
 This section suggests you solutions for additional, special designs.
 
 ## Restricted cross-VNET communication
+
 If you need to handle resources across non-peered VNETs with firewalls configured, you have to make sure the Virtual Machine Scale Set is able to connect to the resources.
 The simplest solution to achieve this is to place the `Virtual Machine Scale Set` in a Subnet of a VNET and assign a [`NAT Gateway`](https://docs.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-gateway-resource) to it. This [`NAT Gateway`](https://docs.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-gateway-resource) should have a Public-IP or IP-Prefix assigned.
 Once done, communication to
+
 - resources in the same VNET is routed via private IPs and hence require the corresponding Virtual Machine Scale Set subnet to be whitelisted
 - resources in any other non-peered VNET are routed via the [`NAT Gateway`](https://docs.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-gateway-resource)'s public IP (or prefixes) and hence require its IP to be whitelisted
 
 #### [NAT Gateway](https://docs.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-gateway-resource) Limitations
+
 - NAT is only compatible with standard SKU public IP, public IP prefix, and load balancer resources. Basic resources (for example basic load balancer) and any products derived from them aren't compatible with NAT. Basic resources must be placed on a subnet not configured with NAT
 - IPv4 address family is supported. NAT doesn't interact with IPv6 address family. NAT cannot be deployed on a subnet with IPv6 prefix
 - NSG flow logging isn't supported when using NAT
