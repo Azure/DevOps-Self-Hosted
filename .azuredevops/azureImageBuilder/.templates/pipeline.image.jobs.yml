@@ -19,8 +19,8 @@ jobs:
         eq('${{ parameters.removeImageTemplateResources }}', 'true')
       )
     pool:
-      vmImage: "$(vmImage_${{ parameters.environment }})"
-      name: "$(poolName_${{ parameters.environment }})"
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
     strategy:
       runOnce:
         deploy:
@@ -29,7 +29,7 @@ jobs:
             # [Agent] Prepare environment
             #----------------------------
             - task: PowerShell@2
-              displayName: "Setup agent"
+              displayName: 'Setup agent'
               inputs:
                 targetType: inline
                 pwsh: true
@@ -48,10 +48,10 @@ jobs:
             #-----------------------
             - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
-              displayName: "Remove previous Image Template resources"
+              displayName: 'Remove previous Image Template resources'
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
@@ -74,10 +74,10 @@ jobs:
                   Remove-ImageTemplate @functionInput -Verbose
             - task: AzureCLI@2
               name: Remove_DeploymentScripts_Task
-              displayName: "Remove previous Deployment Script resources"
+              displayName: 'Remove previous Deployment Script resources'
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
@@ -112,8 +112,8 @@ jobs:
       )
     timeoutInMinutes: 120
     pool:
-      vmImage: "$(vmImage_${{ parameters.environment }})"
-      name: "$(poolName_${{ parameters.environment }})"
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
     strategy:
       runOnce:
         deploy:
@@ -122,7 +122,7 @@ jobs:
             # [Agent] Prepare environment
             #----------------------------
             - task: PowerShell@2
-              displayName: "Setup agent"
+              displayName: 'Setup agent'
               inputs:
                 targetType: inline
                 pwsh: true
@@ -142,7 +142,7 @@ jobs:
             # [Deployment] task(s)
             #---------------------
             - task: AzureCLI@2
-              displayName: "Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]"
+              displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
                   succeeded(),
@@ -150,7 +150,7 @@ jobs:
                 )
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
@@ -187,7 +187,7 @@ jobs:
                   # Invoke deployment
                   New-TemplateDeployment @functionInput -Verbose
             - task: AzureCLI@2
-              displayName: "Trigger Storage Account post-deployment"
+              displayName: 'Trigger Storage Account post-deployment'
               condition: |
                 and(
                   succeeded(),
@@ -195,7 +195,7 @@ jobs:
                 )
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
@@ -217,7 +217,7 @@ jobs:
 
                   Invoke-StorageAccountPostDeployment @functionInput -Verbose
             - task: AzureCLI@2
-              displayName: "Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]"
+              displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
                   succeeded(),
@@ -225,7 +225,7 @@ jobs:
                 )
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
@@ -271,7 +271,7 @@ jobs:
             #------------------------------
             - task: AzureCLI@2
               name: PostDeploy_ImageTemplates_Task
-              displayName: "Wait for image build"
+              displayName: 'Wait for image build'
               condition: |
                 and(
                   succeeded(),
@@ -280,7 +280,7 @@ jobs:
                 )
               inputs:
                 addSpnToEnvironment: true
-                azureSubscription: "$(serviceConnection_${{ parameters.environment }})"
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
