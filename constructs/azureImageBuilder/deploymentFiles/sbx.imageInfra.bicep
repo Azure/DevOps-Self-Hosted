@@ -23,7 +23,7 @@ module imageInfraDeployment '../templates/imageInfra.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        computeGalleryName: 'aibgallery'
-        storageAccountName: 'shaibstorage'
+        computeGalleryName: '<YourComputeGallery>'
+        storageAccountName: '<YourStorageAccount>'
     }
 }
