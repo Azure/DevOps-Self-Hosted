@@ -295,7 +295,7 @@ jobs:
 
                   $functionInput = @{
                     TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                    ImageTemplateName = $env:IMAGETEMPATENAME # template deployment output
+                    ImageTemplateName = $env:IMAGETEMPLATENAME # template deployment output
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
