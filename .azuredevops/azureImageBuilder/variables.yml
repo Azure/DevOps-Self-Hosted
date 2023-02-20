@@ -33,9 +33,12 @@ variables:
   location: westeurope
   #endregion
 
-	@@ -40,5 +40,5 @@ variables:
+  ######################
+  ## SCRIPT VARIABLES ##
+  ######################
+  #region script variables
 
   # StorageAccount related
   # ----------------------
   uploadsPath: 'constructs/azureImageBuilder/scripts/Uploads'
-#endregion
+  #endregion
