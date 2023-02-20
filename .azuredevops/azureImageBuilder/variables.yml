@@ -12,33 +12,30 @@ variables:
   ## GENERAL ##
   #############
   #region shared
-  vmImage_sbx: "ubuntu-latest" # Use this for microsoft-hosted agents
-  vmImage_dev: "ubuntu-latest" # Use this for microsoft-hosted agents
-  vmImage_prd: "ubuntu-latest" # Use this for microsoft-hosted agents
+  vmImage_sbx: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_dev: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_prd: 'ubuntu-latest' # Use this for microsoft-hosted agents
 
-  poolName_sbx: "" # Use this for self-hosted agents
-  poolName_dev: "" # Use this for self-hosted agents
-  poolName_prd: "" # Use this for self-hosted agents
+  poolName_sbx: '' # Use this for self-hosted agents
+  poolName_dev: '' # Use this for self-hosted agents
+  poolName_prd: '' # Use this for self-hosted agents
 
-  serviceConnection_sbx: "ModulePlaygroundPrivate"
-  serviceConnection_dev: "ModulePlaygroundPrivate"
-  serviceConnection_prd: "ModulePlaygroundPrivate"
+  serviceConnection_sbx: 'sbxConnection'
+  serviceConnection_dev: 'devConnection'
+  serviceConnection_prd: 'prdConnection'
   #endregion
 
   #region specific
-  templatesPath: "constructs/azureImageBuilder/templates"
-  deploymentFilesPath: "constructs/azureImageBuilder/deploymentFiles"
-  orchestrationFunctionsPath: "constructs/azureImageBuilder/scripts"
-  sharedOrchestrationFunctionsPath: "sharedScripts"
+  templatesPath: 'constructs/azureImageBuilder/templates'
+  deploymentFilesPath: 'constructs/azureImageBuilder/deploymentFiles'
+  orchestrationFunctionsPath: 'constructs/azureImageBuilder/scripts'
+  sharedOrchestrationFunctionsPath: 'sharedScripts'
   location: westeurope
   #endregion
 
-  ######################
-  ## SCRIPT VARIABLES ##
-  ######################
-  #region script variables
+	@@ -40,5 +40,5 @@ variables:
 
   # StorageAccount related
   # ----------------------
-  uploadsPath: "constructs/azureImageBuilder/scripts/Uploads"
+  uploadsPath: 'constructs/azureImageBuilder/scripts/Uploads'
 #endregion
