@@ -66,7 +66,7 @@ foreach ($scriptPath in $scriptPaths) {
 
     try {
         Write-Verbose 'Testing blob container' -Verbose
-        Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
+        Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction 'Stop'
         Write-Verbose 'Testing blob container SUCCEEDED' -Verbose
 
         Write-Verbose ('Uploading file [{0}] to container [{1}]' -f (Split-Path $_ -Leaf), $TargetContainer) -Verbose
