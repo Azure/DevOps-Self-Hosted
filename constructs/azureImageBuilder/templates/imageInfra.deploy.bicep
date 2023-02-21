@@ -44,6 +44,23 @@ param storageAccountName string
 @description('Optional. The name of container in the Storage Account.')
 param storageAccountContainerName string = 'aibscripts'
 
+// Network Security Group Parameters
+@description('Optional. The name of the Network Security Group to create and attach to the Image Template Subnet.')
+param networkSecurityGroupName string = 'it-nsg'
+
+// Virtual Network Parameters
+@description('Optional. The name of the Virtual Network.')
+param virtualNetworkName string = 'it-vnet'
+
+@description('Optional. The address space of the Virtual Network.')
+param virtualNetworkAddressPrefix string = '10.0.0.0/16'
+
+@description('Optional. The name of the Image Template Virtual Network Subnet to create.')
+param virutalNetworkSubnetName string = 'itsubnet'
+
+@description('Optional. The address space of the Virtual Network Subnet.')
+param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+
 // Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
@@ -111,7 +128,61 @@ module acg '../../../CARML0.9/Microsoft.Compute/galleries/deploy.bicep' = if (de
   ]
 }
 
-// Assets storage account deployment
+// Network Security Group
+module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+  name: '${deployment().name}-nsg'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: networkSecurityGroupName
+    location: location
+  }
+  dependsOn: [
+    rg
+  ]
+}
+
+// Image Template Virtual Network
+module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
+  name: '${deployment().name}-vnet'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: virtualNetworkName
+    addressPrefixes: [
+      virtualNetworkAddressPrefix
+    ]
+    subnets: [
+      {
+        name: virutalNetworkSubnetName
+        addressPrefix: virutalNetworkSubnetAddressPrefix
+        networkSecurityGroupId: nsg.outputs.resourceId
+      }
+    ]
+    location: location
+  }
+  dependsOn: [
+    rg
+  ]
+}
+
+// Assets Storage Account Private DNS Zone
+module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
+  name: '${deployment().name}-prvDNSZone'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: 'privatelink.blob.${environment().suffixes.storage}'
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: vnet.outputs.resourceId
+      }
+    ]
+    location: location
+  }
+  dependsOn: [
+    rg
+  ]
+}
+
+// Assets Storage Account
 module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-sa'
   scope: resourceGroup(resourceGroupName)
@@ -126,6 +197,17 @@ module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = i
       ]
     }
     location: location
+    privateEndpoints: [
+      {
+        service: 'blob'
+        subnetResourceId: vnet.outputs.subnetResourceIds[0]
+        privateDnsZoneGroup: {
+          privateDNSResourceIds: [
+            privateDNSZone.outputs.resourceId
+          ]
+        }
+      }
+    ]
   }
   dependsOn: [
     rg

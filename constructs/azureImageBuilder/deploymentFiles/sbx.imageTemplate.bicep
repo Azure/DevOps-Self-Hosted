@@ -110,5 +110,5 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
     }
 }
 
-@description('The generated name of the image template')
+@description('The generated name of the Image Template.')
 output imageTempateName string = imageTemplateDeployment.outputs.imageTempateName

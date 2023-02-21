@@ -44,7 +44,7 @@ module testDeployment '../../managementGroup/deploy.bicep' = {
     principalId: nestedDependencies.outputs.managedIdentityPrincipalId
     roleDefinitionIdOrName: 'Backup Reader'
     description: 'Role Assignment (management group scope)'
-    managementGroupId: last(split(managementGroup().id, '/'))
+    managementGroupId: last(split(managementGroup().id, '/'))!
     principalType: 'ServicePrincipal'
   }
 }

@@ -34,6 +34,9 @@ param imageTemplateComputeGalleryName string
 @description('Required. The name of Image Definition of the Azure Compute Gallery to host the new image version.')
 param imageTemplateComputeGalleryImageDefinitionName string
 
+@description('Optional. The subnet to deploy the Image Template VM into.')
+param imageTemplateSubnetResourceId string = ''
+
 // Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
@@ -86,6 +89,7 @@ module it '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemplates/deplo
     userMsiName: imageTemplateManagedIdendityName
     userMsiResourceGroup: imageTemplateManagedIdentityResourceGroupName
     sigImageDefinitionId: computeGallery::imageDefinition.id
+    subnetId: imageTemplateSubnetResourceId
     location: location
   }
 }
@@ -111,5 +115,5 @@ module ds '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep'
   }
 }
 
-@description('The generated name of the image template')
+@description('The generated name of the image template.')
 output imageTempateName string = it.outputs.name
