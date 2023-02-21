@@ -69,8 +69,8 @@ foreach ($scriptPath in $scriptPaths) {
         Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction 'Stop'
         Write-Verbose 'Testing blob container SUCCEEDED' -Verbose
 
-        Write-Verbose ('Uploading file [{0}] to container [{1}]' -f (Split-Path $_ -Leaf), $TargetContainer) -Verbose
-        if ($PSCmdlet.ShouldProcess(('File [{0}] to container [{1}]' -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
+        Write-Verbose ('Uploading file [{0}] to container [{1}]' -f (Split-Path $scriptPath -Leaf), $TargetContainer) -Verbose
+        if ($PSCmdlet.ShouldProcess(('File [{0}] to container [{1}]' -f (Split-Path $scriptPath -Leaf), $TargetContainer), 'Upload')) {
             $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
         }
     } catch {
