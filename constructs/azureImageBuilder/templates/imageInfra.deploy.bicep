@@ -281,7 +281,7 @@ module sa_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy
         value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
       }
     ]
-    arguments: ' -StorageAccountName "${sa.outputs.name}" -TargetContainer "${storageAccountContainerName}" -Verbose'
+    arguments: ' -StorageAccountName "${sa.outputs.name}" -TargetContainer "${storageAccountContainerName}"'
     timeout: 'PT30M'
     cleanupPreference: 'Always'
     location: location

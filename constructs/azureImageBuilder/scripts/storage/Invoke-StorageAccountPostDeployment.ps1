@@ -37,7 +37,7 @@ param(
     [string] $TargetContainer
 )
 
-Write-Verbose 'Fetching & storing scripts'
+Write-Verbose 'Fetching & storing scripts' -Verbose
 $contentDirectoryName = 'scripts'
 $contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force).FullName
 $scriptPaths = @()
@@ -49,11 +49,11 @@ foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like
 
     $scriptContent = (Get-Item env:$scriptEnvVar).Value
 
-    Write-Verbose ('Storing file [{0}] with length [{1}]' -f $scriptName, $scriptContent.Length)
+    Write-Verbose ('Storing file [{0}] with length [{1}]' -f $scriptName, $scriptContent.Length) -Verbose
     $scriptPaths += (New-Item (Join-Path $contentDirectoryName $scriptName) -ItemType 'File' -Value $scriptContent -Force).FullName
 }
 
-Write-Verbose 'Getting storage account context.'
+Write-Verbose 'Getting storage account context.' -Verbose
 $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
 
 $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
@@ -65,11 +65,12 @@ Write-Verbose "Content directory: '$contentDirectory'"
 foreach ($scriptPath in $scriptPaths) {
 
     try {
-        Write-Verbose 'Testing blob container'
+        Write-Verbose 'Testing blob container' -Verbose
         Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
-        Write-Verbose 'Testing blob container SUCCEEDED'
+        Write-Verbose 'Testing blob container SUCCEEDED' -Verbose
 
-        if ($PSCmdlet.ShouldProcess(("File [{0}] to the '{1}' container" -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
+        Write-Verbose ('Uploading file [{0}] to container [{1}]' -f (Split-Path $_ -Leaf), $TargetContainer) -Verbose
+        if ($PSCmdlet.ShouldProcess(('File [{0}] to container [{1}]' -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
             $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
         }
     } catch {
