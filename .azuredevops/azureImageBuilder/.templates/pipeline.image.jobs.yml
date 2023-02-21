@@ -238,6 +238,14 @@ jobs:
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'template' 'Get-TemplateParameterValue.ps1')
+
+                  # Get Virtual Network reference for Image Template VM placement
+                  $templateValuesInputObject = @{
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
+                    ParameterName    = 'virtualNetworkName', 'virtualNetworkSubnetName', 'resourceGroupName'
+                  }
+                  $virtualNetworkName, $virtualNetworkSubnetName, $virtualNetworkResourceGroupName = Get-TemplateParameterValue @templateValuesInputObject
 
                   # ----------------- #
                   # INVOKE DEPLOYMENT #

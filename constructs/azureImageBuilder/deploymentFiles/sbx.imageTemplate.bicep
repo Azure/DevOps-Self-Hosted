@@ -19,6 +19,15 @@ param location string = 'WestEurope'
 @description('Generated. Do not provide a value! This date value is used to generate a registration token.')
 param baseTime string = utcNow('u')
 
+@description('Required. The name of the Resource Group containing the Virtual Network.')
+param virtualNetworkResourceGroupName string
+
+@description('Required. The name of the Virtual Network.')
+param virtualNetworkName string
+
+@description('Required. The name of the Image Template Virtual Network Subnet to create.')
+param virtualNetworkSubnetName string
+
 ///////////////////////////////
 //   Deployment Properties   //
 ///////////////////////////////
@@ -40,12 +49,23 @@ var sasKey = existingStorage.listAccountSas(existingStorage.apiVersion, sasConfi
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
+resource imageTemplateVNET 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
+    name: virtualNetworkName
+
+    resource imageTemplateSubnet 'subnets@2022-07-01' existing = {
+        name: virtualNetworkSubnetName
+    }
+
+    scope: resourceGroup(virtualNetworkResourceGroupName)
+}
+
 module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
     name: '${uniqueString(deployment().name)}-imageInfra-sbx'
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
         imageTemplateComputeGalleryName: '<YourComputeGallery>'
+        imageTemplateSubnetResourceId: imageTemplateVNET::imageTemplateSubnet.id
 
         // Linux Example
         imageTemplateImageSource: {

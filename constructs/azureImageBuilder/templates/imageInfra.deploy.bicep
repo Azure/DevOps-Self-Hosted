@@ -56,7 +56,7 @@ param virtualNetworkName string = 'it-vnet'
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
 @description('Optional. The name of the Image Template Virtual Network Subnet to create.')
-param virutalNetworkSubnetName string = 'itsubnet'
+param virtualNetworkSubnetName string = 'itsubnet'
 
 @description('Optional. The address space of the Virtual Network Subnet.')
 param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
@@ -152,7 +152,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
     ]
     subnets: [
       {
-        name: virutalNetworkSubnetName
+        name: virtualNetworkSubnetName
         addressPrefix: virutalNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
       }
