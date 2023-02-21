@@ -27,54 +27,52 @@ Invoke-StorageAccountPostDeployment -StorageAccountName 'mystorage'
 
 Upload any required data to the storage account 'mystorage' to the default containers.
 #>
-function Invoke-StorageAccountPostDeployment {
 
-    [CmdletBinding(SupportsShouldProcess = $True)]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $StorageAccountName,
+[CmdletBinding(SupportsShouldProcess = $True)]
+param(
+    [Parameter(Mandatory = $true)]
+    [string] $StorageAccountName,
 
-        [Parameter(Mandatory = $true)]
-        [string] $TargetContainer
-    )
+    [Parameter(Mandatory = $true)]
+    [string] $TargetContainer
+)
 
-    Write-Verbose 'Fetching & storing scripts'
-    $contentDirectoryName = 'scripts'
-    $contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force).FullName
-    $scriptPaths = @()
-    foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like 'script_*' }) {
-        # Handle value like 'script_Windows_Install_ps1
-        $scriptExtension = Split-Path ($scriptEnvVar -replace '_', '.') -Extension
-        $scriptNameSuffix = ($scriptExtension -split '\.')[1]
-        $scriptName = '{0}{1}' -f (($scriptEnvVar -replace 'script_', '') -replace "_$scriptNameSuffix", ''), $scriptExtension
+Write-Verbose 'Fetching & storing scripts'
+$contentDirectoryName = 'scripts'
+$contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force).FullName
+$scriptPaths = @()
+foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like 'script_*' }) {
+    # Handle value like 'script_Windows_Install_ps1
+    $scriptExtension = Split-Path ($scriptEnvVar -replace '_', '.') -Extension
+    $scriptNameSuffix = ($scriptExtension -split '\.')[1]
+    $scriptName = '{0}{1}' -f (($scriptEnvVar -replace 'script_', '') -replace "_$scriptNameSuffix", ''), $scriptExtension
 
-        $scriptContent = (Get-Item env:$scriptEnvVar).Value
+    $scriptContent = (Get-Item env:$scriptEnvVar).Value
 
-        Write-Verbose ('Storing file [{0}] with length [{1}]' -f $scriptName, $scriptContent.Length)
-        $scriptPaths += (New-Item (Join-Path $contentDirectoryName $scriptName) -ItemType 'File' -Value $scriptContent -Force).FullName
-    }
+    Write-Verbose ('Storing file [{0}] with length [{1}]' -f $scriptName, $scriptContent.Length)
+    $scriptPaths += (New-Item (Join-Path $contentDirectoryName $scriptName) -ItemType 'File' -Value $scriptContent -Force).FullName
+}
 
-    Write-Verbose 'Getting storage account context.'
-    $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
+Write-Verbose 'Getting storage account context.'
+$saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
 
-    $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
-    $ctx = $storageAccount.Context
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
+$ctx = $storageAccount.Context
 
-    Write-Verbose 'Building paths to the local folders to upload.'
-    Write-Verbose "Content directory: '$contentDirectory'"
+Write-Verbose 'Building paths to the local folders to upload.'
+Write-Verbose "Content directory: '$contentDirectory'"
 
-    foreach ($scriptPath in $scriptPaths) {
+foreach ($scriptPath in $scriptPaths) {
 
-        try {
-            Write-Verbose 'Testing blob container'
-            Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
-            Write-Verbose 'Testing blob container SUCCEEDED'
+    try {
+        Write-Verbose 'Testing blob container'
+        Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
+        Write-Verbose 'Testing blob container SUCCEEDED'
 
-            if ($PSCmdlet.ShouldProcess(("File [{0}] to the '{1}' container" -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
-                $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
-            }
-        } catch {
-            Write-Error "Upload FAILED: $_"
+        if ($PSCmdlet.ShouldProcess(("File [{0}] to the '{1}' container" -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
+            $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
         }
+    } catch {
+        Write-Error "Upload FAILED: $_"
     }
 }
