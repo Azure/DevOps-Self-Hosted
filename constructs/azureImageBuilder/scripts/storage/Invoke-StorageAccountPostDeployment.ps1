@@ -71,7 +71,7 @@ foreach ($scriptPath in $scriptPaths) {
 
         Write-Verbose ('Uploading file [{0}] to container [{1}]' -f (Split-Path $scriptPath -Leaf), $TargetContainer) -Verbose
         if ($PSCmdlet.ShouldProcess(('File [{0}] to container [{1}]' -f (Split-Path $scriptPath -Leaf), $TargetContainer), 'Upload')) {
-            $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
+            $null = Set-AzStorageBlobContent -File $scriptPath -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
         }
         Write-Verbose 'Upload successful' -Verbose
     } catch {
