@@ -59,8 +59,8 @@ $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.
 $storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
 $ctx = $storageAccount.Context
 
-Write-Verbose 'Building paths to the local folders to upload.'
-Write-Verbose "Content directory: '$contentDirectory'"
+Write-Verbose 'Building paths to the local folders to upload.' -Verbose
+Write-Verbose "Content directory: '$contentDirectory'" -Verbose
 
 foreach ($scriptPath in $scriptPaths) {
 
