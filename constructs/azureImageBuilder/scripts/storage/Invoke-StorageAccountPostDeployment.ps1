@@ -73,6 +73,7 @@ foreach ($scriptPath in $scriptPaths) {
         if ($PSCmdlet.ShouldProcess(('File [{0}] to container [{1}]' -f (Split-Path $scriptPath -Leaf), $TargetContainer), 'Upload')) {
             $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
         }
+        Write-Verbose 'Upload successful' -Verbose
     } catch {
         Write-Error "Upload FAILED: $_"
     }
