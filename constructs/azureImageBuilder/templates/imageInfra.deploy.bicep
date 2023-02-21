@@ -176,22 +176,23 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 }
 
 // Assets Storage Account Private DNS Zone
-module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
-  name: '${deployment().name}-prvDNSZone'
-  scope: resourceGroup(resourceGroupName)
-  #disable-next-line explicit-values-for-loc-params // The location is 'global'
-  params: {
-    name: 'privatelink.blob.${environment().suffixes.storage}'
-    virtualNetworkLinks: [
-      {
-        virtualNetworkResourceId: vnet.outputs.resourceId
-      }
-    ]
-  }
-  dependsOn: [
-    rg
-  ]
-}
+// Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
+// module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
+//   name: '${deployment().name}-prvDNSZone'
+//   scope: resourceGroup(resourceGroupName)
+//   #disable-next-line explicit-values-for-loc-params // The location is 'global'
+//   params: {
+//     name: 'privatelink.blob.${environment().suffixes.storage}'
+//     virtualNetworkLinks: [
+//       {
+//         virtualNetworkResourceId: vnet.outputs.resourceId
+//       }
+//     ]
+//   }
+//   dependsOn: [
+//     rg
+//   ]
+// }
 
 // Assets Storage Account
 module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
@@ -208,17 +209,18 @@ module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = i
       ]
     }
     location: location
-    privateEndpoints: [
-      {
-        service: 'blob'
-        subnetResourceId: vnet.outputs.subnetResourceIds[0]
-        privateDnsZoneGroup: {
-          privateDNSResourceIds: [
-            privateDNSZone.outputs.resourceId
-          ]
-        }
-      }
-    ]
+    // Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
+    // privateEndpoints: [
+    //   {
+    //     service: 'blob'
+    //     subnetResourceId: vnet.outputs.subnetResourceIds[0]
+    //     privateDnsZoneGroup: {
+    //       privateDNSResourceIds: [
+    //         privateDNSZone.outputs.resourceId
+    //       ]
+    //     }
+    //   }
+    // ]
   }
   dependsOn: [
     rg
@@ -226,34 +228,7 @@ module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = i
 }
 
 // Upload storage account files
-// module sa_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-//   name: '${deployment().name}-ds'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: '${storageDeploymentScriptName}-${formattedTime}'
-//     userAssignedIdentities: {
-//       '${msi.outputs.resourceId}': {}
-//     }
-//     scriptContent: loadTextContent('../scripts/storage/Invoke-StorageAccountPostDeployment.ps1')
-//     timeout: 'PT30M'
-//     cleanupPreference: 'Always'
-//     location: location
-
-//     arguments: ' -StorageAccountName "${sa.outputs.name}" -TargetContainer "${storageAccountContainerName}" -ContentToUpload @{  }'
-//   }
-// }
-// var scriptContent = '''
-// $ContentToUpload = @(
-//     @{
-//         sourcePath      = 'windows'
-//         targetContainer = '{0}'
-//     },
-//     @{
-//         sourcePath      = 'linux'
-//         targetContainer = 'aibscripts'
-//     }
-// )
-// '''
+// Should be updated to use a subnet once https://github.com/Azure/bicep/issues/6540 is implemented
 module sa_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-ds'
   scope: resourceGroup(resourceGroupName)
