@@ -56,7 +56,7 @@ foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like
 Write-Verbose 'Getting storage account context.' -Verbose
 $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
 
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction Stop
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $saResource.ResourceGroupName -StorageAccountName $storageAccountName -ErrorAction 'Stop'
 $ctx = $storageAccount.Context
 
 Write-Verbose 'Building paths to the local folders to upload.' -Verbose
