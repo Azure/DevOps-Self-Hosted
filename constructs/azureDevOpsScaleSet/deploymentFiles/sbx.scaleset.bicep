@@ -31,7 +31,7 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
   params: {
     location: location
     deploymentsToPerform: deploymentsToPerform
-    virtualMachineScaleSetComputeGalleryName: '<YourComputeGallery>'
+    virtualMachineScaleSetComputeGalleryName: 'aibgallery'
 
     // Linux example
     virtualMachineScaleSetOsType: 'Linux'

@@ -6,8 +6,8 @@ Run the Post-Deployment for the storage account deployment
 Run the Post-Deployment for the storage account deployment
 - Upload required data to the storage account
 
-.PARAMETER TemplateFilePath
-Required. The template file to fetch deployment information from (e.g. the used Storage Account name)
+.PARAMETER StorageAccountName
+Required. The name of the Storage Account to upload to
 
 .PARAMETER ContentToUpload
 Required. The map of source paths & target container tuples. For example:
@@ -23,41 +23,36 @@ $(
 )
 
 .EXAMPLE
-Invoke-StorageAccountPostDeployment -TemplateFilePath 'C:\dev\DevOps-Self-Hosted\constructs\azureImageBuilder\deploymentFiles\sbx.imageTemplate.bicep'
+Invoke-StorageAccountPostDeployment -StorageAccountName 'mystorage'
 
-Upload any required data to the storage account specified in the template file 'sbx.imageTemplate.bicep' to the default containers.
+Upload any required data to the storage account 'mystorage' to the default containers.
 #>
 function Invoke-StorageAccountPostDeployment {
 
     [CmdletBinding(SupportsShouldProcess = $True)]
     param(
         [Parameter(Mandatory = $true)]
-        [string] $TemplateFilePath,
+        [string] $StorageAccountName,
 
-        [Parameter(Mandatory = $false)]
-        [Hashtable[]] $ContentToUpload = $(
-            @{
-                sourcePath      = 'windows'
-                targetContainer = 'aibscripts'
-            },
-            @{
-                sourcePath      = 'linux'
-                targetContainer = 'aibscripts'
-            }
-        )
+        [Parameter(Mandatory = $true)]
+        [string] $TargetContainer
     )
 
-    $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
+    Write-Verbose 'Fetching & storing scripts'
+    $contentDirectoryName = 'scripts'
+    $contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force).FullName
+    $scriptPaths = @()
+    foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like 'script_*' }) {
+        # Handle value like 'script_Windows_Install_ps1
+        $scriptExtension = Split-Path ($scriptEnvVar -replace '_', '.') -Extension
+        $scriptNameSuffix = ($scriptExtension -split '\.')[1]
+        $scriptName = '{0}{1}' -f (($scriptEnvVar -replace 'script_', '') -replace "_$scriptNameSuffix", ''), $scriptExtension
 
-    # Get Storage Account name
-    if ($templateContent.resources[-1].properties.parameters.Keys -contains 'storageAccountName') {
-        # Used explicit value
-        $storageAccountName = $templateContent.resources[-1].properties.parameters['storageAccountName'].value
-    } else {
-        # Used default value
-        $storageAccountName = $templateContent.resources[-1].properties.template.parameters['storageAccountName'].defaultValue
+        $scriptContent = (Get-Item env:$scriptEnvVar).Value
+
+        Write-Verbose ('Storing file [{0}] with length [{1}]' -f $scriptName, $scriptContent.Length)
+        $scriptPaths += (New-Item (Join-Path $contentDirectoryName $scriptName) -ItemType 'File' -Value $scriptContent -Force).FullName
     }
-
 
     Write-Verbose 'Getting storage account context.'
     $saResource = Get-AzResource -Name $storageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
@@ -66,36 +61,17 @@ function Invoke-StorageAccountPostDeployment {
     $ctx = $storageAccount.Context
 
     Write-Verbose 'Building paths to the local folders to upload.'
-    Write-Verbose "Script Directory: '$PSScriptRoot'"
-    $contentDirectory = Join-Path -Path (Split-Path $PSScriptRoot -Parent) 'Uploads'
     Write-Verbose "Content directory: '$contentDirectory'"
 
-    foreach ($contentObject in $contentToUpload) {
-
-        $sourcePath = $contentObject.sourcePath
-        $targetContainer = $contentObject.targetContainer
+    foreach ($scriptPath in $scriptPaths) {
 
         try {
-            $pathToContentToUpload = Join-Path $contentDirectory $sourcePath
-            Write-Verbose "Processing content in path: '$pathToContentToUpload'"
-
-            Write-Verbose 'Testing local path'
-            If (-Not (Test-Path -Path $pathToContentToUpload)) {
-                throw "Testing local paths FAILED: Cannot find content path to upload '$pathToContentToUpload'"
-            }
-            Write-Verbose 'Testing paths: SUCCEEDED'
-
-            Write-Verbose 'Getting files to be uploaded...'
-            $scriptsToUpload = Get-ChildItem -Path $pathToContentToUpload -ErrorAction Stop
-            Write-Verbose 'Files to be uploaded:'
-            $scriptsToUpload.Name | ForEach-Object { Write-Verbose "- $_" }
-
             Write-Verbose 'Testing blob container'
             Get-AzStorageContainer -Name $targetContainer -Context $ctx -ErrorAction Stop
             Write-Verbose 'Testing blob container SUCCEEDED'
 
-            if ($PSCmdlet.ShouldProcess("Files to the '$targetContainer' container", 'Upload')) {
-                $scriptsToUpload | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop' | Out-Null
+            if ($PSCmdlet.ShouldProcess(("File [{0}] to the '{1}' container" -f (Split-Path $_ -Leaf), $TargetContainer), 'Upload')) {
+                $null = $scriptPath | Set-AzStorageBlobContent -Container $targetContainer -Context $ctx -Force -ErrorAction 'Stop'
             }
         } catch {
             Write-Error "Upload FAILED: $_"

@@ -81,6 +81,7 @@ module gallery_roleAssignments '.bicep/nested_roleAssignments.bicep' = [for (rol
 module galleries_applications 'applications/deploy.bicep' = [for (application, index) in applications: {
   name: '${uniqueString(deployment().name, location)}-Gallery-Application-${index}'
   params: {
+    location: location
     name: application.name
     galleryName: gallery.name
     supportedOSType: contains(application, 'supportOSType') ? application.supportedOSType : 'Windows'
@@ -100,6 +101,7 @@ module galleries_applications 'applications/deploy.bicep' = [for (application, i
 module galleries_images 'images/deploy.bicep' = [for (image, index) in images: {
   name: '${uniqueString(deployment().name, location)}-Gallery-Image-${index}'
   params: {
+    location: location
     name: image.name
     galleryName: gallery.name
     osType: contains(image, 'osType') ? image.osType : 'Windows'

@@ -74,6 +74,17 @@ param location string = deployment().location
 ])
 param deploymentsToPerform string = 'Only storage & image'
 
+// Dpeloyment Script Parameters
+@description('Optional. The name of the Deployment Script to trigger the image tempalte baking.')
+param storageDeploymentScriptName string = 'triggerUpload-storage'
+
+// Shared Parameters
+
+@description('Generated. Do not provide a value! This date value is used to generate a SAS token to access the modules.')
+param baseTime string = utcNow()
+
+var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '')
+
 // =========== //
 // Deployments //
 // =========== //
@@ -168,6 +179,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-prvDNSZone'
   scope: resourceGroup(resourceGroupName)
+  #disable-next-line explicit-values-for-loc-params // The location is 'global'
   params: {
     name: 'privatelink.blob.${environment().suffixes.storage}'
     virtualNetworkLinks: [
@@ -175,7 +187,6 @@ module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deplo
         virtualNetworkResourceId: vnet.outputs.resourceId
       }
     ]
-    location: location
   }
   dependsOn: [
     rg
@@ -212,4 +223,67 @@ module sa '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = i
   dependsOn: [
     rg
   ]
+}
+
+// Upload storage account files
+// module sa_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+//   name: '${deployment().name}-ds'
+//   scope: resourceGroup(resourceGroupName)
+//   params: {
+//     name: '${storageDeploymentScriptName}-${formattedTime}'
+//     userAssignedIdentities: {
+//       '${msi.outputs.resourceId}': {}
+//     }
+//     scriptContent: loadTextContent('../scripts/storage/Invoke-StorageAccountPostDeployment.ps1')
+//     timeout: 'PT30M'
+//     cleanupPreference: 'Always'
+//     location: location
+
+//     arguments: ' -StorageAccountName "${sa.outputs.name}" -TargetContainer "${storageAccountContainerName}" -ContentToUpload @{  }'
+//   }
+// }
+// var scriptContent = '''
+// $ContentToUpload = @(
+//     @{
+//         sourcePath      = 'windows'
+//         targetContainer = '{0}'
+//     },
+//     @{
+//         sourcePath      = 'linux'
+//         targetContainer = 'aibscripts'
+//     }
+// )
+// '''
+module sa_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+  name: '${deployment().name}-ds'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: '${storageDeploymentScriptName}-${formattedTime}'
+    userAssignedIdentities: {
+      '${msi.outputs.resourceId}': {}
+    }
+    scriptContent: loadTextContent('../scripts/storage/Invoke-StorageAccountPostDeployment.ps1')
+    environmentVariables: [
+      {
+        name: 'script_LinuxInstallPowerShell_sh'
+        value: loadTextContent('../scripts/Uploads/linux/LinuxInstallPowerShell.sh')
+      }
+      {
+        name: 'script_LinuxPrepareMachine_ps1'
+        value: loadTextContent('../scripts/Uploads/linux/LinuxPrepareMachine.ps1')
+      }
+      {
+        name: 'script_WindowsInstallPowerShell_ps1'
+        value: loadTextContent('../scripts/Uploads/windows/WindowsInstallPowerShell.ps1')
+      }
+      {
+        name: 'script_WindowsPrepareMachine_ps1'
+        value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
+      }
+    ]
+    arguments: ' -StorageAccountName "${sa.outputs.name}" -TargetContainer "${storageAccountContainerName}" -Verbose'
+    timeout: 'PT30M'
+    cleanupPreference: 'Always'
+    location: location
+  }
 }

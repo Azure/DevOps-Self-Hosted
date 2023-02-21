@@ -215,6 +215,7 @@ jobs:
                   Write-Verbose "Invoke task with" -Verbose
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
+                  # TODO: We may be able to get rid of this by using a deployment script that loads the scripts content in Bicep as a parameter (only works if the file is not too big, but should be ok)
                   Invoke-StorageAccountPostDeployment @functionInput -Verbose
             - task: AzureCLI@2
               displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'

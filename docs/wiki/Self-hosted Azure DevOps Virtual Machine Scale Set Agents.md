@@ -81,7 +81,7 @@ The file comes with out-of-the box parameters that you can use aside from a few 
 - For the image reference you can choose an image from a Shared Image Gallery using both the `virtualMachineScaleSetComputeGalleryName` & `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameters. If you don't define the `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameter with a specific version, it will assume `latest`.
   Example
   ```Bicep
-  virtualMachineScaleSetComputeGalleryName: '<YourComputeGallery>'
+  virtualMachineScaleSetComputeGalleryName: 'aibgallery'
   virtualMachineScaleSetComputeGalleryImageDefinitionName: 'linux-sid'
   virtualMachineScaleSetImageVersion: '0.24470.675' // (optional)
   ```

@@ -10,7 +10,7 @@ targetScope = 'subscription'
     'Only storage & image'
     'Only image'
 ])
-param deploymentsToPerform string = 'Only storage & image'
+param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
 param location string = 'WestEurope'
@@ -23,7 +23,7 @@ module imageInfraDeployment '../templates/imageInfra.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        computeGalleryName: '<YourComputeGallery>'
-        storageAccountName: '<YourStorageAccount>'
+        computeGalleryName: 'aibgallery'
+        storageAccountName: 'shaibstorage'
     }
 }
