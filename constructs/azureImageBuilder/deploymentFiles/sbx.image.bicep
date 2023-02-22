@@ -3,7 +3,6 @@ targetScope = 'subscription'
 //////////////////////////
 //   Input Parameters   //
 //////////////////////////
-
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
     'All'
@@ -16,56 +15,42 @@ param deploymentsToPerform string = 'All'
 @description('Optional. Specifies the location for resources.')
 param location string = 'WestEurope'
 
-@description('Generated. Do not provide a value! This date value is used to generate a registration token.')
-param baseTime string = utcNow('u')
-
-@description('Required. The name of the Resource Group containing the Virtual Network.')
-param virtualNetworkResourceGroupName string
-
-@description('Required. The name of the Virtual Network.')
-param virtualNetworkName string
-
-@description('Required. The name of the Image Template Virtual Network Subnet to create.')
-param virtualNetworkSubnetName string
-
-///////////////////////////////
-//   Deployment Properties   //
-///////////////////////////////
-
-// Misc
-resource existingStorage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = {
-    name: 'shaibstorage'
-    scope: resourceGroup(subscription().subscriptionId, 'agents-vmss-rg')
-}
-var sasConfig = {
-    signedResourceTypes: 'o'
-    signedPermission: 'r'
-    signedServices: 'b'
-    signedExpiry: dateTimeAdd(baseTime, 'PT1H')
-    signedProtocol: 'https'
-}
-var sasKey = existingStorage.listAccountSas(existingStorage.apiVersion, sasConfig).accountSasToken
-
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
-resource imageTemplateVNET 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
-    name: virtualNetworkName
 
-    resource imageTemplateSubnet 'subnets@2022-07-01' existing = {
-        name: virtualNetworkSubnetName
-    }
+// Variables to minimize duplication
+var storageAccountName = 'shaibstorage'
+var storageAccountContainerName = 'aibscripts'
 
-    scope: resourceGroup(virtualNetworkResourceGroupName)
-}
-
-module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
-    name: '${uniqueString(deployment().name)}-imageInfra-sbx'
+// Deployment
+module imageDeployment '../templates/image.deploy.bicep' = {
+    name: '${uniqueString(deployment().name)}-image-sbx'
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        imageTemplateComputeGalleryName: 'aibgallery'
-        imageTemplateSubnetResourceId: imageTemplateVNET::imageTemplateSubnet.id
+        computeGalleryName: 'aibgallery'
+        storageAccountName: storageAccountName
+        storageAccountContainerName: storageAccountContainerName
+
+        storageAccountFilesToUpload: [
+            {
+                name: 'script_LinuxInstallPowerShell_sh'
+                value: loadTextContent('../scripts/Uploads/linux/LinuxInstallPowerShell.sh')
+            }
+            {
+                name: 'script_LinuxPrepareMachine_ps1'
+                value: loadTextContent('../scripts/Uploads/linux/LinuxPrepareMachine.ps1')
+            }
+            {
+                name: 'script_WindowsInstallPowerShell_ps1'
+                value: loadTextContent('../scripts/Uploads/windows/WindowsInstallPowerShell.ps1')
+            }
+            {
+                name: 'script_WindowsPrepareMachine_ps1'
+                value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
+            }
+        ]
 
         // Linux Example
         imageTemplateImageSource: {
@@ -82,13 +67,13 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+                scriptUri: 'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/LinuxInstallPowerShell.sh'
             }
             {
                 type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+                    'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
                     'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
@@ -111,7 +96,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?${sasKey}\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'WindowsInstallPowerShell.ps1\''
         //         ]
@@ -121,7 +106,7 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         //         type: 'PowerShell'
         //         name: 'Software installation'
         //         inline: [
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?${sasKey}\' -O \'WindowsPrepareMachine.ps1\''
+        //             'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
         //             'pwsh \'WindowsPrepareMachine.ps1\''
         //         ]
         //         runElevated: true
@@ -129,6 +114,3 @@ module imageTemplateDeployment '../templates/imageTemplate.deploy.bicep' = {
         // ]
     }
 }
-
-@description('The generated name of the Image Template.')
-output imageTempateName string = imageTemplateDeployment.outputs.imageTempateName

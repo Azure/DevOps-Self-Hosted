@@ -142,7 +142,7 @@ jobs:
             # [Deployment] task(s)
             #---------------------
             - task: AzureCLI@2
-              displayName: 'Deploy [imageInfra.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
+              displayName: 'Deploy [image.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
               condition: |
                 and(
                   succeeded(),
@@ -164,97 +164,15 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
 
+                  # TODO: Investigate creating a script that injects the scripts to upload to the storage account automatically
+
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
+                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
                     location          = '$(location)'
                     subscriptionId    = (Get-AzContext).Subscription.Id
-                  }
-
-                  # Inject control parmaeters from pipeline
-                  $functionInput['additionalParameters'] = @{
-                    deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
-                  }
-
-                  Write-Verbose "Invoke task with" -Verbose
-                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
-
-                  # Validate deployment
-                  Test-TemplateDeployment @functionInput
-
-                  # Invoke deployment
-                  New-TemplateDeployment @functionInput -Verbose
-            - task: AzureCLI@2
-              displayName: 'Trigger Storage Account post-deployment'
-              condition: |
-                and(
-                  succeeded(),
-                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
-                )
-              inputs:
-                addSpnToEnvironment: true
-                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                scriptType: pscore
-                scriptLocation: inlineScript
-                inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
-
-                  Write-Verbose "Load function" -Verbose
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'storage' 'Invoke-StorageAccountPostDeployment.ps1')
-
-                  $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
-                  }
-
-                  Write-Verbose "Invoke task with" -Verbose
-                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
-
-                  # TODO: We may be able to get rid of this by using a deployment script that loads the scripts content in Bicep as a parameter (only works if the file is not too big, but should be ok)
-                  Invoke-StorageAccountPostDeployment @functionInput -Verbose
-            - task: AzureCLI@2
-              displayName: 'Deploy [imageTemplate.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-              condition: |
-                and(
-                  succeeded(),
-                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only storage & image', 'Only image')
-                )
-              inputs:
-                addSpnToEnvironment: true
-                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                scriptType: pscore
-                scriptLocation: inlineScript
-                inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
-
-                  # Load used functions
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
-                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'template' 'Get-TemplateParameterValue.ps1')
-
-                  # Get Virtual Network reference for Image Template VM placement
-                  $templateValuesInputObject = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageInfra.bicep'
-                    ParameterName    = 'virtualNetworkName', 'virtualNetworkSubnetName', 'resourceGroupName'
-                  }
-                  $virtualNetworkName, $virtualNetworkSubnetName, $virtualNetworkResourceGroupName = Get-TemplateParameterValue @templateValuesInputObject
-
-                  # ----------------- #
-                  # INVOKE DEPLOYMENT #
-                  # ----------------- #
-                  $functionInput = @{
-                    templateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
-                    location         = '$(location)'
-                    subscriptionId   = (Get-AzContext).Subscription.Id
                   }
 
                   # Inject control parmaeters from pipeline

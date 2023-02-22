@@ -1,4 +1,6 @@
-﻿function Get-TemplateParameterValue {
+﻿# TODO: Add synopsis
+# TODO: Reference in scripts
+function Get-TemplateParameterValue {
 
     [CmdletBinding()]
     param(

@@ -46,8 +46,7 @@ To prepare the construct for usage you have to perform two fundamental steps:
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureImageBuilder\variables.yml`
-- `constructs\azureImageBuilder\Parameters\imageInfra.bicep`
-- `constructs\azureImageBuilder\Parameters\imageTemplate.bicep`
+- `constructs\azureImageBuilder\Parameters\image.bicep`
 
 ### Variables
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
@@ -57,11 +56,10 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 - `location`: The location to store deployment metadata in. This variable is also used as a default location to deploy into, if no location is provided in the parameter files.
 
 ### Parameters
-Next, we have two deployment files, `imageInfra.bicep` & `imageTemplate.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
+Next, we have one deployment file, `image.bicep` that hosts to the two phases in the deployment: Deploy all infrastructure components & build the image.
 
-Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
+The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
-- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.bicep` parameter file should be the same you then reference in the `imageTemplate.bicep`'s `imageTemplateCustomizationSteps` parameter.
 
 > **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
@@ -71,7 +69,7 @@ As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find
 
 #### Special case: **Image Template**
 
-The image template ultimately decides what happens during the image built. In this construct, it works in combination with the PowerShell scripts provided in the `constructs\azureImageBuilder\scripts\Uploads` folder.
+The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\Uploads` folder.  <!-- TODO: Go into more detail regarding the way the files are uploaded -->
 
 When you eventually trigger the pipeline, it will upload any script in the `Uploads` folder to a dedicated storage account for the image building process and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
@@ -80,13 +78,13 @@ imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+      scriptUri: 'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
+          'wget \'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
           'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
           'pwsh \'LinuxPrepareMachine.ps1\''
       ]

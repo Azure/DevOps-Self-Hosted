@@ -13,7 +13,7 @@ The solution comes with 3 pre-configured stages, SBX, DEV & PRD, and each pipeli
 
 To this end, pipeline variables and parameter files are named as per the environment they belong to:
 
-- Deployment (Bicep) files (in a `deploymentFiles` folder): `<env>.<name>.bicep` (for example: `sbx.imageInfra.bicep`)
+- Deployment (Bicep) files (in a `deploymentFiles` folder): `<env>.<name>.bicep` (for example: `sbx.image.bicep`)
 - Pipeline variables (in a `variables.yml` file): `<name>_<env>` (for example `serviceConnection_sbx`)
 
 Upon triggering a pipeline, the corresponding stage will select the correct parameter file(s) and pipeline variable(s). For an exemplary `SBX` stage this could look like:
@@ -67,7 +67,7 @@ jobs:
               ScriptType: InlineScript
               inline: |
                 # Comment: Access the correct parameter file as per the stage's 'environment' template parameter
-                templateFilePath = '${{ parameters.environment }}.imageInfra.bicep'
+                templateFilePath = '${{ parameters.environment }}.image.bicep'
 ```
 
 # How to use it

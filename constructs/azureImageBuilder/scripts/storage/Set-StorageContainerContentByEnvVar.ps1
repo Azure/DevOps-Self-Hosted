@@ -1,31 +1,23 @@
 <#
 .SYNOPSIS
-Run the Post-Deployment for the storage account deployment
+Run the Post-Deployment for the storage account deployment & upload required data to the storage account.
 
 .DESCRIPTION
-Run the Post-Deployment for the storage account deployment
-- Upload required data to the storage account
+Run the Post-Deployment for the storage account deployment & upload required data to the storage account.
+Any content that should be uploaded must exist as an environment variable with a 'script_' prefix (for example 'script_LinuxPrepareMachine_ps1').
+The script will fetch any matching environment variable, store it as a file (for example 'script_LinuxPrepareMachine_ps1' is stored as 'LinuxPrepareMachine.ps1')
+and uploade it as blob to the given container.
 
 .PARAMETER StorageAccountName
 Required. The name of the Storage Account to upload to
 
-.PARAMETER ContentToUpload
-Required. The map of source paths & target container tuples. For example:
-$(
-    @{
-        sourcePath = 'windows'
-        targetContainer = 'aibscripts'
-    },
-    @{
-        sourcePath = 'linux'
-        targetContainer = 'aibscripts'
-    }
-)
+.PARAMETER TargetContainer
+Required. The container to upload the files to
 
 .EXAMPLE
-Invoke-StorageAccountPostDeployment -StorageAccountName 'mystorage'
+Set-StorageContainerContentByEnvVar -StorageAccountName 'mystorage' -TargetContainer 'myContainer'
 
-Upload any required data to the storage account 'mystorage' to the default containers.
+Upload any required data to the storage account 'mystorage' and container 'myContainer'.
 #>
 
 [CmdletBinding(SupportsShouldProcess = $True)]
