@@ -61,19 +61,6 @@ param virtualNetworkSubnetName string = 'itsubnet'
 @description('Optional. The address space of the Virtual Network Subnet.')
 param virtualNetworkSubnetAddressPrefix string = '10.0.0.0/24'
 
-// Shared Parameters
-@description('Optional. The location to deploy into')
-param location string = deployment().location
-
-@description('Optional. A parameter to control which deployments should be executed')
-@allowed([
-  'All'
-  'Only infrastructure'
-  'Only storage & image'
-  'Only image'
-])
-param deploymentsToPerform string = 'Only storage & image'
-
 // Deployment Script Parameters
 @description('Optional. The name of the Deployment Script to trigger the Image Template baking.')
 param storageDeploymentScriptName string = 'triggerUpload-storage'
@@ -88,12 +75,6 @@ param imageTemplateDeploymentScriptName string = 'triggerBuild-imageTemplate'
 @description('Optional. The name of the Image Template.')
 param imageTemplateName string = 'aibIt'
 
-@description('Optional. The name of the Image Template.')
-param imageTemplateManagedIdendityName string = 'aibMsi'
-
-@description('Optional. The name of the Image Template.')
-param imageTemplateManagedIdentityResourceGroupName string = resourceGroupName
-
 @description('Required. The image source to use for the Image Template.')
 param imageTemplateImageSource object
 
@@ -104,6 +85,17 @@ param imageTemplateCustomizationSteps array
 param imageTemplateComputeGalleryImageDefinitionName string
 
 // Shared Parameters
+@description('Optional. The location to deploy into')
+param location string = deployment().location
+
+@description('Optional. A parameter to control which deployments should be executed')
+@allowed([
+  'All'
+  'Only infrastructure'
+  'Only storage & image'
+  'Only image'
+])
+param deploymentsToPerform string = 'Only storage & image'
 
 @description('Generated. Do not provide a value! This date value is used to generate a SAS token to access the modules.')
 param baseTime string = utcNow()
@@ -192,12 +184,12 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
         addressPrefix: virtualNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
-        // privateLinkServiceNetworkPolicies: 'Disabled'
-        // serviceEndpoints: [
-        //   {
-        //     service: 'Microsoft.Storage'
-        //   }
-        // ]
+        privateLinkServiceNetworkPolicies: 'Disabled'
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+        ]
       }
     ]
     location: location
