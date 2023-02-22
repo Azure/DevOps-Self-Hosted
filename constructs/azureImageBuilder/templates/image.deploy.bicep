@@ -295,8 +295,8 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     customizationSteps: imageTemplateCustomizationSteps
     imageSource: imageTemplateImageSource
     name: imageTemplateName
-    userMsiName: imageTemplateManagedIdendityName
-    userMsiResourceGroup: imageTemplateManagedIdentityResourceGroupName
+    userMsiName: msi.outputs.name
+    userMsiResourceGroup: msi.outputs.resourceGroupName
     sigImageDefinitionId: az.resourceId(subscription().subscriptionId, rg.outputs.name, 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
     subnetId: vnet.outputs.subnetResourceIds[0]
