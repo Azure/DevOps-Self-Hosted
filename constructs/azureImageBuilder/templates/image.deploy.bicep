@@ -140,7 +140,7 @@ module msi '../../../CARML0.9/Microsoft.ManagedIdentity/userAssignedIdentities/d
 module msi_rbac '../../../CARML0.9/Microsoft.Authorization/roleAssignments/subscription/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ra'
   params: {
-    // Tracked issue: https://github.com/Azure/bicep/issues/2371
+    // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
     //principalId: msi.outputs.principalId // Results in: Deployment template validation failed: 'The template resource 'Microsoft.Resources/deployments/image.deploy-ra' reference to 'Microsoft.Resources/deployments/image.deploy-msi' requires an API version. Please see https://aka.ms/arm-template for usage details.'.
     // Default: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('rgParam').name), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name))).outputs.principalId.value
     //principalId: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroupName), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name)),'2021-04-01').outputs.principalId.value
@@ -191,6 +191,12 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
         name: virtualNetworkSubnetName
         addressPrefix: virtualNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
+        // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+        ]
       }
     ]
     location: location
@@ -201,7 +207,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 }
 
 // Assets Storage Account Private DNS Zone
-// Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
+// TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
 // module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
 //   name: '${deployment().name}-prvDNSZone'
 //   scope: resourceGroup(resourceGroupName)
@@ -234,7 +240,7 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
       ]
     }
     location: location
-    // Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
+    // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
     // privateEndpoints: [
     //   {
     //     service: 'blob'
@@ -292,8 +298,8 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     userMsiName: imageTemplateManagedIdendityName
     userMsiResourceGroup: imageTemplateManagedIdentityResourceGroupName
     sigImageDefinitionId: az.resourceId(subscription().subscriptionId, rg.outputs.name, 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
-    // Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
-    // subnetId: vnet.outputs.subnetResourceIds[0]
+    // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
+    subnetId: vnet.outputs.subnetResourceIds[0]
     location: location
   }
 }
