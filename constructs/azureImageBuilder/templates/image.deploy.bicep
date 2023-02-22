@@ -192,6 +192,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
         addressPrefix: virtualNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
+        privateLinkServiceNetworkPolicies: 'Disabled'
         serviceEndpoints: [
           {
             service: 'Microsoft.Storage'
