@@ -192,12 +192,12 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
         addressPrefix: virtualNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
-        privateLinkServiceNetworkPolicies: 'Disabled'
-        serviceEndpoints: [
-          {
-            service: 'Microsoft.Storage'
-          }
-        ]
+        // privateLinkServiceNetworkPolicies: 'Disabled'
+        // serviceEndpoints: [
+        //   {
+        //     service: 'Microsoft.Storage'
+        //   }
+        // ]
       }
     ]
     location: location
@@ -241,6 +241,16 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
       ]
     }
     location: location
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0]
+        }
+      ]
+    }
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
     // privateEndpoints: [
     //   {
