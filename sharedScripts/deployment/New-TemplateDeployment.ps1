@@ -148,7 +148,7 @@ function New-TemplateDeploymentInner {
         [switch] $doNotThrow,
 
         [Parameter(Mandatory = $false)]
-        [int]$retryLimit = 3
+        [int]$retryLimit = 1
     )
 
     begin {
