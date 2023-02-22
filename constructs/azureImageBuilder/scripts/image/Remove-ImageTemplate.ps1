@@ -25,31 +25,20 @@ function Remove-ImageTemplate {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
+        $repoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+
         . (Join-Path -Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
+        . (Join-Path -Path $repoRoot 'sharedScripts' 'template' 'Get-TemplateParameterValue.ps1')
     }
 
     process {
         # Fetch information
         # -----------------
-        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-        # Get Image Template name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
-            # Used explicit value
-            $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
-        } else {
-            # Used default value
-            $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
+        $templateParamInputObject = @{
+            TemplateFilePath = $TemplateFilePath
+            ParameterName    = @('resourceGroupName', 'imageTemplateName')
         }
-
-        # Get Resource Group name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-            # Used explicit value
-            $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-        } else {
-            # Used default value
-            $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-        }
+        $resourceGroupName, $imageTemplateName = Get-TemplateParameterValue @templateParamInputObject
 
         # Logic
         # -----

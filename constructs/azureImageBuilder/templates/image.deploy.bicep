@@ -59,7 +59,7 @@ param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 param virtualNetworkSubnetName string = 'itsubnet'
 
 @description('Optional. The address space of the Virtual Network Subnet.')
-param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+param virtualNetworkSubnetAddressPrefix string = '10.0.0.0/24'
 
 // Shared Parameters
 @description('Optional. The location to deploy into')
@@ -189,7 +189,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
     subnets: [
       {
         name: virtualNetworkSubnetName
-        addressPrefix: virutalNetworkSubnetAddressPrefix
+        addressPrefix: virtualNetworkSubnetAddressPrefix
         networkSecurityGroupId: nsg.outputs.resourceId
       }
     ]
