@@ -325,4 +325,4 @@ module imageTemplate_trigger '../../../CARML0.9/Microsoft.Resources/deploymentSc
 }
 
 @description('The generated name of the image template.')
-output imageTempateName string = imageTemplate.outputs.name
+output imageTemplateName string = imageTemplate.outputs.name
