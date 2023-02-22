@@ -1,4 +1,4 @@
-name: 'ScaleSet Image Deployment'
+name: 'Image Build $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
 
 parameters:
   - name: startEnvironment

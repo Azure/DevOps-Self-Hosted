@@ -1,4 +1,4 @@
-name: 'ScaleSet Deployment'
+name: 'ScaleSet Deployment $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
 
 parameters:
   - name: startEnvironment
