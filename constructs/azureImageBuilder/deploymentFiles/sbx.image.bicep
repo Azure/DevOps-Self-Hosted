@@ -19,19 +19,14 @@ param location string = 'WestEurope'
 //   Template Deployment   //
 /////////////////////////////
 
-// Variables to minimize duplication
-var storageAccountName = 'shaibstorage'
-var storageAccountContainerName = 'aibscripts'
-
-// Deployment
 module imageDeployment '../templates/image.deploy.bicep' = {
     name: '${uniqueString(deployment().name)}-image-sbx'
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
         computeGalleryName: 'aibgallery'
-        storageAccountName: storageAccountName
-        storageAccountContainerName: storageAccountContainerName
+        storageAccountName: 'shaibstorage'
+        storageAccountContainerName: 'aibscripts'
 
         storageAccountFilesToUpload: [
             {
@@ -67,13 +62,13 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/LinuxInstallPowerShell.sh'
+                scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
             }
             {
                 type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
+                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
                     'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
@@ -96,7 +91,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'WindowsInstallPowerShell.ps1\''
         //         ]
@@ -106,7 +101,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         type: 'PowerShell'
         //         name: 'Software installation'
         //         inline: [
-        //             'wget \'https://${storageAccountName}.blob.${environment().suffixes.storage}/${storageAccountContainerName}/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
+        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
         //             'pwsh \'WindowsPrepareMachine.ps1\''
         //         ]
         //         runElevated: true
