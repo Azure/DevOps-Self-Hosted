@@ -258,7 +258,8 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
     roleAssignments: [
       {
         // Allow MSI to access storage account files once uploaded via AAD Auth
-        roleDefinitionIdOrName: 'Storage Blob Data Reader'
+        // roleDefinitionIdOrName: 'Storage Blob Data Reader'
+        roleDefinitionIdOrName: 'Storage Blob Data Owner'
         principalIds: [
           msi.outputs.principalId
         ]
