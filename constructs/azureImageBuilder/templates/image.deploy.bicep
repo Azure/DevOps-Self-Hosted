@@ -265,7 +265,7 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
 // Upload storage account files
 // Should be updated to use a subnet once https://github.com/Azure/bicep/issues/6540 is implemented
 module storageAccount_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-  name: '${deployment().name}-ds'
+  name: '${deployment().name}-storage-upload-ds'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: '${storageDeploymentScriptName}-${formattedTime}'
@@ -300,7 +300,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
 
 // Deployment script to trigger image build
 module imageTemplate_trigger '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-  name: '${deployment().name}-ds'
+  name: '${deployment().name}-imageTemplate-trigger-ds'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${imageTemplate.outputs.name}'
