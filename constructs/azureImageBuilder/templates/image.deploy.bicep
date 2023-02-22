@@ -116,7 +116,7 @@ module rg '../../../CARML0.9/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // User Assigned Identity (MSI)
-module msi '../../../CARML0.9/Microsoft.ManagedIdentity/userAssignedIdentities/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module msi '../../../CARML0.9/Microsoft.ManagedIdentity/userAssignedIdentities/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-msi'
   scope: resourceGroup(resourceGroupName)
   params: {
