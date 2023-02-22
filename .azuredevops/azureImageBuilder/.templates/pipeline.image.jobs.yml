@@ -65,7 +65,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -91,7 +91,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -221,7 +221,7 @@ jobs:
                   . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
 
                   $functionInput = @{
-                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.imageTemplate.bicep'
+                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
                     ImageTemplateName = $env:IMAGETEMPLATENAME # template deployment output
                   }
 
