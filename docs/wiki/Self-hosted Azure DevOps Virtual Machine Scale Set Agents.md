@@ -145,7 +145,7 @@ Use the following table to configure the values according to your requirements:
 <details>
 <summary>1.1.2 Configure the Azure DevOps environment to enable the pipeline to read & register the resources</summary>
 
-Since the pipeline uses the `$(System.AccessToken)` to interact with the environment, and its principal `<Project Name> Build Service (<Organization Name>)` (for example: `My Contoso Project Build (Contoso)`) does not have the required permissions by default, you need to [set two permissions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml#manage-build-service-account-permissions) in the project's settings to enable the automatic agent pool registration:
+Since the pipeline uses the `$(System.AccessToken)` to interact with the environment, and its principal `<Project Name> Build Service (<Organization Name>)` (for example: `My Contoso Project Build Service (Contoso)`) does not have the required permissions by default, you need to [set two permissions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml#manage-build-service-account-permissions) in the project's settings to enable the automatic agent pool registration:
 
 > Note: The `<Project Name> Build Service (<Organization Name>)` is created on the organizational level for every new Azure DevOps project. You can find it when you navigate to your 'Organization Settings', Permissions (`'Security'` section), in the `Users` tab.
 
