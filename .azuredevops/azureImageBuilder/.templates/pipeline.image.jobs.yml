@@ -146,7 +146,7 @@ jobs:
               condition: |
                 and(
                   succeeded(),
-                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image')
+                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
                 )
               inputs:
                 addSpnToEnvironment: true
