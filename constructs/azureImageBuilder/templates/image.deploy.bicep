@@ -224,25 +224,37 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
   scope: resourceGroup(resourceGroupName)
   params: {
     name: storageAccountName
+    allowSharedKeyAccess: false
     blobServices: {
       containers: [
         {
           name: storageAccountContainerName
           publicAccess: 'None'
+          roleAssignments: [
+            {
+              // Allow MSI to access storage account container files
+              roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+              // roleDefinitionIdOrName: 'Storage Blob Data Owner'
+              principalIds: [
+                msi.outputs.principalId
+              ]
+              principalType: 'ServicePrincipal'
+            }
+          ]
         }
       ]
     }
     location: location
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Deny'
-      virtualNetworkRules: [
-        {
-          action: 'Allow'
-          id: vnet.outputs.subnetResourceIds[0]
-        }
-      ]
-    }
+    // networkAcls: {
+    //   bypass: 'AzureServices'
+    //   defaultAction: 'Deny'
+    //   virtualNetworkRules: [
+    //     {
+    //       action: 'Allow'
+    //       id: vnet.outputs.subnetResourceIds[0]
+    //     }
+    //   ]
+    // }
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
     // privateEndpoints: [
     //   {
@@ -255,17 +267,6 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
     //     }
     //   }
     // ]
-    roleAssignments: [
-      {
-        // Allow MSI to access storage account files once uploaded via AAD Auth
-        // roleDefinitionIdOrName: 'Storage Blob Data Reader'
-        roleDefinitionIdOrName: 'Storage Blob Data Owner'
-        principalIds: [
-          msi.outputs.principalId
-        ]
-        principalType: 'ServicePrincipal'
-      }
-    ]
   }
   dependsOn: [
     rg
@@ -303,7 +304,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     userMsiResourceGroup: msi.outputs.resourceGroupName
     sigImageDefinitionId: az.resourceId(subscription().subscriptionId, rg.outputs.name, 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
-    subnetId: vnet.outputs.subnetResourceIds[0]
+    // subnetId: vnet.outputs.subnetResourceIds[0]
     location: location
   }
 }

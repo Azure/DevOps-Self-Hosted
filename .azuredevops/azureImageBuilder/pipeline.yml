@@ -58,7 +58,7 @@ stages:
 
   - stage: PRD_Deployments
     displayName: Deploy to PRD
-    condition: and(succeeded(),in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd'))
     jobs:
       - template: .templates/pipeline.image.jobs.yml
         parameters:
