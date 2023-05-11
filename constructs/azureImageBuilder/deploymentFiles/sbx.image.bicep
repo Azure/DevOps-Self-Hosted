@@ -62,17 +62,22 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
+                scriptUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
+            }
+            {
+                type: 'File'
+                name: 'LinuxPrepareMachine'
+                sourceUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1'
+                destination: 'LinuxPrepareMachine.ps1'
             }
             {
                 type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
-                    'sed -i \'s/\r$//\' \'LinuxPrepareMachine.ps1\''
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
             }
+            
         ]
         imageTemplateComputeGalleryImageDefinitionName: 'linux-sid'
 
@@ -96,6 +101,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //             '. \'WindowsInstallPowerShell.ps1\''
         //         ]
         //         runElevated: true
+        //     }
+        //     {
+        //         type: 'File'
+        //         name: 'WindowsPrepareMachine'
+        //         sourceUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1'
+        //         destination: 'WindowsPrepareMachine.ps1'
         //     }
         //     {
         //         type: 'PowerShell'
