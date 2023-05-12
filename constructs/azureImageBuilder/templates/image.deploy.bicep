@@ -157,7 +157,7 @@ module azureComputeGallery '../../../CARML0.9/Microsoft.Compute/galleries/deploy
 }
 
 // Network Security Group
-module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-nsg'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -170,7 +170,7 @@ module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Image Template Virtual Network
-module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-vnet'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -201,7 +201,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 
 // Assets Storage Account Private DNS Zone
 // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
-// module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All') {
+// module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
 //   name: '${deployment().name}-prvDNSZone'
 //   scope: resourceGroup(resourceGroupName)
 //   #disable-next-line explicit-values-for-loc-params // The location is 'global'
