@@ -19,11 +19,13 @@ param virtualNetworkName string = 'vmss-vnet'
 @description('Optional. The address space of the Virtual Network.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
-@description('Optional. The name of the Virtual Network Subnet.')
-param virtualNetworkSubnetName string = 'vmsssubnet'
-
-@description('Optional. The address space of the Virtual Network Subnet.')
-param virtualNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+@description('Optional. The subnets to create in the Virtual Network.')
+param virtualNetworkSubnets array = [
+  {
+    name: 'vmsssubnet'
+    addressPrefix: '10.0.0.0/24' // 10.0.0.0 - 10.0.0.255
+  }
+]
 
 // Virtual Machine Scale Set Parameters
 @description('Optional. The name of the Virtual Machine Scale Set.')
@@ -106,13 +108,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
     addressPrefixes: [
       virtualNetworkAddressPrefix
     ]
-    subnets: [
-      {
-        name: virtualNetworkSubnetName
-        addressPrefix: virtualNetworkSubnetAddressPrefix
-        networkSecurityGroupId: nsg.outputs.resourceId
-      }
-    ]
+    subnets: virtualNetworkSubnets
     location: location
   }
   dependsOn: [
