@@ -16,26 +16,8 @@ param managedIdentityName string = 'aibMsi'
 @description('Required. The name of the Azure Compute Gallery.')
 param computeGalleryName string
 
-@description('Optional. The Image Definitions in the Azure Compute Gallery.')
-param computeGalleryImageDefinitions array = [
-  // Linux Example
-  {
-    hyperVGeneration: 'V2'
-    name: 'linux-sid'
-    osType: 'Linux'
-    publisher: 'devops'
-    offer: 'devops_linux'
-    sku: 'devops_linux_az'
-  }
-  // Windows Example
-  {
-    name: 'windows-sid'
-    osType: 'Windows'
-    publisher: 'devops'
-    offer: 'devops_windows'
-    sku: 'devops_windows_az'
-  }
-]
+@description('Required. The Image Definitions in the Azure Compute Gallery.')
+param computeGalleryImageDefinitions array
 
 // Storage Account Parameters
 @description('Required. The name of the storage account.')
@@ -143,7 +125,7 @@ module msi_rbac '../../../CARML0.9/Microsoft.Authorization/roleAssignments/subsc
 }
 
 // Azure Compute Gallery
-module azureComputeGallery '../../../CARML0.9/Microsoft.Compute/galleries/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module azureComputeGallery '../../../CARML0.9/Microsoft.Compute/galleries/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-acg'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -182,8 +164,8 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
       {
         name: virtualNetworkSubnetName
         addressPrefix: virtualNetworkSubnetAddressPrefix
-        networkSecurityGroupId: nsg.outputs.resourceId
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
+        networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
         privateLinkServiceNetworkPolicies: 'Disabled'
         serviceEndpoints: [
           {
@@ -302,7 +284,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     name: imageTemplateName
     userMsiName: msi.outputs.name
     userMsiResourceGroup: msi.outputs.resourceGroupName
-    sigImageDefinitionId: az.resourceId(subscription().subscriptionId, rg.outputs.name, 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
+    sigImageDefinitionId: az.resourceId(split(azureComputeGallery.outputs.resourceId, '/')[2], split(azureComputeGallery.outputs.resourceId, '/')[4], 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
     // subnetId: vnet.outputs.subnetResourceIds[0]
     location: location

@@ -25,6 +25,17 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         location: location
         deploymentsToPerform: deploymentsToPerform
         computeGalleryName: 'aibgallery'
+        computeGalleryImageDefinitions: [
+            {
+                hyperVGeneration: 'V2'
+                name: 'sid-linux'
+                osType: 'Linux'
+                publisher: 'devops'
+                offer: 'devops_linux'
+                sku: 'devops_linux_az'
+            }
+        ]
+
         storageAccountName: 'shaibstorage'
         storageAccountContainerName: 'aibscripts'
 
@@ -77,11 +88,20 @@ module imageDeployment '../templates/image.deploy.bicep' = {
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
             }
-            
+
         ]
         imageTemplateComputeGalleryImageDefinitionName: 'linux-sid'
 
         // Windows Example
+        // computeGalleryImageDefinitions: [
+        //     {
+        //         name: 'windows-sid'
+        //         osType: 'Windows'
+        //         publisher: 'devops'
+        //         offer: 'devops_windows'
+        //         sku: 'devops_windows_az'
+        //     }
+        // ]
         // imageTemplateComputeGalleryImageDefinitionName: 'windows-sid'
         // imageTemplateImageSource: {
         //     type: 'PlatformImage'
