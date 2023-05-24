@@ -654,6 +654,13 @@ LogInfo('Install az bicep exention start')
 az bicep install
 LogInfo('Install az bicep exention end')
 
+########################
+##   Install docker    #
+########################
+LogInfo('Install az bicep exention start')
+choco install docker
+LogInfo('Install az bicep exention end')
+
 #########################
 ##   Install Kubectl    #
 #########################

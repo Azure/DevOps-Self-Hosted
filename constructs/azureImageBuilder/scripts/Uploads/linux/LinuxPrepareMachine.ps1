@@ -365,6 +365,17 @@ LogInfo('Install az bicep exention start')
 az bicep install
 LogInfo('Install az bicep exention end')
 
+########################
+##   Install Docker    #
+########################
+LogInfo('Install docker start')
+sudo apt-get update
+
+sudo apt -y install docker.io
+sudo snap install docker
+docker --version
+LogInfo('Install docker end')
+
 #########################
 ##   Install Kubectl    #
 #########################
