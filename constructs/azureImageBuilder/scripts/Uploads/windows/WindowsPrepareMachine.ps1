@@ -665,7 +665,7 @@ LogInfo('Install kubectl end')
 ##   Install Docker    #
 ########################
 LogInfo('Install docker start')
-$null = choco install docker
+$null = choco install docker -y -v
 # $null = choco install docker-desktop
 LogInfo('Install docker end')
 
