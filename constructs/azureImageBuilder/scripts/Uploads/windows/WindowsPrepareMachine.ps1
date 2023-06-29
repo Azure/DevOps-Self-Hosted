@@ -661,6 +661,14 @@ LogInfo('Install kubectl start')
 $null = choco install kubernetes-cli -y -v
 LogInfo('Install kubectl end')
 
+########################
+##   Install Docker    #
+########################
+LogInfo('Install docker start')
+$null = choco install docker -y -v
+# $null = choco install docker-desktop
+LogInfo('Install docker end')
+
 #################################
 ##   Install PowerShell Core    #
 #################################
