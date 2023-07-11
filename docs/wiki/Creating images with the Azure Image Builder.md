@@ -218,6 +218,7 @@ Following you can find an overview of the installed elements currently implement
 | | `Nuget Package Provider` | | :heavy_check_mark: | :heavy_check_mark: (`dotnet nuget`) |
 | | `Terraform` | | :heavy_check_mark: (`latest`) | :heavy_check_mark: (`0.12.30`)  |
 | | `azcopy` | |  :heavy_check_mark: (`latest`) |  :heavy_check_mark: (`latest`) |
+| | `docker` | |  :heavy_check_mark: (`latest`) |  :heavy_check_mark: (`latest`) |
 | | | | | |
 | Modules
 | | PowerShell
