@@ -66,6 +66,9 @@ param imageTemplateCustomizationSteps array
 @description('Required. The name of Image Definition of the Azure Compute Gallery to host the new image version.')
 param imageTemplateComputeGalleryImageDefinitionName string
 
+@description('Optional. The name of the Resource Group to deploy the Image Template resources into.')
+param imageTemplateResourceGroupName string = ''
+
 // Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
@@ -288,6 +291,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
     // subnetId: vnet.outputs.subnetResourceIds[0]
     location: location
+    stagingResourceGroup: imageTemplateResourceGroupName
   }
 }
 
