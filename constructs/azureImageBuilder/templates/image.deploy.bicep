@@ -216,9 +216,18 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
           publicAccess: 'None'
           roleAssignments: [
             {
-              // Allow MSI to access storage account container files
+              // Allow MSI to access storage account container files to upload files
               roleDefinitionIdOrName: 'Storage Blob Data Contributor'
               // roleDefinitionIdOrName: 'Storage Blob Data Owner'
+              principalIds: [
+                msi.outputs.principalId
+              ]
+              principalType: 'ServicePrincipal'
+            }
+            {
+              // Allow MSI to leverage the storage account for private networking
+              // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
+              roleDefinitionIdOrName: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
               principalIds: [
                 msi.outputs.principalId
               ]
@@ -292,6 +301,9 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     location: location
     stagingResourceGroup: imageTemplateResourceGroupName
   }
+  dependsOn: [
+    storageAccount_upload
+  ]
 }
 
 // Deployment script to trigger image build
@@ -309,7 +321,7 @@ module imageTemplate_trigger '../../../CARML0.9/Microsoft.Resources/deploymentSc
     location: location
   }
   dependsOn: [
-    storageAccount_upload
+    imageTemplate
   ]
 }
 
