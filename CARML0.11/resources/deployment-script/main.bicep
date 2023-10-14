@@ -80,9 +80,8 @@ param tags object = {}
 @description('Optional. Enable telemetry via a Globally Unique Identifier (GUID).')
 param enableDefaultTelemetry bool = true
 
-var containerSettings = {
-  containerGroupName: containerGroupName
-}
+@description('Optional. The subnet resource IDs to deployment script links to. Use this parameter for private networking.')
+param subnetIds array = []
 
 var identityType = !empty(userAssignedIdentities) ? 'UserAssigned' : 'None'
 
@@ -117,7 +116,10 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   properties: {
     azPowerShellVersion: kind == 'AzurePowerShell' ? azPowerShellVersion : null
     azCliVersion: kind == 'AzureCLI' ? azCliVersion : null
-    containerSettings: !empty(containerGroupName) ? containerSettings : null
+    containerSettings: {
+      containerGroupName: !empty(containerGroupName) ? containerGroupName : null
+      subnetIds: !empty(subnetIds) ? subnetIds : null
+    }
     storageAccountSettings: !empty(storageAccountResourceId) ? storageAccountSettings : null
     arguments: arguments
     environmentVariables: !empty(environmentVariables) ? environmentVariables.secureList : []

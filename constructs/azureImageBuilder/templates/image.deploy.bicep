@@ -48,7 +48,7 @@ param virtualNetworkSubnetAddressPrefix string = '10.0.0.0/24'
 param storageDeploymentScriptName string = 'triggerUpload-storage'
 
 @description('Optional. The files to upload to the Assets Storage Account. The syntax of each item should be like: { name: \'script_LinuxInstallPowerShell_sh\' \n value: loadTextContent(\'../scripts/Uploads/linux/LinuxInstallPowerShell.sh\') }')
-param storageAccountFilesToUpload array = []
+param storageAccountFilesToUpload object = {}
 
 @description('Optional. The name of the Deployment Script to trigger the image tempalte baking.')
 param imageTemplateDeploymentScriptName string = 'triggerBuild-imageTemplate'
@@ -92,7 +92,7 @@ var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.9/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-rg'
   params: {
     name: resourceGroupName
@@ -101,7 +101,7 @@ module rg '../../../CARML0.9/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // User Assigned Identity (MSI)
-module msi '../../../CARML0.9/Microsoft.ManagedIdentity/userAssignedIdentities/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+module msi '../../../CARML0.11/managed-identity/user-assigned-identity/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-msi'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -114,7 +114,7 @@ module msi '../../../CARML0.9/Microsoft.ManagedIdentity/userAssignedIdentities/d
 }
 
 // MSI Subscription contributor assignment
-module msi_rbac '../../../CARML0.9/Microsoft.Authorization/roleAssignments/subscription/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module msi_rbac '../../../CARML0.11/authorization//role-assignment/subscription/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ra'
   params: {
     // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
@@ -128,7 +128,7 @@ module msi_rbac '../../../CARML0.9/Microsoft.Authorization/roleAssignments/subsc
 }
 
 // Azure Compute Gallery
-module azureComputeGallery '../../../CARML0.9/Microsoft.Compute/galleries/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module azureComputeGallery '../../../CARML0.11/compute/gallery/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-acg'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -142,7 +142,7 @@ module azureComputeGallery '../../../CARML0.9/Microsoft.Compute/galleries/deploy
 }
 
 // Network Security Group
-module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module nsg '../../../CARML0.11/network/network-security-group/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-nsg'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -155,7 +155,7 @@ module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Image Template Virtual Network
-module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-vnet'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -185,7 +185,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 }
 
 // Assets Storage Account Private DNS Zone
-module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+module privateDNSZone '../../../CARML0.11/network/private-dns-zone/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-prvDNSZone'
   scope: resourceGroup(resourceGroupName)
   #disable-next-line explicit-values-for-loc-params // The location is 'global'
@@ -203,7 +203,7 @@ module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deplo
 }
 
 // Assets Storage Account
-module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-sa'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -266,7 +266,7 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
 }
 
 // Upload storage account files
-module storageAccount_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module storageAccount_upload '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-storage-upload-ds'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -287,7 +287,7 @@ module storageAccount_upload '../../../CARML0.9/Microsoft.Resources/deploymentSc
 }
 
 // Image template
-module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemplates/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-it'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -307,7 +307,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
 }
 
 // Deployment script to trigger image build
-module imageTemplate_trigger '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-imageTemplate-trigger-ds'
   scope: resourceGroup(resourceGroupName)
   params: {

@@ -39,25 +39,26 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         storageAccountName: 'shaibstorage'
         storageAccountContainerName: 'aibscripts'
 
-        storageAccountFilesToUpload: [
-            {
-                name: 'script_LinuxInstallPowerShell_sh'
-                value: loadTextContent('../scripts/Uploads/linux/LinuxInstallPowerShell.sh')
-            }
-            {
-                name: 'script_LinuxPrepareMachine_ps1'
-                value: loadTextContent('../scripts/Uploads/linux/LinuxPrepareMachine.ps1')
-            }
-            // {
-            //     name: 'script_WindowsInstallPowerShell_ps1'
-            //     value: loadTextContent('../scripts/Uploads/windows/WindowsInstallPowerShell.ps1')
-            // }
-            // {
-            //     name: 'script_WindowsPrepareMachine_ps1'
-            //     value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
-            // }
-        ]
-
+        storageAccountFilesToUpload: {
+            secureList: [
+                {
+                    name: 'script_LinuxInstallPowerShell_sh'
+                    value: loadTextContent('../scripts/Uploads/linux/LinuxInstallPowerShell.sh')
+                }
+                {
+                    name: 'script_LinuxPrepareMachine_ps1'
+                    value: loadTextContent('../scripts/Uploads/linux/LinuxPrepareMachine.ps1')
+                }
+                // {
+                //     name: 'script_WindowsInstallPowerShell_ps1'
+                //     value: loadTextContent('../scripts/Uploads/windows/WindowsInstallPowerShell.ps1')
+                // }
+                // {
+                //     name: 'script_WindowsPrepareMachine_ps1'
+                //     value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
+                // }
+            ]
+        }
         // Linux Example
         imageTemplateImageSource: {
             type: 'PlatformImage'
