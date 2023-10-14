@@ -168,13 +168,13 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
         name: virtualNetworkSubnetName
         addressPrefix: virtualNetworkSubnetAddressPrefix
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
-        networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
+        // networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
         privateLinkServiceNetworkPolicies: 'Disabled'
-        serviceEndpoints: [
-          {
-            service: 'Microsoft.Storage'
-          }
-        ]
+        // serviceEndpoints: [
+        //   {
+        //     service: 'Microsoft.Storage'
+        //   }
+        // ]
       }
     ]
     location: location
@@ -185,23 +185,22 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
 }
 
 // Assets Storage Account Private DNS Zone
-// TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
-// module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
-//   name: '${deployment().name}-prvDNSZone'
-//   scope: resourceGroup(resourceGroupName)
-//   #disable-next-line explicit-values-for-loc-params // The location is 'global'
-//   params: {
-//     name: 'privatelink.blob.${environment().suffixes.storage}'
-//     virtualNetworkLinks: [
-//       {
-//         virtualNetworkResourceId: vnet.outputs.resourceId
-//       }
-//     ]
-//   }
-//   dependsOn: [
-//     rg
-//   ]
-// }
+module privateDNSZone '../../../CARML0.9/Microsoft.Network/privateDnsZones/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+  name: '${deployment().name}-prvDNSZone'
+  scope: resourceGroup(resourceGroupName)
+  #disable-next-line explicit-values-for-loc-params // The location is 'global'
+  params: {
+    name: 'privatelink.blob.${environment().suffixes.storage}'
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: vnet.outputs.resourceId
+      }
+    ]
+  }
+  dependsOn: [
+    rg
+  ]
+}
 
 // Assets Storage Account
 module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
@@ -230,28 +229,27 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
       ]
     }
     location: location
-    // networkAcls: {
-    //   bypass: 'AzureServices'
-    //   defaultAction: 'Deny'
-    //   virtualNetworkRules: [
-    //     {
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[0]
-    //     }
-    //   ]
-    // }
-    // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is implemented
-    // privateEndpoints: [
-    //   {
-    //     service: 'blob'
-    //     subnetResourceId: vnet.outputs.subnetResourceIds[0]
-    //     privateDnsZoneGroup: {
-    //       privateDNSResourceIds: [
-    //         privateDNSZone.outputs.resourceId
-    //       ]
-    //     }
-    //   }
-    // ]
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0]
+        }
+      ]
+    }
+    privateEndpoints: [
+      {
+        service: 'blob'
+        subnetResourceId: vnet.outputs.subnetResourceIds[0]
+        privateDnsZoneGroup: {
+          privateDNSResourceIds: [
+            privateDNSZone.outputs.resourceId
+          ]
+        }
+      }
+    ]
   }
   dependsOn: [
     rg
@@ -259,7 +257,6 @@ module storageAccount '../../../CARML0.9/Microsoft.Storage/storageAccounts/deplo
 }
 
 // Upload storage account files
-// Should be updated to use a subnet once https://github.com/Azure/bicep/issues/6540 is implemented
 module storageAccount_upload '../../../CARML0.9/Microsoft.Resources/deploymentScripts/deploy.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-storage-upload-ds'
   scope: resourceGroup(resourceGroupName)
@@ -274,6 +271,9 @@ module storageAccount_upload '../../../CARML0.9/Microsoft.Resources/deploymentSc
     timeout: 'PT30M'
     cleanupPreference: 'Always'
     location: location
+    subnetIds: [
+      vnet.outputs.subnetResourceIds[0]
+    ]
   }
 }
 
@@ -288,8 +288,7 @@ module imageTemplate '../../../CARML0.9/Microsoft.VirtualMachineImages/imageTemp
     userMsiName: msi.outputs.name
     userMsiResourceGroup: msi.outputs.resourceGroupName
     sigImageDefinitionId: az.resourceId(split(azureComputeGallery.outputs.resourceId, '/')[2], split(azureComputeGallery.outputs.resourceId, '/')[4], 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
-    // TODO: Blocked until https://github.com/Azure/bicep/issues/6540 is resolved
-    // subnetId: vnet.outputs.subnetResourceIds[0]
+    subnetId: vnet.outputs.subnetResourceIds[0]
     location: location
     stagingResourceGroup: imageTemplateResourceGroupName
   }

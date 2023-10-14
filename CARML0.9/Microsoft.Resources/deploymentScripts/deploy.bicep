@@ -32,6 +32,9 @@ param environmentVariables array = []
 @description('Optional. List of supporting files for the external script (defined in primaryScriptUri). Does not work with internal scripts (code defined in scriptContent).')
 param supportingScriptUris array = []
 
+@description('Optional. The subnet resource IDs to deployment script links to. Use this parameter for private networking.')
+param subnetIds array = []
+
 @description('Optional. Command-line arguments to pass to the script. Arguments are separated by spaces.')
 param arguments string = ''
 
@@ -72,10 +75,6 @@ param tags object = {}
 @description('Optional. Enable telemetry via a Globally Unique Identifier (GUID).')
 param enableDefaultTelemetry bool = true
 
-var containerSettings = {
-  containerGroupName: containerGroupName
-}
-
 var identityType = !empty(userAssignedIdentities) ? 'UserAssigned' : 'None'
 
 var identity = identityType != 'None' ? {
@@ -95,16 +94,19 @@ resource defaultTelemetry 'Microsoft.Resources/deployments@2021-04-01' = if (ena
   }
 }
 
-resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: name
   location: location
   tags: tags
-  identity: identity
+  identity: any(identity)
   kind: any(kind)
   properties: {
     azPowerShellVersion: kind == 'AzurePowerShell' ? azPowerShellVersion : null
     azCliVersion: kind == 'AzureCLI' ? azCliVersion : null
-    containerSettings: empty(containerGroupName) ? null : containerSettings
+    containerSettings: {
+      containerGroupName: !empty(containerGroupName) ? containerGroupName : null
+      subnetIds: !empty(subnetIds) ? subnetIds : null
+    }
     arguments: arguments
     environmentVariables: empty(environmentVariables) ? null : environmentVariables
     scriptContent: empty(scriptContent) ? null : scriptContent
@@ -114,6 +116,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     forceUpdateTag: runOnce ? resourceGroup().name : baseTime
     retentionInterval: retentionInterval
     timeout: timeout
+
   }
 }
 
