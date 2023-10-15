@@ -224,19 +224,21 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
               ]
               principalType: 'ServicePrincipal'
             }
-            {
-              // Allow MSI to leverage the storage account for private networking
-              // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
-              roleDefinitionIdOrName: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
-              principalIds: [
-                msi.outputs.principalId
-              ]
-              principalType: 'ServicePrincipal'
-            }
           ]
         }
       ]
     }
+    roleAssignments: [
+      {
+        // Allow MSI to leverage the storage account for private networking
+        // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
+        roleDefinitionIdOrName: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
+        principalIds: [
+          msi.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
     location: location
     // networkAcls: {
     //   bypass: 'AzureServices'
