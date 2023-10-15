@@ -95,6 +95,10 @@ var storageAccountSettings = !empty(storageAccountResourceId) ? {
   storageAccountName: last(split(storageAccountResourceId, '/'))
 } : {}
 
+var subnetIdsFormatted = [for resourceID in subnetIds: {
+  id: resourceID
+}]
+
 resource defaultTelemetry 'Microsoft.Resources/deployments@2021-04-01' = if (enableDefaultTelemetry) {
   name: 'pid-47ed15a6-730a-4827-bcb4-0fd963ffbd82-${uniqueString(deployment().name, location)}'
   properties: {
@@ -118,7 +122,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     azCliVersion: kind == 'AzureCLI' ? azCliVersion : null
     containerSettings: {
       containerGroupName: !empty(containerGroupName) ? containerGroupName : null
-      subnetIds: !empty(subnetIds) ? subnetIds : null
+      subnetIds: !empty(subnetIds) ? subnetIdsFormatted : null
     }
     storageAccountSettings: !empty(storageAccountResourceId) ? storageAccountSettings : null
     arguments: arguments
