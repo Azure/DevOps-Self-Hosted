@@ -245,27 +245,27 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
       }
     ]
     location: location
-    // networkAcls: {
-    //   bypass: 'AzureServices'
-    //   defaultAction: 'Deny'
-    //   virtualNetworkRules: [
-    //     {
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[0]
-    //     }
-    //   ]
-    // }
-    // privateEndpoints: [
-    //   {
-    //     service: 'blob'
-    //     subnetResourceId: vnet.outputs.subnetResourceIds[0]
-    //     privateDnsZoneGroup: {
-    //       privateDNSResourceIds: [
-    //         privateDNSZone.outputs.resourceId
-    //       ]
-    //     }
-    //   }
-    // ]
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0]
+        }
+      ]
+    }
+    privateEndpoints: [
+      {
+        service: 'blob'
+        subnetResourceId: vnet.outputs.subnetResourceIds[0]
+        privateDnsZoneGroup: {
+          privateDNSResourceIds: [
+            privateDNSZone.outputs.resourceId
+          ]
+        }
+      }
+    ]
   }
   dependsOn: [
     rg
@@ -273,64 +273,64 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
 }
 
 // Upload storage account files
-// module storageAccount_upload '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-//   name: '${deployment().name}-storage-upload-ds'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: '${storageDeploymentScriptName}-${formattedTime}'
-//     userAssignedIdentities: {
-//       '${msi.outputs.resourceId}': {}
-//     }
-//     scriptContent: loadTextContent('../scripts/storage/Set-StorageContainerContentByEnvVar.ps1')
-//     environmentVariables: storageAccountFilesToUpload
-//     arguments: ' -StorageAccountName "${storageAccount.outputs.name}" -TargetContainer "${storageAccountContainerName}"'
-//     timeout: 'PT30M'
-//     cleanupPreference: 'Always'
-//     location: location
-//     subnetIds: [
-//       vnet.outputs.subnetResourceIds[0]
-//     ]
-//   }
-// }
+module storageAccount_upload '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+  name: '${deployment().name}-storage-upload-ds'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: '${storageDeploymentScriptName}-${formattedTime}'
+    userAssignedIdentities: {
+      '${msi.outputs.resourceId}': {}
+    }
+    scriptContent: loadTextContent('../scripts/storage/Set-StorageContainerContentByEnvVar.ps1')
+    environmentVariables: storageAccountFilesToUpload
+    arguments: ' -StorageAccountName "${storageAccount.outputs.name}" -TargetContainer "${storageAccountContainerName}"'
+    timeout: 'PT30M'
+    cleanupPreference: 'Always'
+    location: location
+    subnetIds: [
+      vnet.outputs.subnetResourceIds[0]
+    ]
+  }
+}
 
-// // Image template
-// module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-//   name: '${deployment().name}-it'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     customizationSteps: imageTemplateCustomizationSteps
-//     imageSource: imageTemplateImageSource
-//     name: imageTemplateName
-//     userMsiName: msi.outputs.name
-//     userMsiResourceGroup: msi.outputs.resourceGroupName
-//     sigImageDefinitionId: az.resourceId(split(azureComputeGallery.outputs.resourceId, '/')[2], split(azureComputeGallery.outputs.resourceId, '/')[4], 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
-//     subnetId: vnet.outputs.subnetResourceIds[0]
-//     location: location
-//     stagingResourceGroup: imageTemplateResourceGroupName
-//   }
-//   dependsOn: [
-//     storageAccount_upload
-//   ]
-// }
+// Image template
+module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+  name: '${deployment().name}-it'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    customizationSteps: imageTemplateCustomizationSteps
+    imageSource: imageTemplateImageSource
+    name: imageTemplateName
+    userMsiName: msi.outputs.name
+    userMsiResourceGroup: msi.outputs.resourceGroupName
+    sigImageDefinitionId: az.resourceId(split(azureComputeGallery.outputs.resourceId, '/')[2], split(azureComputeGallery.outputs.resourceId, '/')[4], 'Microsoft.Compute/galleries/images', azureComputeGallery.outputs.name, imageTemplateComputeGalleryImageDefinitionName)
+    subnetId: vnet.outputs.subnetResourceIds[0]
+    location: location
+    stagingResourceGroup: imageTemplateResourceGroupName
+  }
+  dependsOn: [
+    storageAccount_upload
+  ]
+}
 
-// // Deployment script to trigger image build
-// module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-//   name: '${deployment().name}-imageTemplate-trigger-ds'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${imageTemplate.outputs.name}'
-//     userAssignedIdentities: {
-//       '${msi.outputs.resourceId}': {}
-//     }
-//     scriptContent: imageTemplate.outputs.runThisCommand
-//     timeout: 'PT30M'
-//     cleanupPreference: 'Always'
-//     location: location
-//   }
-//   dependsOn: [
-//     imageTemplate
-//   ]
-// }
+// Deployment script to trigger image build
+module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+  name: '${deployment().name}-imageTemplate-trigger-ds'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${imageTemplate.outputs.name}'
+    userAssignedIdentities: {
+      '${msi.outputs.resourceId}': {}
+    }
+    scriptContent: imageTemplate.outputs.runThisCommand
+    timeout: 'PT30M'
+    cleanupPreference: 'Always'
+    location: location
+  }
+  dependsOn: [
+    imageTemplate
+  ]
+}
 
-// @description('The generated name of the image template.')
-// output imageTemplateName string = imageTemplate.outputs.name
+@description('The generated name of the image template.')
+output imageTemplateName string = imageTemplate.outputs.name
