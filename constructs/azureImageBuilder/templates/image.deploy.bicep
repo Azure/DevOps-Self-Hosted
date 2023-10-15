@@ -287,6 +287,7 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
     timeout: 'PT30M'
     cleanupPreference: 'Always'
     location: location
+    storageAccountResourceId: storageAccount.outputs.resourceId
     subnetIds: [
       vnet.outputs.subnetResourceIds[0]
     ]
