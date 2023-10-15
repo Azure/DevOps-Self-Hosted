@@ -41,7 +41,10 @@ param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 param virtualNetworkSubnetName string = 'itsubnet'
 
 @description('Optional. The address space of the Virtual Network Subnet.')
-param virtualNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+param virtualNetworkSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 0)
+
+@description('Optional. The address space of the Virtual Network Subnet used by the deployment script.')
+param virtualNetworkDeploymentScriptSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 1)
 
 // Deployment Script Parameters
 @description('Optional. The name of the Deployment Script to trigger the Image Template baking.')
@@ -170,6 +173,15 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
         // networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
         privateLinkServiceNetworkPolicies: 'Disabled'
+        // serviceEndpoints: [
+        //   {
+        //     service: 'Microsoft.Storage'
+        //   }
+        // ]
+      }
+      {
+        name: 'deploymentSsriptSubnet'
+        addressPrefix: virtualNetworkDeploymentScriptSubnetAddressPrefix
         delegations: [
           {
             name: 'deploymentScript'
@@ -178,11 +190,6 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
             }
           }
         ]
-        // serviceEndpoints: [
-        //   {
-        //     service: 'Microsoft.Storage'
-        //   }
-        // ]
       }
     ]
     location: location
@@ -297,7 +304,7 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
     location: location
     storageAccountResourceId: storageAccount.outputs.resourceId
     subnetIds: [
-      vnet.outputs.subnetResourceIds[0]
+      vnet.outputs.subnetResourceIds[1]
     ]
   }
 }
