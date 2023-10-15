@@ -248,12 +248,12 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
-      virtualNetworkRules: [
-        {
-          action: 'Allow'
-          id: vnet.outputs.subnetResourceIds[0]
-        }
-      ]
+      //   virtualNetworkRules: [
+      //     {
+      //       action: 'Allow'
+      //       id: vnet.outputs.subnetResourceIds[0]
+      //     }
+      //   ]
     }
     privateEndpoints: [
       {
