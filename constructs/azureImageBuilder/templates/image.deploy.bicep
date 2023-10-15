@@ -174,7 +174,7 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
           {
             name: 'deploymentScript'
             properties: {
-              serviceName: 'Microsoft.ContainerInstance'
+              serviceName: 'Microsoft.ContainerInstance/containerGroups'
             }
           }
         ]
