@@ -23,6 +23,9 @@ param computeGalleryImageDefinitions array
 @description('Required. The name of the storage account.')
 param storageAccountName string
 
+@description('Optional. The name of the storage account.')
+param deploymentScriptStorageAccountName string = '${storageAccountName}ds'
+
 @description('Optional. The name of container in the Storage Account.')
 param storageAccountContainerName string = 'aibscripts'
 
@@ -291,7 +294,7 @@ module storageAccountDeploymentScript '../../../CARML0.11/storage/storage-accoun
   name: '${deployment().name}-sa-ds'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: storageAccountName
+    name: deploymentScriptStorageAccountName
     allowSharedKeyAccess: false
     roleAssignments: [
       {
