@@ -182,6 +182,11 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
       {
         name: 'deploymentSsriptSubnet'
         addressPrefix: virtualNetworkDeploymentScriptSubnetAddressPrefix
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+        ]
         delegations: [
           {
             name: 'deploymentScript'
@@ -215,11 +220,6 @@ module privateDNSZone '../../../CARML0.11/network/private-dns-zone/main.bicep' =
   dependsOn: [
     rg
   ]
-}
-
-resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor for Deployment Script MSI
-  scope: tenant()
 }
 
 // Assets Storage Account
@@ -263,12 +263,6 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
-      //   virtualNetworkRules: [
-      //     {
-      //       action: 'Allow'
-      //       id: vnet.outputs.subnetResourceIds[0]
-      //     }
-      //   ]
     }
     privateEndpoints: [
       {
@@ -281,6 +275,46 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
         }
       }
     ]
+  }
+  dependsOn: [
+    rg
+  ]
+}
+
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor for Deployment Script MSI
+  scope: tenant()
+}
+
+// Deployment script storage account
+module storageAccountDeploymentScript '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+  name: '${deployment().name}-sa'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: storageAccountName
+    allowSharedKeyAccess: false
+    roleAssignments: [
+      {
+        // Allow MSI to leverage the storage account for private networking
+        // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
+        roleDefinitionIdOrName: storageFileDataPrivilegedContributor.id // Storage File Data Priveleged Contributor
+        principalIds: [
+          msi.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+    location: location
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[1]
+        }
+      ]
+    }
   }
   dependsOn: [
     rg
@@ -302,7 +336,7 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
     timeout: 'PT30M'
     cleanupPreference: 'Always'
     location: location
-    storageAccountResourceId: storageAccount.outputs.resourceId
+    storageAccountResourceId: storageAccountDeploymentScript.outputs.resourceId
     subnetIds: [
       vnet.outputs.subnetResourceIds[1]
     ]
