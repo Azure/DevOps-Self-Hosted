@@ -170,6 +170,14 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
         // networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
         privateLinkServiceNetworkPolicies: 'Disabled'
+        delegations: [
+          {
+            name: 'deploymentScript'
+            properties: {
+              serviceName: 'Microsoft.ContainerInstance'
+            }
+          }
+        ]
         // serviceEndpoints: [
         //   {
         //     service: 'Microsoft.Storage'
