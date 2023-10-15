@@ -202,6 +202,11 @@ module privateDNSZone '../../../CARML0.11/network/private-dns-zone/main.bicep' =
   ]
 }
 
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor for Deployment Script MSI
+  scope: tenant()
+}
+
 // Assets Storage Account
 module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-sa'
@@ -232,7 +237,7 @@ module storageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = 
       {
         // Allow MSI to leverage the storage account for private networking
         // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
-        roleDefinitionIdOrName: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
+        roleDefinitionIdOrName: storageFileDataPrivilegedContributor.id // Storage File Data Priveleged Contributor
         principalIds: [
           msi.outputs.principalId
         ]
