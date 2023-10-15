@@ -288,7 +288,7 @@ resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefin
 
 // Deployment script storage account
 module storageAccountDeploymentScript '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
-  name: '${deployment().name}-sa'
+  name: '${deployment().name}-sa-ds'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: storageAccountName
