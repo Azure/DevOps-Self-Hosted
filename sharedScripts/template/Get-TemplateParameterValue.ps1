@@ -40,7 +40,7 @@ function Get-TemplateParameterValue {
     $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
 
     $res = @()
-
+    # TODO: Enable to work with UDT
     foreach ($name in $ParameterName) {
         # Get Storage Account name
         if ($templateContent.resources[-1].properties.parameters.Keys -contains $name) {
