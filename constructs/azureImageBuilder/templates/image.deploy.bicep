@@ -183,7 +183,7 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
         // ]
       }
       {
-        name: 'deploymentSsriptSubnet'
+        name: 'deploymentScriptSubnet'
         addressPrefix: virtualNetworkDeploymentScriptSubnetAddressPrefix
         serviceEndpoints: [
           {
