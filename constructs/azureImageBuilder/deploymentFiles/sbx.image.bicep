@@ -89,9 +89,9 @@ module imageDeployment '../templates/image.deploy.bicep' = {
                     'pwsh \'LinuxPrepareMachine.ps1\''
                 ]
             }
-
         ]
-        imageTemplateComputeGalleryImageDefinitionName: 'linux-sid'
+        imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
+        imageTemplateResourceGroupName: 'agents-vmss-image-build-rg'
 
         // Windows Example
         // computeGalleryImageDefinitions: [

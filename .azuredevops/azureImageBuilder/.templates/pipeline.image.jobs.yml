@@ -98,6 +98,32 @@ jobs:
                   Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
                   Remove-DeploymentScript @functionInput -Verbose
+            - task: AzureCLI@2
+              name: Clean_StagingRG_Task
+              displayName: 'Cleanup resources from Staging Resource Group'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ResourcesInStagingRg.ps1')
+
+                  $functionInput = @{
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Remove-ResourcesInStagingRg @functionInput -Verbose
 
   - deployment: deploy_job
     displayName: Deploy Resources

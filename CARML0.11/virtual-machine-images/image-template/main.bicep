@@ -34,8 +34,8 @@ param userAssignedIdentities array = []
 @description('Required. Image source definition in object format.')
 param imageSource object
 
-@description('Required. Customization steps to be run when building the VM image.')
-param customizationSteps array
+@description('Optional. Customization steps to be run when building the VM image.')
+param customizationSteps array = []
 
 @description('Optional. Name of the managed image that will be created in the AIB resourcegroup.')
 param managedImageName string = ''
@@ -141,9 +141,6 @@ var unManagedImage = {
 }
 var conditionalUnManagedImage = empty(unManagedImageName) ? [] : array(unManagedImage)
 var distribute = concat(conditionalManagedImage, conditionalSharedImage, conditionalUnManagedImage)
-var vnetConfig = {
-  subnetId: subnetId
-}
 
 resource defaultTelemetry 'Microsoft.Resources/deployments@2021-04-01' = if (enableDefaultTelemetry) {
   name: 'pid-47ed15a6-730a-4827-bcb4-0fd963ffbd82-${uniqueString(deployment().name, location)}'
@@ -157,7 +154,7 @@ resource defaultTelemetry 'Microsoft.Resources/deployments@2021-04-01' = if (ena
   }
 }
 
-resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
+resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-07-01' = {
   name: '${name}-${baseTime}'
   location: location
   tags: tags
@@ -173,10 +170,12 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14
       vmSize: vmSize
       osDiskSizeGB: osDiskSizeGB
       userAssignedIdentities: userAssignedIdentities
-      vnetConfig: !empty(subnetId) ? vnetConfig : null
+      vnetConfig: !empty(subnetId) ? {
+        subnetId: subnetId
+      } : null
     }
     source: imageSource
-    customize: customizationSteps
+    customize: !empty(customizationSteps) ? customizationSteps : null
     distribute: distribute
     stagingResourceGroup: stagingResourceGroup
   }

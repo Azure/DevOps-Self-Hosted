@@ -64,6 +64,6 @@ foreach ($scriptPath in $scriptPaths) {
         }
         Write-Verbose 'Upload successful' -Verbose
     } catch {
-        Write-Error "Upload FAILED: $_"
+        throw "Upload FAILED: $_"
     }
 }
