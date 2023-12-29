@@ -108,6 +108,7 @@ module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploym
   }
 }
 
+// Always deployed as both an infra element & needed as a staging resource group for image building
 module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' = {
   name: '${deployment().name}-rg'
   params: {
@@ -117,7 +118,8 @@ module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' 
 }
 
 // User Assigned Identity (MSI)
-module dsMsi '../../../CARML0.11/managed-identity/user-assigned-identity/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+// Always deployed as both an infra element & its output is neeeded for image building
+module dsMsi '../../../CARML0.11/managed-identity/user-assigned-identity/main.bicep' = {
   name: '${deployment().name}-ds-msi'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -347,10 +349,9 @@ module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/m
     stagingResourceGroup: imageTemplateRg.outputs.resourceId
     roleAssignments: [
       {
-        // Allow deployment script to trigger image build
         roleDefinitionIdOrName: 'Contributor'
         principalIds: [
-          (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
+          dsMsi.outputs.principalId // Allow deployment script to trigger image build
         ]
         principalType: 'ServicePrincipal'
       }
