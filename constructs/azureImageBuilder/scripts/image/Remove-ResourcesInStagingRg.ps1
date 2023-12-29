@@ -28,44 +28,57 @@ function Remove-ResourcesInStagingRg {
         [switch] $RemoveImageTemplateResourceGroup
     )
 
-    # Fetch information
-    # -----------------
-    $templateParamInputObject = @{
-        TemplateFilePath = $TemplateFilePath
-        ParameterName    = @('imageTemplateResourceGroupName')
-    }
-    $imageTemplateResourceGroupName = Get-TemplateParameterValue @templateParamInputObject
+    begin {
+        # Load helper
+        $repoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
 
-
-    if (-not (Get-AzResourceGroup $imageTemplateResourceGroupName -ErrorAction SilentlyContinue)) {
-        Write-Verbose ('Resource Group [{0}] does not exist. Skipping cleanup.' -f $imageTemplateResourceGroupName) -Verbose
-        return
+        . (Join-Path -Path $repoRoot 'sharedScripts' 'template' 'Get-TemplateParameterValue.ps1')
     }
 
-    # Fetching & removing resources
-    # =============================
-    if ($RemoveImageTemplateResourceGroup) {
-        Write-Verbose "Removing resource group [$imageTemplateResourceGroupName]"
-        if ($PSCmdlet.ShouldProcess('Resource [{0}]' -f $resource.Id, 'Remove')) {
-            $null = Remove-AzResourceGroup -Name $imageTemplateResourceGroupName -Force -ErrorAction 'SilentlyContinue'
+    process {
+        # Fetch information
+        # -----------------
+        $templateParamInputObject = @{
+            TemplateFilePath = $TemplateFilePath
+            ParameterName    = @('imageTemplateResourceGroupName')
         }
-        return
-    }
+        $imageTemplateResourceGroupName = Get-TemplateParameterValue @templateParamInputObject
 
 
-    $imageTemplateResources = Get-AzResource -ResourceGroupName $imageTemplateResourceGroupName
-
-    if ($imageTemplateResources.Count -gt 0) {
-
-        Write-Verbose 'Removing resources:'
-        foreach ($resource in $imageTemplateResources) {
-            Write-Verbose ('- [{0}]' -f $resource.id)
+        if (-not (Get-AzResourceGroup $imageTemplateResourceGroupName -ErrorAction SilentlyContinue)) {
+            Write-Verbose ('Resource Group [{0}] does not exist. Skipping cleanup.' -f $imageTemplateResourceGroupName) -Verbose
+            return
         }
 
-        foreach ($resource in $imageTemplateResources) {
+        # Fetching & removing resources
+        # =============================
+        if ($RemoveImageTemplateResourceGroup) {
+            Write-Verbose "Removing resource group [$imageTemplateResourceGroupName]"
             if ($PSCmdlet.ShouldProcess('Resource [{0}]' -f $resource.Id, 'Remove')) {
-                $null = Remove-AzResource -ResourceId $resource.Id -Force -ErrorAction 'Stop'
+                $null = Remove-AzResourceGroup -Name $imageTemplateResourceGroupName -Force -ErrorAction 'SilentlyContinue'
+            }
+            return
+        }
+
+
+        $imageTemplateResources = Get-AzResource -ResourceGroupName $imageTemplateResourceGroupName
+
+        if ($imageTemplateResources.Count -gt 0) {
+
+            Write-Verbose 'Removing resources:'
+            foreach ($resource in $imageTemplateResources) {
+                Write-Verbose ('- [{0}]' -f $resource.id)
+            }
+
+            foreach ($resource in $imageTemplateResources) {
+                if ($PSCmdlet.ShouldProcess('Resource [{0}]' -f $resource.Id, 'Remove')) {
+                    $null = Remove-AzResource -ResourceId $resource.Id -Force -ErrorAction 'Stop'
+                }
             }
         }
+    }
+
+    end {
+        Write-Debug ('{0} exited' -f $MyInvocation.MyCommand)
     }
 }
