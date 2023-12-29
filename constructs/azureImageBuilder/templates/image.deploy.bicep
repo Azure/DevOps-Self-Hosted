@@ -118,7 +118,7 @@ module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' 
 
 // User Assigned Identity (MSI)
 module dsMsi '../../../CARML0.11/managed-identity/user-assigned-identity/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
-  name: '${deployment().name}-infra-msi'
+  name: '${deployment().name}-ds-msi'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: deploymentScriptManagedIdentityName
@@ -233,7 +233,7 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
               // Allow Infra MSI to access storage account container to upload files - DO NOT REMOVE
               roleDefinitionIdOrName: 'Storage Blob Data Contributor'
               principalIds: [
-                dsMsi.outputs.principalId
+                (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : // Requires condition als Bicep will otherwise try to resolve the null reference
               ]
               principalType: 'ServicePrincipal'
             }
@@ -241,7 +241,7 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
               // Allow image MSI to access storage account container to read files - DO NOT REMOVE
               roleDefinitionIdOrName: 'Storage Blob Data Reader'
               principalIds: [
-                imageMSI.outputs.principalId
+                (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? imageMSI.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
               ]
               principalType: 'ServicePrincipal'
             }
@@ -278,7 +278,7 @@ module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' 
         // ref: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-script-bicep#access-private-virtual-network
         roleDefinitionIdOrName: storageFileDataPrivilegedContributor.id // Storage File Data Priveleged Contributor
         principalIds: [
-          dsMsi.outputs.principalId
+          (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
         ]
         principalType: 'ServicePrincipal'
       }
@@ -347,9 +347,10 @@ module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/m
     stagingResourceGroup: imageTemplateRg.outputs.resourceId
     roleAssignments: [
       {
+        // Allow deployment script to trigger image build
         roleDefinitionIdOrName: 'Contributor'
         principalIds: [
-          dsMsi.outputs.principalId // Allows deployment script to trigger image build
+          (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
         ]
         principalType: 'ServicePrincipal'
       }
