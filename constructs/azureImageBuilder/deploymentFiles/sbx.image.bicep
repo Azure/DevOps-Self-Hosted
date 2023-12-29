@@ -13,7 +13,7 @@ targetScope = 'subscription'
 param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'West Europe'
+param location string = 'WestEurope'
 
 /////////////////////////////
 //   Template Deployment   //
@@ -24,7 +24,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        computeGalleryName: 'aibgallery'
+        computeGalleryName: 'galaib'
+        imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
         computeGalleryImageDefinitions: [
             {
                 hyperVGeneration: 'V2'
@@ -36,10 +37,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             }
         ]
 
-        deploymentScriptStorageAccountName: 'dsalsehrsa'
-
-        storageAccountName: 'shaibstorage'
-        storageAccountContainerName: 'aibscripts'
+        assetsStorageAccountName: 'stshaib'
+        assetsStorageAccountContainerName: 'aibscripts'
 
         storageAccountFilesToUpload: {
             secureList: [
@@ -76,12 +75,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
+                scriptUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
             }
             {
                 type: 'File'
                 name: 'LinuxPrepareMachine'
-                sourceUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1'
+                sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1'
                 destination: 'LinuxPrepareMachine.ps1'
             }
             {
@@ -92,8 +91,6 @@ module imageDeployment '../templates/image.deploy.bicep' = {
                 ]
             }
         ]
-        imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
-        imageTemplateResourceGroupName: 'agents-vmss-image-build-rg'
 
         // Windows Example
         // computeGalleryImageDefinitions: [
@@ -119,7 +116,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'WindowsInstallPowerShell.ps1\''
         //         ]
@@ -128,14 +125,14 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //     {
         //         type: 'File'
         //         name: 'WindowsPrepareMachine'
-        //         sourceUri: 'https://shaibstorage.blob.${az.environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1'
+        //         sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1'
         //         destination: 'WindowsPrepareMachine.ps1'
         //     }
         //     {
         //         type: 'PowerShell'
         //         name: 'Software installation'
         //         inline: [
-        //             'wget \'https://shaibstorage.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
+        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
         //             'pwsh \'WindowsPrepareMachine.ps1\''
         //         ]
         //         runElevated: true

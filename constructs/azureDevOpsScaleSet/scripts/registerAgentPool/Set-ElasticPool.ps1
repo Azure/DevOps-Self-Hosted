@@ -39,7 +39,7 @@ Optional. The minimum time in minutes to keep idle agents alive. Defaults to '15
 $inputObject = @{
     Organization      = 'contoso'
     ScaleSetPoolId    = 14
-    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
+    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/ado-agents-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
     VMSSOSType        = 'Linux'
 }
 Set-ElasticPool @inputObject

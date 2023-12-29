@@ -6,7 +6,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('Optional. The name of the Resource Group.')
-param resourceGroupName string = 'agents-vmss-rg'
+param resourceGroupName string = 'ado-agents-rg'
 
 // Network Security Group Parameters
 @description('Optional. The name of the Network Security Group.')

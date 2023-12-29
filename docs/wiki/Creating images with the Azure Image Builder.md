@@ -78,13 +78,13 @@ imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh'
+      scriptUri: 'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://shaibstorage.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
+          'wget \'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
           'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
           'pwsh \'LinuxPrepareMachine.ps1\''
       ]
@@ -139,7 +139,7 @@ So let's take a look at the different configuration options when running the pip
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `sbx.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only deploy the storage account, upload the latest installation files from the `Uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
+| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only uploads the latest installation files from the `Uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
 | `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs\azureImageBuilder\scripts\image\Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
 | `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter file - as long es their built is not in state `running`.  | De-select | |
 
@@ -195,7 +195,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
   {
     imageSource: {
       type: 'SharedImageVersion'
-      imageVersionID: '/subscriptions/c64d2kd9-4679-45f5-b17a-e27b0214acp4d/resourceGroups/scale-set-rg/providers/Microsoft.Compute/galleries/mygallery/images/mydefinition/versions/0.24457.34028'
+      imageVersionID: '/subscriptions/c64d2kd9-4679-45f5-b17a-e27b0214acp4d/resourceGroups/rg-scaleset/providers/Microsoft.Compute/galleries/galmy/images/mydefinition/versions/0.24457.34028'
     }
   }
   ```
@@ -242,6 +242,6 @@ Following you can find an overview of the installed elements currently implement
 
 # Troubleshooting
 
-Most commonly issues with the construct occur during the image building process due to script errors. As those are hard to troubleshoot and the AIB VMs that are used to bake images are not accessible, the AIB service writes logs into a storage account in the resource group it generates during the building process (`IT_...`) as documented [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-troubleshoot#customization-log).
+Most commonly issues with the construct occur during the image building process due to script errors. As those are hard to troubleshoot and the AIB VMs that are used to bake images are not accessible, the AIB service writes logs into a storage account in the 'staging' resource group it generates during the building process as documented [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-troubleshoot#customization-log).
 
 Aside from the packer logs, it will also contain the logs generated by our provided customization scripts and hence provide you insights into 'where' something wrong, and ideally also 'what' went wrong.

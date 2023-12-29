@@ -50,7 +50,7 @@ $inputObject = @{
     ProjectId         = 43
     PoolName          = 'myPool'
     ServiceEndpointId = '11111-1111-11111-1111-1111111'
-    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
+    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/ado-agents-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
     VMSSOSType        = 'Linux'
 }
 New-ElasticPool @inputObject
