@@ -97,6 +97,7 @@ module galleries_applications 'application/main.bicep' = [for (application, inde
     customActions: contains(application, 'customActions') ? application.customActions : []
     tags: contains(application, 'tags') ? application.tags : {}
     enableDefaultTelemetry: enableReferencedModulesTelemetry
+    location: location
   }
 }]
 
@@ -129,6 +130,7 @@ module galleries_images 'image/main.bicep' = [for (image, index) in images: {
     roleAssignments: contains(image, 'roleAssignments') ? image.roleAssignments : []
     tags: contains(image, 'tags') ? image.tags : {}
     enableDefaultTelemetry: enableReferencedModulesTelemetry
+    location: location
   }
 }]
 
