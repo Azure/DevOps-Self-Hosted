@@ -169,11 +169,6 @@ jobs:
             #---------------------
             - task: AzureCLI@2
               displayName: 'Deploy [image.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
-              condition: |
-                and(
-                  succeeded(),
-                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
-                )
               inputs:
                 addSpnToEnvironment: true
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
@@ -226,8 +221,7 @@ jobs:
               condition: |
                 and(
                   succeeded(),
-                  eq('${{ parameters.waitForImageBuild }}', 'true'),
-                  in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image')
+                  eq('${{ parameters.waitForImageBuild }}', 'true')
                 )
               inputs:
                 addSpnToEnvironment: true
