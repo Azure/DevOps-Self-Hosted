@@ -134,7 +134,7 @@ jobs:
     condition: |
       and(
         succeeded(),
-        not(eq('${{ parameters.deploymentsToPerform }}', 'Only removal')
+        not(eq('${{ parameters.deploymentsToPerform }}', 'Only removal'))
       )
     timeoutInMinutes: 120
     pool:
