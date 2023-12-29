@@ -190,8 +190,6 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
 
-                  # TODO: Investigate creating a script that injects the scripts to upload to the storage account automatically
-
                   # ----------------- #
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
