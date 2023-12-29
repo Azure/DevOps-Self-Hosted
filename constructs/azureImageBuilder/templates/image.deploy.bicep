@@ -233,7 +233,7 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
               // Allow Infra MSI to access storage account container to upload files - DO NOT REMOVE
               roleDefinitionIdOrName: 'Storage Blob Data Contributor'
               principalIds: [
-                (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : // Requires condition als Bicep will otherwise try to resolve the null reference
+                (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? dsMsi.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
               ]
               principalType: 'ServicePrincipal'
             }
