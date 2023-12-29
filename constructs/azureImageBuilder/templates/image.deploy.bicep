@@ -9,7 +9,7 @@ targetScope = 'subscription'
 param resourceGroupName string = 'rg-ado-agents'
 
 @description('Optional. The name of the Resource Group to deploy the Image Template resources into.')
-param imageTemplateResourceGroupName string = 'rg-ado-agents-image-build'
+param imageTemplateResourceGroupName string = '${resourceGroupName}-image-build'
 
 // User Assigned Identity (MSI) Parameters
 @description('Optional. The name of the Managed Identity used by deployment scripts.')
