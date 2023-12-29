@@ -210,6 +210,14 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
 }
 
 // Assets Storage Account
+// Notes
+// - Subnet in Stefan's IT deployment missing?
+// -> If not provided on my end, doesn't make a difference. Still has access issues
+// Storage Firewall
+// - Access works if disabled, but is actually enabled in Stefan's deployment
+// Storage Shared Access Key:
+// - Definitely not needed
+
 module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-files-sa'
   scope: resourceGroup(resourceGroupName)
@@ -236,7 +244,7 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
       ]
     }
     location: location
-    // If enabled, the IT cannot access the storage account container files
+    // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
     // networkAcls: {
     //   bypass: 'AzureServices'
     //   defaultAction: 'Deny'
@@ -372,11 +380,3 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
 
 // @description('The generated name of the image template.')
 // output imageTemplateName string = imageTemplate.outputs.name
-
-// Notes
-// - Subnet in Stefan's IT deployment missing?
-// -> If not provided on my end, doesn't make a difference. Still has access issues
-// Storage Firewall
-// - Access works if disabled, but is actually enabled in Stefan's deployment
-// Storage Shared Access Key:
-// - Definitely not needed
