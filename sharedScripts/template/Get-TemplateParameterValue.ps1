@@ -22,9 +22,9 @@ $resourceGroupName = Get-TemplateParameterValue -TemplateFilePath 'C:\constructs
 Fetch the value for the parameter 'resourceGroupName' from template 'sbx.image.bicep' and assign it to the corresponding local variable for subsequent use
 
 .EXAMPLE
-$resourceGroupName = Get-TemplateParameterValue -TemplateFilePath 'C:\constructs\azureImageBuilder\deploymentFiles\sbx.image.bicep' -ParameterName @('resourceGroupName', 'imageTemplateDeploymentScriptName', 'storageDeploymentScriptName')
+$var1, $var2 = Get-TemplateParameterValue -TemplateFilePath 'C:\constructs\azureImageBuilder\deploymentFiles\sbx.image.bicep' -ParameterName @('var1', 'var2')
 
-Fetch the values for the parameters 'resourceGroupName', 'imageTemplateDeploymentScriptName' & 'storageDeploymentScriptName' from template 'sbx.image.bicep' and assign them to the corresponding local variables for subsequent use
+Fetch the values for the parameters 'var1' & 'var2' from template 'sbx.image.bicep' and assign them to the corresponding local variables for subsequent use
 #>
 function Get-TemplateParameterValue {
 
