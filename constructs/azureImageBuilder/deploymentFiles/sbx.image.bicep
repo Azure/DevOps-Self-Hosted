@@ -63,9 +63,9 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         // Linux Example
         imageTemplateImageSource: {
             type: 'PlatformImage'
-            publisher: 'Canonical'
-            offer: '0001-com-ubuntu-server-focal'
-            sku: '20_04-lts-gen2'
+            publisher: 'canonical'
+            offer: '0001-com-ubuntu-server-mantic'
+            sku: '23_10'
             version: 'latest'
             // Custom image example
             // type: 'SharedImageVersion'
