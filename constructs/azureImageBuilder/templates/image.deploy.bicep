@@ -215,8 +215,6 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
 // -> If not provided on my end, doesn't make a difference. Still has access issues
 // Storage Firewall
 // - Access works if disabled, but is actually enabled in Stefan's deployment
-// Storage Shared Access Key:
-// - Definitely not needed
 
 module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-files-sa'
