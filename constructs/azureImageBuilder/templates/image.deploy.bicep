@@ -224,6 +224,24 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
   params: {
     name: storageAccountName
     allowSharedKeyAccess: false // Keys not needed if MSI is granted access
+    location: location
+    // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
+    // networkAcls: {
+    //   bypass: 'AzureServices'
+    //   defaultAction: 'Deny'
+    //   virtualNetworkRules: [
+    //     {
+    //       // Allow image template to access storage account container files to download files
+    //       action: 'Allow'
+    //       id: vnet.outputs.subnetResourceIds[0]
+    //     }
+    //     {
+    //       // Allow deployment script to access storage account container files to upload files
+    //       action: 'Allow'
+    //       id: vnet.outputs.subnetResourceIds[1]
+    //     }
+    //   ]
+    // }
     blobServices: {
       containers: [
         {
@@ -243,24 +261,6 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
         }
       ]
     }
-    location: location
-    // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
-    // networkAcls: {
-    //   bypass: 'AzureServices'
-    //   defaultAction: 'Deny'
-    //   virtualNetworkRules: [
-    //     {
-    //       // Allow image template to access storage account container files to download files
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[0]
-    //     }
-    //     {
-    //       // Allow deployment script to access storage account container files to upload files
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[1]
-    //     }
-    //   ]
-    // }
   }
   dependsOn: [
     rg
