@@ -99,11 +99,19 @@ var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '
 // Deployments //
 // =========== //
 
-// Resource Group
+// Resource Groups
 module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-rg'
   params: {
     name: resourceGroupName
+    location: location
+  }
+}
+
+module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' = {
+  name: '${deployment().name}-rg'
+  params: {
+    name: imageTemplateResourceGroupName
     location: location
   }
 }
@@ -336,7 +344,7 @@ module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/m
     sigImageDefinitionId: az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Compute/galleries/images', computeGalleryName, imageTemplateComputeGalleryImageDefinitionName)
     subnetId: az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, imageSubnetName)
     location: location
-    stagingResourceGroup: '${subscription().id}/resourceGroups/${imageTemplateResourceGroupName}'
+    stagingResourceGroup: imageTemplateRg.outputs.resourceId
     roleAssignments: [
       {
         roleDefinitionIdOrName: 'Contributor'
