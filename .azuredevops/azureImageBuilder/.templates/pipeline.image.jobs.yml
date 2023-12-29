@@ -134,7 +134,7 @@ jobs:
     condition: |
       and(
         succeeded(),
-        in('${{ parameters.deploymentsToPerform }}', 'All', 'Only infrastructure', 'Only storage & image', 'Only image', '')
+        not(eq('${{ parameters.deploymentsToPerform }}', 'Only removal')
       )
     timeoutInMinutes: 120
     pool:
