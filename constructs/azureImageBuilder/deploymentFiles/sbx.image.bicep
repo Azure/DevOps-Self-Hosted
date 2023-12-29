@@ -13,7 +13,7 @@ targetScope = 'subscription'
 param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'WestEurope'
+param location string = 'West Europe'
 
 /////////////////////////////
 //   Template Deployment   //
@@ -35,6 +35,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
                 sku: 'devops_linux_az'
             }
         ]
+
+        deploymentScriptStorageAccountName: 'dsalsehrsa'
 
         storageAccountName: 'shaibstorage'
         storageAccountContainerName: 'aibscripts'

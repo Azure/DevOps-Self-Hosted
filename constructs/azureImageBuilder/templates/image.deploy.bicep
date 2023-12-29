@@ -120,18 +120,18 @@ module msi '../../../CARML0.11/managed-identity/user-assigned-identity/main.bice
 }
 
 // MSI Subscription contributor assignment
-module msi_rbac '../../../CARML0.11/authorization//role-assignment/subscription/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
-  name: '${deployment().name}-ra'
-  params: {
-    // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
-    //principalId: msi.outputs.principalId // Results in: Deployment template validation failed: 'The template resource 'Microsoft.Resources/deployments/image.deploy-ra' reference to 'Microsoft.Resources/deployments/image.deploy-msi' requires an API version. Please see https://aka.ms/arm-template for usage details.'.
-    // Default: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('rgParam').name), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name))).outputs.principalId.value
-    //principalId: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroupName), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name)),'2021-04-01').outputs.principalId.value
-    principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? msi.outputs.principalId : ''
-    roleDefinitionIdOrName: 'Contributor' // TODO: May need even less
-    location: location
-  }
-}
+// module msi_rbac '../../../CARML0.11/authorization//role-assignment/subscription/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+//   name: '${deployment().name}-ra'
+//   params: {
+//     // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
+//     //principalId: msi.outputs.principalId // Results in: Deployment template validation failed: 'The template resource 'Microsoft.Resources/deployments/image.deploy-ra' reference to 'Microsoft.Resources/deployments/image.deploy-msi' requires an API version. Please see https://aka.ms/arm-template for usage details.'.
+//     // Default: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('rgParam').name), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name))).outputs.principalId.value
+//     //principalId: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroupName), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name)),'2021-04-01').outputs.principalId.value
+//     principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? msi.outputs.principalId : ''
+//     roleDefinitionIdOrName: 'Contributor' // TODO: May need even less
+//     location: location
+//   }
+// }
 
 // Azure Compute Gallery
 module azureComputeGallery '../../../CARML0.11/compute/gallery/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
@@ -177,12 +177,12 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
         // networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // TODO: Check if the extra condition helps mitigating the reference issue
         privateLinkServiceNetworkPolicies: 'Disabled' // - DO NOT REMOVE
-        // TODO: Check if this subnetcan have PE
-        // serviceEndpoints: [ // TOD: Temp disabled to test public storage access
-        //   {
-        //     service: 'Microsoft.Storage'
-        //   }
-        // ]
+        // TODO: Check if this subnet can have PE
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+        ]
       }
       {
         name: 'deploymentScriptSubnet'
@@ -209,21 +209,13 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
   ]
 }
 
-// module dnsTest 'dnsTest.bicep' = {
-//   scope: resourceGroup(resourceGroupName)
-//   name: 'dns-deploy'
-//   params: {
-//     virtualNetworkResourceId: vnet.outputs.resourceId
-//   }
-// }
-
 // Assets Storage Account
-module filesStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-files-sa'
   scope: resourceGroup(resourceGroupName)
   params: {
     name: storageAccountName
-    allowSharedKeyAccess: false
+    allowSharedKeyAccess: false // Keys not needed if MSI is granted access
     blobServices: {
       containers: [
         {
@@ -232,6 +224,7 @@ module filesStorageAccount '../../../CARML0.11/storage/storage-account/main.bice
           roleAssignments: [
             {
               // Allow MSI to access storage account container files to upload files - DO NOT REMOVE
+              // 'Storage Blob Data Reader' would be enough if we only download files
               roleDefinitionIdOrName: 'Storage Blob Data Contributor'
               principalIds: [
                 msi.outputs.principalId
@@ -242,17 +235,8 @@ module filesStorageAccount '../../../CARML0.11/storage/storage-account/main.bice
         }
       ]
     }
-    // privateEndpoints: [
-    //   {
-    //     service: 'blob'
-    //     subnetResourceId: vnet.outputs.subnetResourceIds[0]
-    //     privateDnsZoneResourceIds: [
-    //       dnsTest.outputs.privateDNSZoneResourceId
-    //     ]
-    //   }
-    // ]
     location: location
-    // TODO: Should be enabled. Disabled only for testing
+    // If enabled, the IT cannot access the storage account container files
     // networkAcls: {
     //   bypass: 'AzureServices'
     //   defaultAction: 'Deny'
@@ -293,6 +277,9 @@ module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/m
     location: location
     stagingResourceGroup: '${subscription().id}/resourceGroups/${imageTemplateResourceGroupName}'
   }
+  dependsOn: [
+    storageAccount_upload
+  ]
 }
 
 // Deployment scripts & their storage account
@@ -306,7 +293,7 @@ module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' 
   name: '${deployment().name}-ds-sa'
   scope: resourceGroup(resourceGroupName)
   params: {
-    name: 'dsalsehrsa'
+    name: deploymentScriptStorageAccountName
     allowSharedKeyAccess: true // May not be disabled to allow deployment script to access storage account files
     roleAssignments: [
       {
@@ -348,7 +335,7 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
     }
     scriptContent: loadTextContent('../scripts/storage/Set-StorageContainerContentByEnvVar.ps1')
     environmentVariables: storageAccountFilesToUpload
-    arguments: ' -StorageAccountName "${filesStorageAccount.outputs.name}" -TargetContainer "${storageAccountContainerName}"'
+    arguments: ' -StorageAccountName "${assetsStorageAccount.outputs.name}" -TargetContainer "${storageAccountContainerName}"'
     timeout: 'PT30M'
     cleanupPreference: 'Always'
     location: location
@@ -359,29 +346,37 @@ module storageAccount_upload '../../../CARML0.11/resources/deployment-script/mai
   }
 }
 
-// // Deployment script to trigger image build
-// module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-//   name: '${deployment().name}-imageTemplate-trigger-ds'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${imageTemplate.outputs.name}'
-//     userAssignedIdentities: {
-//       '${msi.outputs.resourceId}': {}
-//     }
-//     scriptContent: imageTemplate.outputs.runThisCommand
-//     timeout: 'PT30M'
-//     cleanupPreference: 'Always'
-//     location: location
-//     storageAccountName: dsStorageAccount.outputs.name
-//     subnetIds: [
-//       vnet.outputs.subnetResourceIds[1]
-//     ]
-//   }
-//   dependsOn: [
-//     storageAccount_upload
-//     imageTemplate
-//   ]
-// }
+// // // Deployment script to trigger image build
+// // module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+// //   name: '${deployment().name}-imageTemplate-trigger-ds'
+// //   scope: resourceGroup(resourceGroupName)
+// //   params: {
+// //     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${imageTemplate.outputs.name}'
+// //     userAssignedIdentities: {
+// //       '${msi.outputs.resourceId}': {}
+// //     }
+// //     scriptContent: imageTemplate.outputs.runThisCommand
+// //     timeout: 'PT30M'
+// //     cleanupPreference: 'Always'
+// //     location: location
+// //     storageAccountName: dsStorageAccount.outputs.name
+// //     subnetIds: [
+// //       vnet.outputs.subnetResourceIds[1]
+// //     ]
+// //   }
+// //   dependsOn: [
+// //     // storageAccount_upload
+// //     imageTemplate
+// //   ]
+// // }
 
-@description('The generated name of the image template.')
-output imageTemplateName string = imageTemplate.outputs.name
+// @description('The generated name of the image template.')
+// output imageTemplateName string = imageTemplate.outputs.name
+
+// Notes
+// - Subnet in Stefan's IT deployment missing?
+// -> If not provided on my end, doesn't make a difference. Still has access issues
+// Storage Firewall
+// - Access works if disabled, but is actually enabled in Stefan's deployment
+// Storage Shared Access Key:
+// - Definitely not needed
