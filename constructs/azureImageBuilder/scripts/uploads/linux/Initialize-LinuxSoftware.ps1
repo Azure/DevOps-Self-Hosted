@@ -431,19 +431,26 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 ##################################
 # Source: https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#1804-
 LogInfo('Install dotnet (for nuget) start')
-$ubuntuBaseVersion = 18.04
+
+# Get the version of Ubuntu
+# . /etc/os-release - does not work (yet) for image version 23.04. The package is available, but does not contain nuget
+$ubuntuBaseVersion = '22.04'
 
 # .NET-Core Runtime
-wget https://packages.microsoft.com/config/ubuntu/$ubuntuBaseVersion/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+wget "https://packages.microsoft.com/config/ubuntu/$ubuntuBaseVersion/packages-microsoft-prod.deb" -O 'packages-microsoft-prod.deb'
 sudo dpkg -i packages-microsoft-prod.deb
 
 # .NET-Core SDK
 sudo apt-get update
-sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y dotnet-sdk-5.0
+sudo apt-get install -y apt-transport-https
+sudo apt-get update
+sudo apt-get install -y dotnet-sdk-5.0
 
 # .NET-Core Runtime
 sudo apt-get update
-sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y aspnetcore-runtime-5.0
+sudo apt-get install -y apt-transport-https
+sudo apt-get update
+sudo apt-get install -y aspnetcore-runtime-5.0
 LogInfo('Install dotnet (for nuget) end')
 
 ###########################
