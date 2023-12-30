@@ -31,7 +31,7 @@ The image creation uses several components:
 
 <p>
 
-<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="300">
+<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="400">
 
 <p>
 
