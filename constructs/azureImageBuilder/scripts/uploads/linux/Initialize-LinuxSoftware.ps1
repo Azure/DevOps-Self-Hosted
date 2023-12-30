@@ -371,7 +371,7 @@ LogInfo('Install az bicep exention end')
 LogInfo('Install docker start')
 sudo apt-get update
 
-sudo apt -y install docker.io
+# sudo apt -y install docker.io
 sudo snap install docker
 docker --version
 LogInfo('Install docker end')
