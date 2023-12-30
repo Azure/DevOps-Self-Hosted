@@ -389,6 +389,7 @@ apt-cache policy 'docker-ce'
 sudo apt update
 
 sudo apt -y install 'docker-ce'
+
 sudo chmod 666 '/var/run/docker.sock' # All users can read and write but cannot execute the file/folder
 LogInfo('Install docker end')
 
