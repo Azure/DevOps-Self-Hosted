@@ -1,38 +1,42 @@
 # Source: https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.4
 
-echo '##########################################'
+echo '###########################################'
 echo '#   Entering Install-LinuxPowerShell.sh   #'
-echo '##########################################'
+echo '###########################################'
 
-# Update the list of packages
+echo '1. Update the list of packages'
 sudo apt-get update
 
-# Install pre-requisite packages.
+echo '2. Install pre-requisite packages'
 sudo apt-get install -y wget apt-transport-https software-properties-common
 
-# Get the version of Ubuntu
+echo '3. Get the version of Ubuntu'
 source /etc/os-release
 
-# Download the Microsoft repository GPG keys
-wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
+echo '4. Determine URL'
+url=https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
+echo "   Found URL [$url]"
 
-# Register the Microsoft repository GPG keys
+echo '5. Download the Microsoft repository GPG keys'
+wget -q $url
+
+echo '6. Register the Microsoft repository GPG keys'
 sudo dpkg -i packages-microsoft-prod.deb
 
-# Delete the Microsoft repository keys file
+echo '7. Delete the Microsoft repository keys file'
 rm packages-microsoft-prod.deb
 
-# Update the list of products
+echo '8. Update the list of products'
 sudo apt-get update
 
-# Enable the "universe" repositories
-sudo add-apt-repository universe
+echo '9. Enable the "universe" repositories'
+sudo add-apt-repository universe -y
 
-# Install PowerShell
+echo '10. Install PowerShell'
 sudo apt-get install -y powershell
 
-echo '#########################################'
+echo '##########################################'
 echo '#   Exiting Install-LinuxPowerShell.sh   #'
-echo '#########################################'
+echo '##########################################'
 
 exit 0
