@@ -2,6 +2,7 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 
 ### _Navigation_
 - [Overview](#overview)
+- [Prerequisites](#prerequisites)
 - [Process](#process)
   - [Initial configuration](#initial-configuration)
   - [Deployment](#deployment)
@@ -32,6 +33,12 @@ The image creation uses several components:
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
 > For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
+
+# Prerequisites
+
+The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
+
+- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Adminitrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
 
 # Process
 
