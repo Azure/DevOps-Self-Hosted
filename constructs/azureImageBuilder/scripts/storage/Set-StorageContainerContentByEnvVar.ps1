@@ -5,7 +5,7 @@ Run the Post-Deployment for the storage account deployment & upload required dat
 .DESCRIPTION
 Run the Post-Deployment for the storage account deployment & upload required data to the storage account.
 Any content that should be uploaded must exist as an environment variable with a 'script_' prefix (for example 'script_Initialize-LinuxSoftware_ps1').
-The script will fetch any matching environment variable, store it as a file (for example 'script_Initialize-LinuxSoftware_ps1' is stored as 'Initialize-LinuxSoftware.ps1')
+The script will fetch any matching environment variable, store it as a file (for example 'script_Initialize__LinuxSoftware_ps1' is stored as 'Initialize-LinuxSoftware.ps1')
 and uploade it as blob to the given container.
 
 .PARAMETER StorageAccountName
@@ -35,7 +35,7 @@ $contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force
 $scriptPaths = @()
 foreach ($scriptEnvVar in (Get-ChildItem 'env:*').Name | Where-Object { $_ -like 'script_*' }) {
     # Handle value like 'script_Windows_Install_ps1
-    $scriptExtension = Split-Path ($scriptEnvVar -replace '_', '.') -Extension
+    $scriptExtension = Split-Path (($scriptEnvVar -replace '__', '-') -replace '_', '.') -Extension
     $scriptNameSuffix = ($scriptExtension -split '\.')[1]
     $scriptName = '{0}{1}' -f (($scriptEnvVar -replace 'script_', '') -replace "_$scriptNameSuffix", ''), $scriptExtension
 

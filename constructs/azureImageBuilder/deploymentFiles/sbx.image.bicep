@@ -43,19 +43,19 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         storageAccountFilesToUpload: {
             secureList: [
                 {
-                    name: 'script_Install-LinuxPowerShell_sh'
+                    name: 'script_Install__LinuxPowerShell_sh' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
                     value: loadTextContent('../scripts/uploads/linux/Install-LinuxPowerShell.sh')
                 }
                 {
-                    name: 'script_Initialize-LinuxSoftware_ps1'
+                    name: 'script_Initialize__LinuxSoftware_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
                     value: loadTextContent('../scripts/uploads/linux/Initialize-LinuxSoftware.ps1')
                 }
                 // {
-                //     name: 'script_Install-WindowsPowerShell_ps1'
+                //     name: 'script_Install__WindowsPowerShell_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
                 //     value: loadTextContent('../scripts/uploads/windows/Install-WindowsPowerShell.ps1')
                 // }
                 // {
-                //     name: 'script_Initialize-WindowsSoftware_ps1'
+                //     name: 'script_Initialize__WindowsSoftware_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
                 //     value: loadTextContent('../scripts/uploads/windows/Initialize-WindowsSoftware.ps1')
                 // }
             ]
