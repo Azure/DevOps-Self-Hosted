@@ -159,8 +159,7 @@ jobs:
                   # Define PS modules to install on the runner
                   $Modules = @(
                       @{ Name = 'Az.Accounts' },
-                      @{ Name = 'Az.Resources' },
-                      @{ Name = 'Az.Storage' }
+                      @{ Name = 'Az.Resources' }
                   )
 
                   # Set agent up
