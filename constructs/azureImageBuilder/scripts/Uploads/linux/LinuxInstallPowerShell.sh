@@ -1,5 +1,9 @@
 # Source: https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu?view=powershell-7.4
 
+echo '##########################################'
+echo '#   Entering LinuxInstallPowerShell.sh   #'
+echo '##########################################'
+
 # Update the list of packages
 sudo apt-get update
 
@@ -26,5 +30,9 @@ sudo add-apt-repository universe
 
 # Install PowerShell
 sudo apt-get install -y powershell
+
+echo '#########################################'
+echo '#   Exiting LinuxInstallPowerShell.sh   #'
+echo '#########################################'
 
 exit 0
