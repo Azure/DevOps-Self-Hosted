@@ -114,15 +114,15 @@ imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh'
+      scriptUri: 'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Install-LinuxPowerShell.sh'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1\' -O \'LinuxPrepareMachine.ps1\''
-          'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
-          'pwsh \'LinuxPrepareMachine.ps1\''
+          'wget \'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Initialize-LinuxSoftware.ps1\' -O \'Initialize-LinuxSoftware.ps1\''
+          'sed -i \'s/\r$//' 'Initialize-LinuxSoftware.ps1\''
+          'pwsh \'Initialize-LinuxSoftware.ps1\''
       ]
   }
 ]
@@ -187,8 +187,8 @@ If you did not select `All` you can then decide at any point to re-run the pipel
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the pipeline to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `PipelineAgentsScaleSet` module:
 
-- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\LinuxPrepareMachine.ps1`
-- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\WindowsPrepareMachine.ps1`
+- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\Initialize-LinuxSoftware.ps1`
+- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\Initialize-WindowsSoftware.ps1`
 
 One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep or Terraform.
 

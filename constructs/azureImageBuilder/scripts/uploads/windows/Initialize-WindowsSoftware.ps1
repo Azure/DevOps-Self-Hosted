@@ -373,7 +373,7 @@ function Get-Downloader {
             if ($null -eq $creds) {
                 Write-Debug 'Default credentials were null. Attempting backup method'
                 $cred = Get-Credential
-                $creds = $cred.GetNetworkCredential();
+                $creds = $cred.GetNetworkCredential()
             }
 
             $proxyaddress = $downloader.Proxy.GetProxy($url).Authority
@@ -530,7 +530,7 @@ function Install-Choco {
     $chocoExePath = Join-Path $chocoPath 'bin'
 
     if ($($env:Path).ToLower().Contains($($chocoExePath).ToLower()) -eq $false) {
-        $env:Path = [Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine);
+        $env:Path = [Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
     }
 
     LogInfo( 'Ensuring chocolatey.nupkg is in the lib folder')
@@ -611,7 +611,7 @@ function Copy-FileAndFolderList {
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
 LogInfo('##########################################')
-LogInfo('#   Entering WindowsPrepareMachine.ps1   #')
+LogInfo('#   Entering Initialize-WindowsSoftware.ps1   #')
 LogInfo('##########################################')
 
 LogInfo( 'Set Execution Policy')
@@ -785,8 +785,8 @@ $elapsedTime = (Get-Date) - $StartTime
 $totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
 LogInfo('#########################################')
-LogInfo('#   Exiting WindowsPrepareMachine.ps1   #')
+LogInfo('#   Exiting Initialize-WindowsSoftware.ps1   #')
 LogInfo('#########################################')
 
-return 0;
+return 0
 #endregion

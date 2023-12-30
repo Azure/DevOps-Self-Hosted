@@ -4,8 +4,8 @@ Run the Post-Deployment for the storage account deployment & upload required dat
 
 .DESCRIPTION
 Run the Post-Deployment for the storage account deployment & upload required data to the storage account.
-Any content that should be uploaded must exist as an environment variable with a 'script_' prefix (for example 'script_LinuxPrepareMachine_ps1').
-The script will fetch any matching environment variable, store it as a file (for example 'script_LinuxPrepareMachine_ps1' is stored as 'LinuxPrepareMachine.ps1')
+Any content that should be uploaded must exist as an environment variable with a 'script_' prefix (for example 'script_Initialize-LinuxSoftware_ps1').
+The script will fetch any matching environment variable, store it as a file (for example 'script_Initialize-LinuxSoftware_ps1' is stored as 'Initialize-LinuxSoftware.ps1')
 and uploade it as blob to the given container.
 
 .PARAMETER StorageAccountName

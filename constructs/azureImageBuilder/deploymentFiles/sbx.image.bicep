@@ -43,20 +43,20 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         storageAccountFilesToUpload: {
             secureList: [
                 {
-                    name: 'script_LinuxInstallPowerShell_sh'
-                    value: loadTextContent('../scripts/uploads/linux/LinuxInstallPowerShell.sh')
+                    name: 'script_Install-LinuxPowerShell_sh'
+                    value: loadTextContent('../scripts/uploads/linux/Install-LinuxPowerShell.sh')
                 }
                 {
-                    name: 'script_LinuxPrepareMachine_ps1'
-                    value: loadTextContent('../scripts/uploads/linux/LinuxPrepareMachine.ps1')
+                    name: 'script_Initialize-LinuxSoftware_ps1'
+                    value: loadTextContent('../scripts/uploads/linux/Initialize-LinuxSoftware.ps1')
                 }
                 // {
-                //     name: 'script_WindowsInstallPowerShell_ps1'
-                //     value: loadTextContent('../scripts/uploads/windows/WindowsInstallPowerShell.ps1')
+                //     name: 'script_Install-WindowsPowerShell_ps1'
+                //     value: loadTextContent('../scripts/uploads/windows/Install-WindowsPowerShell.ps1')
                 // }
                 // {
-                //     name: 'script_WindowsPrepareMachine_ps1'
-                //     value: loadTextContent('../scripts/uploads/windows/WindowsPrepareMachine.ps1')
+                //     name: 'script_Initialize-WindowsSoftware_ps1'
+                //     value: loadTextContent('../scripts/uploads/windows/Initialize-WindowsSoftware.ps1')
                 // }
             ]
         }
@@ -75,19 +75,19 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/LinuxInstallPowerShell.sh'
+                scriptUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
             }
             {
                 type: 'File'
-                name: 'LinuxPrepareMachine'
-                sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/LinuxPrepareMachine.ps1'
-                destination: 'LinuxPrepareMachine.ps1'
+                name: 'Initialize-LinuxSoftware'
+                sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
+                destination: 'Initialize-LinuxSoftware.ps1'
             }
             {
                 type: 'Shell'
                 name: 'Software installation'
                 inline: [
-                    'pwsh \'LinuxPrepareMachine.ps1\''
+                    'pwsh \'Initialize-LinuxSoftware.ps1\''
                 ]
             }
         ]
@@ -116,24 +116,24 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/WindowsInstallPowerShell.ps1?\' -O \'WindowsInstallPowerShell.ps1\''
+        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
         //             'Write-Output "Invocation"'
-        //             '. \'WindowsInstallPowerShell.ps1\''
+        //             '. \'Install-WindowsPowerShell.ps1\''
         //         ]
         //         runElevated: true
         //     }
         //     {
         //         type: 'File'
-        //         name: 'WindowsPrepareMachine'
-        //         sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1'
-        //         destination: 'WindowsPrepareMachine.ps1'
+        //         name: 'Initialize-WindowsSoftware'
+        //         sourceUri: 'https://stshaib.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-WindowsSoftware.ps1'
+        //         destination: 'Initialize-WindowsSoftware.ps1'
         //     }
         //     {
         //         type: 'PowerShell'
         //         name: 'Software installation'
         //         inline: [
-        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/WindowsPrepareMachine.ps1?\' -O \'WindowsPrepareMachine.ps1\''
-        //             'pwsh \'WindowsPrepareMachine.ps1\''
+        //             'wget \'https://stshaib.blob.${environment().suffixes.storage}/aibscripts/Initialize-WindowsSoftware.ps1?\' -O \'Initialize-WindowsSoftware.ps1\''
+        //             'pwsh \'Initialize-WindowsSoftware.ps1\''
         //         ]
         //         runElevated: true
         //     }
