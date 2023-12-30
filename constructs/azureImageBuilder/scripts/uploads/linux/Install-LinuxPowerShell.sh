@@ -36,9 +36,6 @@ sudo add-apt-repository universe -y
 echo '10. Install PowerShell'
 sudo apt-get install -y powershell
 
-echo '11. Test PowerShell installation'
-pwsh
-
 echo '##########################################'
 echo '#   Exiting Install-LinuxPowerShell.sh   #'
 echo '##########################################'
