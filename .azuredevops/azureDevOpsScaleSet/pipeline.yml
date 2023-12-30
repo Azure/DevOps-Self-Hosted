@@ -32,7 +32,7 @@ stages:
     displayName: Deploy to SBX
     condition: and(succeeded(), eq('${{ parameters.startEnvironment }}', 'sbx'))
     jobs:
-      - template: .templates/pipeline.scaleset.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'sbx'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
@@ -40,15 +40,14 @@ stages:
 
   - stage: DEV_Deployments
     displayName: Deploy to DEV
-    dependsOn:
-      SBX_Deployments
+    dependsOn: SBX_Deployments
     condition: |
       and(
         in(dependencies.SBX_Deployments.result, '', 'Succeeded', 'Skipped'),
         in('${{ parameters.startEnvironment }}', 'sbx', 'dev')
       )
     jobs:
-      - template: .templates/pipeline.scaleset.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'dev'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
@@ -56,8 +55,7 @@ stages:
 
   - stage: PRD_Deployments
     displayName: Deploy to PRD
-    dependsOn:
-      DEV_Deployments
+    dependsOn: DEV_Deployments
     condition: |
       and(
         in(dependencies.DEV_Deployments.result, '', 'Succeeded', 'Skipped'),
@@ -65,7 +63,7 @@ stages:
         in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd')
       )
     jobs:
-      - template: .templates/pipeline.scaleset.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'prd'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
