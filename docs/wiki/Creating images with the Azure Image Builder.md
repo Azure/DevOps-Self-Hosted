@@ -17,8 +17,13 @@ The image creation uses several components:
 | &nbsp;&nbsp;&nbsp; | Resource | Description |
 |--|--|--|
 | <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our image resources |
-| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | Storage Account | The storage account that hosts our image customization scripts used by the _Azure Image Building_ when executing the image template |
-| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It requires contributor permissions on the subscription to be able to bake the image. |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | (Image) Resource Group | The resource group hosting our resources created during the image build |
+| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | (Assets) Storage Account | The storage account that hosts our image customization scripts used by the _Azure Image Building_ when executing the image template. |
+| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | (DS) Storage Account | The storage account that hosts the files of the Deployment Scripts. Required for private networking. |
+| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | (Image) User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It is assigned contributor permissions on the subscription to be able to bake the image. Further, it is assigned read permissions on the Assets Storage Account Container in order to consume the customization scripts. |
+| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | (DS) User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It's assigned permissions on the Image Template to trigger it, the Deployment Script Storage Account for Private Networking, and the Assets Storage Account to upload files.  |
+| <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Storage) Deployment Script | The Deployment Script that uploads the customization scripts to the Assets Storage Account. |
+| <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Trigger) Deployment Script | The Deployment Script that triggers the Image Template build. |
 | <img src="./media/icons/AzureComputeGalleries.svg" alt="Azure Compute Gallery" height="12"> | Azure Compute Gallery | Azure service that helps to build structure and organization for managed images. Provides global replication, versioning, grouping, sharing across subscriptions and scaling. The plain resource in itself is like an empty container. |
 | <img src="./media/icons/VMImageDefinitions.svg" alt="Azure Compute Gallery Image" height="12"> | Azure Compute Gallery Image | Created within a gallery and contains information about the image and requirements for using it internally. This includes metadata like whether the image is Windows or Linux, release notes and recommended compute resources. Like the image gallery itself it acts like a container for the actual images. |
 | <img src="./media/icons/ImageTemplates.svg" alt="Image Template" height="12"> | Image Template | A standard Azure Image Builder template that defines the parameters for building a custom image with AIB. The parameters include image source (Marketplace, custom image, etc.), customization options (i.e., Updates, scripts, restarts), and distribution (i.e., managed image, Azure Compute Gallery). The template is not an actual resource. Instead, when an image template is created, Azure stores all the metadata of the referenced Azure Compute Gallery Image alongside other image backing instructions as a hidden resource in a temporary resource group. |
@@ -26,7 +31,7 @@ The image creation uses several components:
 
 <p>
 
-<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="150">
+<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="300">
 
 <p>
 
