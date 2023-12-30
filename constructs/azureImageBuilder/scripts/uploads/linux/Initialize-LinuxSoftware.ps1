@@ -365,17 +365,6 @@ LogInfo('Install az bicep exention start')
 az bicep install
 LogInfo('Install az bicep exention end')
 
-########################
-##   Install Docker    #
-########################
-LogInfo('Install docker start')
-sudo apt-get update
-
-# sudo apt -y install docker.io # Disabled as it returning 'Processing triggers for man-db' and then 'Restarting services...' which breaks the packer build
-sudo snap install docker
-docker --version
-LogInfo('Install docker end')
-
 #########################
 ##   Install Kubectl    #
 #########################
@@ -391,11 +380,14 @@ sudo apt update
 
 sudo apt -y install apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | sudo apt-key add -
-sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable'
+sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' -y
 
 sudo apt update
 
 apt-cache policy 'docker-ce'
+
+sudo apt update
+
 sudo apt -y install 'docker-ce'
 sudo chmod 666 '/var/run/docker.sock' # All users can read and write but cannot execute the file/folder
 LogInfo('Install docker end')
