@@ -11,7 +11,7 @@ echo '2. Install pre-requisite packages'
 sudo apt-get install -y wget apt-transport-https software-properties-common
 
 echo '3. Get the version of Ubuntu'
-source /etc/os-release
+. /etc/os-release
 
 echo '4. Determine URL'
 url=https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
