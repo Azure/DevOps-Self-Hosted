@@ -32,14 +32,3 @@ variables:
   sharedOrchestrationFunctionsPath: 'sharedScripts'
   location: westeurope
   #endregion
-
-  ######################
-  ## SCRIPT VARIABLES ##
-  ######################
-  #region script variables
-
-  # StorageAccount related
-  # ----------------------
-  # TODO: Remove if not implementing logic to auto-fetch scripts from folder
-  uploadsPath: 'constructs/azureImageBuilder/scripts/Uploads'
-  #endregion

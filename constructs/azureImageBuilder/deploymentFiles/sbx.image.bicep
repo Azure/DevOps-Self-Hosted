@@ -44,19 +44,19 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             secureList: [
                 {
                     name: 'script_LinuxInstallPowerShell_sh'
-                    value: loadTextContent('../scripts/Uploads/linux/LinuxInstallPowerShell.sh')
+                    value: loadTextContent('../scripts/uploads/linux/LinuxInstallPowerShell.sh')
                 }
                 {
                     name: 'script_LinuxPrepareMachine_ps1'
-                    value: loadTextContent('../scripts/Uploads/linux/LinuxPrepareMachine.ps1')
+                    value: loadTextContent('../scripts/uploads/linux/LinuxPrepareMachine.ps1')
                 }
                 // {
                 //     name: 'script_WindowsInstallPowerShell_ps1'
-                //     value: loadTextContent('../scripts/Uploads/windows/WindowsInstallPowerShell.ps1')
+                //     value: loadTextContent('../scripts/uploads/windows/WindowsInstallPowerShell.ps1')
                 // }
                 // {
                 //     name: 'script_WindowsPrepareMachine_ps1'
-                //     value: loadTextContent('../scripts/Uploads/windows/WindowsPrepareMachine.ps1')
+                //     value: loadTextContent('../scripts/uploads/windows/WindowsPrepareMachine.ps1')
                 // }
             ]
         }

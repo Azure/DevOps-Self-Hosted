@@ -105,9 +105,9 @@ As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find
 
 #### Special case: **Image Template**
 
-The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\Uploads` folder.
+The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\uploads` folder.
 
-When you eventually trigger the pipeline, it will upload any script in the `Uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
+When you eventually trigger the pipeline, it will upload any script in the `uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
 ```Bicep
 imageTemplateCustomizationSteps: [
@@ -175,7 +175,7 @@ So let's take a look at the different configuration options when running the pip
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only uploads the latest installation files from the `Uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
+| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only uploads the latest installation files from the `uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
 | `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs\azureImageBuilder\scripts\image\Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
 | `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter file - as long es their built is not in state `running`.  | De-select | |
 
@@ -187,8 +187,8 @@ If you did not select `All` you can then decide at any point to re-run the pipel
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the pipeline to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `PipelineAgentsScaleSet` module:
 
-- Linux:    `constructs\azureImageBuilder\scripts\Uploads\linux\LinuxPrepareMachine.ps1`
-- Windows:  `constructs\azureImageBuilder\scripts\Uploads\windows\WindowsPrepareMachine.ps1`
+- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\LinuxPrepareMachine.ps1`
+- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\WindowsPrepareMachine.ps1`
 
 One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep or Terraform.
 
@@ -239,7 +239,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
 
 # Out of the box installed components
 
-Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs\azureImageBuilder\scripts\Uploads` folder:
+Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs\azureImageBuilder\scripts\uploads` folder:
 
 | OS |   |   | Windows | Linux |
 | -  | - | - | -       | -     |
