@@ -37,7 +37,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             }
         ]
 
-        assetsStorageAccountName: '<assetsStorageAccountName>'
+        assetsStorageAccountName: 'stalsehraib'
         assetsStorageAccountContainerName: 'aibscripts'
 
         storageAccountFilesToUpload: {
@@ -75,12 +75,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
+                scriptUri: 'https://stalsehraib.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
             }
             {
                 type: 'File'
                 name: 'Initialize-LinuxSoftware'
-                sourceUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
+                sourceUri: 'https://stalsehraib.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
                 destination: 'Initialize-LinuxSoftware.ps1'
             }
             {
@@ -116,7 +116,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://<assetsStorageAccountName>.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
+        //             'wget \'https://stalsehraib.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'Install-WindowsPowerShell.ps1\''
         //         ]
