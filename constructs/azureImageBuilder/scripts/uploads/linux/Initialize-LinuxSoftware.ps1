@@ -337,6 +337,7 @@ LogInfo('########################################')
 
 LogInfo('Set autorestart start')
 sudo NEEDRESTART_MODE=a apt-get dist-upgrade --yes
+sudo DEBIAN_FRONTEND=noninteractive
 LogInfo('Set autorestart end')
 
 ###########################
