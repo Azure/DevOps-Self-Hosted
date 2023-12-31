@@ -2,8 +2,9 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 
 ### _Navigation_
 - [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [File structure](#file-structure)
+  - [Prerequisites](#prerequisites)
+  - [Elements](#elements)
+  - [File structure & flow](#file-structure--flow)
 - [Process](#process)
   - [Initial configuration](#initial-configuration)
   - [Deployment](#deployment)
@@ -13,6 +14,15 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 - [Troubleshooting](#troubleshooting)
 
 # Overview
+
+## Prerequisites
+
+The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
+
+- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Adminitrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
+- IF you have a policy in place that prevents Storage Accounts from being deployed without a Firewall, you have to create an exemption for the Image Template / Staging Resource Group you can configure for the Image Template Resource (parameter `imageTemplateResourceGroupName`). The rationale is that the Azure-Image-Builder service uses this resource group to deploy both temporal resources used during the image build (e.g., a Virtual Machine), as well as a Storage Account to store temporal files & a 'packerlogs/customization.log' file in (which contains the logs of the image build). This Storage Account has no firewall configured, has a random name, and cannot be configured at deploy time.
+
+## Elements
 The image creation uses several components:
 
 | &nbsp;&nbsp;&nbsp; | Resource | Description |
@@ -40,14 +50,7 @@ The image creation uses several components:
 >
 > For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
 
-# Prerequisites
-
-The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
-
-- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Adminitrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
-- IF you have a policy in place that prevents Storage Accounts from being deployed without a Firewall, you have to create an exemption for the Image Template / Staging Resource Group you can configure for the Image Template Resource (parameter `imageTemplateResourceGroupName`). The rationale is that the Azure-Image-Builder service uses this resource group to deploy both temporal resources used during the image build (e.g., a Virtual Machine), as well as a Storage Account to store temporal files & a 'packerlogs/customization.log' file in (which contains the logs of the image build). This Storage Account has no firewall configured, has a random name, and cannot be configured at deploy time.
-
-# File structure
+## File structure & flow
 
 This section gives you an overview of the solution's structure, that is, how its files are linked to each other.
 

@@ -4,6 +4,8 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 
 - [Overview](#overview)
   - [Advantages](#Advantages)
+  - [Elements](#elements)
+  - [File structure & flow](#file-structure--flow)
 - [Process](#process)
   - [Initial configuration](#initial-configuration)
   - [Deployment](#deployment)
@@ -39,6 +41,30 @@ The scale set agents deployment includes several components:
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
 > For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
+
+## File structure & flow
+
+This section gives you an overview of the solution's structure, that is, how its files are linked to each other.
+
+- **Pipeline Stage template:** This is the entry point for the solution. It's the pipeline template you register in Azure DevOps to trigger a deployment. It contains one stage per environment you'd want to deploy to.
+- **Pipeline Jobs template:** This template contains the actual steps of your pipeline, that is tasks that run PowerShell scripts, and or deploy Bicep templates to Azure.
+- **PowerShell scripts:** These scripts execute deployment-unrelated actions that, for example, setup your deployment agent
+- **AgentPool Config:** This JSON file contains the configuration to apply to the agent pool when registering/updating it. Only relevant if the corresponding feature (described below) is enabled.
+- **Bicep Deployment files:** The Bicep template file that contains the custom parameter you want to set per environment. By default, it only contains a subset of parameters, but can be expanded upon additional parameters available in the _Bicep template file_.
+- **Bicep template file:** The Bicep file template file that contains the blueprint / orchestration of the infrastructure you want to deploy into an environment. It has parameters for all relevant infrastructure properties, but can be extended with any additional parameter available in the contained resource (/ module) deployments.
+- **Bicep CARML modules:** The resource modules imported from the CARML library that contain most of the actual resource deployment logic.
+
+<p>
+
+<img src="./media/scaleset/structure.png" alt="Structure" height="400">
+
+<p>
+
+> **Note:** All files are written in a way that should make modifications easy. However, to help you get started, please take not of the following recommendations:
+> - If you want to add additional logic to your pipeline, make sure to modify the `pipeline.jobs.yml` template to ensure that the added / modified steps are applied equally across all stages.
+> - If you want to add additional resources to your deployment, make sure to modify the `image.deploy.bicep` file to ensure that the added / modified resources are applied to all environments equally. If you further want to ensure your template remains flexible, you can add additional parameters you can then reference from the `<env>.image.bicep` file.
+> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter for your new property to the module, but also give it a value by providing it in the ` image.deploy.bicep` file.
+
 
 # Process
 

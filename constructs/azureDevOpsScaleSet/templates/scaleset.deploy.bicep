@@ -10,11 +10,11 @@ param resourceGroupName string = 'ado-agents-rg'
 
 // Network Security Group Parameters
 @description('Optional. The name of the Network Security Group.')
-param networkSecurityGroupName string = 'vmss-nsg'
+param networkSecurityGroupName string = 'nsg-vmss'
 
 // Virtual Network Parameters
 @description('Optional. The name of the Virtual Network.')
-param virtualNetworkName string = 'vmss-vnet'
+param virtualNetworkName string = 'vnet-vmss'
 
 @description('Optional. The address space of the Virtual Network.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
@@ -29,7 +29,7 @@ param virtualNetworkSubnets array = [
 
 // Virtual Machine Scale Set Parameters
 @description('Optional. The name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetName string = 'agent-scaleset'
+param virtualMachineScaleSetName string = 'vmss-agent'
 
 @description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
