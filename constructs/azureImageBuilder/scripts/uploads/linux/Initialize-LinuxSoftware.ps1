@@ -409,7 +409,7 @@ $latestTerraformVersion = (Invoke-WebRequest -Uri $terraformReleasesUrl -UseBasi
 LogInfo("Fetched latest available version: [$latestTerraformVersion]")
 
 LogInfo("Using version: [$latestTerraformVersion]")
-sudo apt-get install unzip
+sudo DEBIAN_FRONTEND=noninteractive apt-get install unzip
 wget ('https://releases.hashicorp.com/terraform/{0}/terraform_{0}_linux_amd64.zip' -f $latestTerraformVersion)
 unzip ('terraform_{0}_linux_amd64.zip' -f $latestTerraformVersion )
 sudo mv terraform /usr/local/bin/
@@ -441,11 +441,11 @@ LogInfo('Install dotnet (for nuget) start')
 
 # .NET-Core SDK
 sudo apt-get update
-sudo apt-get install -y dotnet-sdk-8.0
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y dotnet-sdk-8.0
 
 # .NET-Core Runtime
 sudo apt-get update
-sudo apt-get install -y aspnetcore-runtime-8.0
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y aspnetcore-runtime-8.0
 
 LogInfo('Install dotnet (for nuget) end')
 
