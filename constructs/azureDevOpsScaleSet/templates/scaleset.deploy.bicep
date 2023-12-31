@@ -6,7 +6,7 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('Optional. The name of the Resource Group.')
-param resourceGroupName string = 'ado-agents-rg'
+param resourceGroupName string = 'rg-ado-agents'
 
 // Network Security Group Parameters
 @description('Optional. The name of the Network Security Group.')
@@ -29,7 +29,7 @@ param virtualNetworkSubnets array = [
 
 // Virtual Machine Scale Set Parameters
 @description('Optional. The name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetName string = 'vmss-agent'
+param virtualMachineScaleSetName string = 'vmss-agents'
 
 @description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'

@@ -20,7 +20,7 @@ param location string = 'WestEurope'
 // For the Windows example (secret must exist ahead of deployment)
 // resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
 //   name: 'agent-vmss-core'
-//   scope: resourceGroup(subscription().subscriptionId, 'ado-agents-rg')
+//   scope: resourceGroup(subscription().subscriptionId, 'rg-ado-agents')
 // }
 
 /////////////////////////////
