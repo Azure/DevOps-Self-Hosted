@@ -143,9 +143,9 @@ As the parameter file is not used in a template deployment, it has a slightly di
 
 ```json
 {
-   "Project": "<Project>",
-   "Organization": "<>",
-   "ServiceConnectionName": "<ServiceConnectionName>",
+  "Organization": "<YourOrganization>",
+   "Project": "<YourProject>",
+   "ServiceConnectionName": "<YourServiceConnectionName>",
    "AgentPoolProperties": { <AgentPoolPoperties> }
 }
 ```
