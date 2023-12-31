@@ -55,12 +55,12 @@ function Wait-ForImageBuild {
 
         do {
             $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $resourceGroupName -templateName $ImageTemplateName
-            $runState = $latestStatus.runState.ToLower()
-            if ($runState -notIn @('running', 'new')) {
 
-                if ($runState -eq 'failed') {
-                    throw $runState
-                }
+            if ($latestStatus -eq 'failed') {
+                throw "Image Template [$ImageTemplateName] build failed with status [failed]"
+            }
+
+            if ($latestStatus.runState.ToLower() -notIn @('running', 'new')) {
                 break
             }
 
