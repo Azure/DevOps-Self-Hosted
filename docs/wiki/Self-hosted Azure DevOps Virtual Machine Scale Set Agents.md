@@ -56,7 +56,7 @@ This section gives you an overview of the solution's structure, that is, how its
 
 <p>
 
-<img src="./media/scaleset/structure.png" alt="Structure" height="400">
+<img src="./media/scaleSet/structure.png" alt="Structure" height="400">
 
 <p>
 
