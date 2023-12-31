@@ -35,6 +35,10 @@ param deploymentScriptStorageAccountName string = '${assetsStorageAccountName}ds
 @description('Optional. The name of container in the Storage Account.')
 param assetsStorageAccountContainerName string = 'aibscripts'
 
+// Network Security Group Parameters
+// @description('Optional. The name of the Network Security Group to create and attach to the Image Template Subnet.')
+// param networkSecurityGroupName string = 'nsg-aib'
+
 // Virtual Network Parameters
 @description('Optional. The name of the Virtual Network.')
 param virtualNetworkName string = 'vnet-it'
@@ -268,22 +272,22 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
       ]
     }
     // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
-    // networkAcls: {
-    //   bypass: 'AzureServices'
-    //   defaultAction: 'Deny'
-    //   virtualNetworkRules: [
-    //     {
-    //       // Allow image template to access storage account container files to download files
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[0]
-    //     }
-    //     {
-    //       // Allow deployment script to access storage account container files to upload files
-    //       action: 'Allow'
-    //       id: vnet.outputs.subnetResourceIds[1]
-    //     }
-    //   ]
-    // }
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          // Allow image template to access storage account container files to download files
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0]
+        }
+        {
+          // Allow deployment script to access storage account container files to upload files
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[1]
+        }
+      ]
+    }
   }
   dependsOn: [
     rg

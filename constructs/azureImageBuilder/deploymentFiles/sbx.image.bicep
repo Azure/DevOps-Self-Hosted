@@ -116,7 +116,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         //         name: 'PowerShell installation'
         //         inline: [
         //             'Write-Output "Download"'
-        //             'wget \'https://stalsehraib.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
+        //             'wget \'https://<assetsStorageAccountName>.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
         //             'Write-Output "Invocation"'
         //             '. \'Install-WindowsPowerShell.ps1\''
         //         ]
