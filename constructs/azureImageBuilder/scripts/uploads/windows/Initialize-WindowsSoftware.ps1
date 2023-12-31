@@ -610,9 +610,9 @@ function Copy-FileAndFolderList {
 
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
-LogInfo('##########################################')
+LogInfo('###############################################')
 LogInfo('#   Entering Initialize-WindowsSoftware.ps1   #')
-LogInfo('##########################################')
+LogInfo('###############################################')
 
 LogInfo( 'Set Execution Policy')
 Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -784,9 +784,9 @@ if (Get-Module AzureRm* -ListAvailable) {
 $elapsedTime = (Get-Date) - $StartTime
 $totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo('#########################################')
+LogInfo('##############################################')
 LogInfo('#   Exiting Initialize-WindowsSoftware.ps1   #')
-LogInfo('#########################################')
+LogInfo('##############################################')
 
 return 0
 #endregion
