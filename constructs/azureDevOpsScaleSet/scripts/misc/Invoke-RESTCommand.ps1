@@ -10,7 +10,7 @@ The PAT token supersedes the local login
 Mandatory. The method to use for the REST call. E.g. GET, PATCH, DELETE
 
 .PARAMETER uri
-Mandatory. The uri to send the REST call towards. E.g. 'https://dev.azure.com/contoso/_apis/projects/Module%20Playground?api-version=6.0'
+Mandatory. The uri to send the REST call towards. E.g. 'https://dev.azure.com/contoso/_apis/projects/My%20Project?api-version=6.0'
 
 .PARAMETER body
 Optional. The body to send with the command. Must be in json format. E.g. ConvertTo-Json @{ Make = 'MyDay' } -Depth 10 -Compress
@@ -19,9 +19,9 @@ Optional. The body to send with the command. Must be in json format. E.g. Conver
 Optional. The header to send with the command. E.g. @{ "Content-Type" = 'application/json' }
 
 .EXAMPLE
-Invoke-RESTCommand -method 'GET' -uri 'https://dev.azure.com/contoso/_apis/projects/Module%20Playground?api-version=6.0'
+Invoke-RESTCommand -method 'GET' -uri 'https://dev.azure.com/contoso/_apis/projects/My%20Project?api-version=6.0'
 
-Fetch the project 'Module Playground' from organization 'contoso' via REST
+Fetch the project 'My Project' from organization 'contoso' via REST
 #>
 function Invoke-RESTCommand {
 
