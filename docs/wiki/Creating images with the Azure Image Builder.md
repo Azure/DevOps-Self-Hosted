@@ -63,7 +63,7 @@ This section gives you an overview of the solution's structure, that is, how its
 
 <p>
 
-<img src="./media/image/structure.png" alt="Structure" height="400">
+<img src="./media/image/structure.png" alt="Structure" height="350">
 
 <p>
 
