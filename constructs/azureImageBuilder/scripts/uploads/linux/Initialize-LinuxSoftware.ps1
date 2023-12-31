@@ -335,6 +335,10 @@ LogInfo('########################################')
 LogInfo('#   Entering Initialize-LinuxSoftware.ps1   #')
 LogInfo('########################################')
 
+LogInfo('Set autorestart start')
+sudo NEEDRESTART_MODE=a apt-get dist-upgrade --yes
+LogInfo('Set autorestart end')
+
 ###########################
 ##   Install Azure CLI   ##
 ###########################
