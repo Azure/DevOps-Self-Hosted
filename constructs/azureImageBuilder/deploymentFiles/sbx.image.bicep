@@ -69,7 +69,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             version: 'latest'
             // Custom image example
             // type: 'SharedImageVersion'
-            // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/aibgallery/images/linux-sid/versions/0.24470.675'
+            // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/galaib/images/sid-linux/versions/0.24470.675'
         }
         imageTemplateCustomizationSteps: [
             {
@@ -95,14 +95,14 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         // Windows Example
         // computeGalleryImageDefinitions: [
         //     {
-        //         name: 'windows-sid'
+        //         name: 'sid-windows'
         //         osType: 'Windows'
         //         publisher: 'devops'
         //         offer: 'devops_windows'
         //         sku: 'devops_windows_az'
         //     }
         // ]
-        // imageTemplateComputeGalleryImageDefinitionName: 'windows-sid'
+        // imageTemplateComputeGalleryImageDefinitionName: 'sid-windows'
         // imageTemplateImageSource: {
         //     type: 'PlatformImage'
         //     publisher: 'MicrosoftWindowsDesktop'
