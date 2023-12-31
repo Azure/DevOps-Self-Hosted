@@ -1,9 +1,9 @@
 {
-    "Organization": "<Organization>",
-    "Project": "<Project>",
-    "ServiceConnectionName": "<ServiceConnectionName>",
+    "Organization": "<YourOrganization>",
+    "Project": "<YourProject>",
+    "ServiceConnectionName": "<YourServiceConnectionName>",
     "AgentPoolProperties": {
-        "ScaleSetPoolName": "<ScaleSetName>",
+        "ScaleSetPoolName": "<YourAgentPoolName>",
         "RecycleAfterEachUse": false,
         "MaxSavedNodeCount": 0,
         "MaxCapacity": 10,
