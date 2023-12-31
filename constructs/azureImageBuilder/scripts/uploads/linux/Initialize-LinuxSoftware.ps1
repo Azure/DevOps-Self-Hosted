@@ -331,9 +331,9 @@ function Get-AreDependenciesAvailable {
 
 $StartTime = Get-Date
 $progressPreference = 'SilentlyContinue'
-LogInfo('########################################')
+LogInfo('#############################################')
 LogInfo('#   Entering Initialize-LinuxSoftware.ps1   #')
-LogInfo('########################################')
+LogInfo('#############################################')
 
 ###########################
 ##   Install Azure CLI   ##
@@ -530,9 +530,9 @@ LogInfo('Copy PS modules end')
 $elapsedTime = (Get-Date) - $StartTime
 $totalTime = '{0:HH:mm:ss}' -f ([datetime]$elapsedTime.Ticks)
 LogInfo("Execution took [$totalTime]")
-LogInfo('#######################################')
+LogInfo('############################################')
 LogInfo('#   Exiting Initialize-LinuxSoftware.ps1   #')
-LogInfo('#######################################')
+LogInfo('############################################')
 
 return 0
 #endregion
