@@ -31,22 +31,20 @@ function Wait-ForImageBuild {
         Write-Debug ('[{0} entered]' -f $MyInvocation.MyCommand)
 
         # Load helper
+        $repoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+
         . (Join-Path -Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
+        . (Join-Path -Path $repoRoot 'sharedScripts' 'template' 'Get-TemplateParameterValue.ps1')
     }
 
     process {
         # Fetch information
         # -----------------
-        $templateContent = az bicep build --file $templateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-        # Get Resource Group name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-            # Used explicit value
-            $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-        } else {
-            # Used default value
-            $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
+        $templateParamInputObject = @{
+            TemplateFilePath = $TemplateFilePath
+            ParameterName    = @('resourceGroupName')
         }
+        $resourceGroupName = Get-TemplateParameterValue @templateParamInputObject
 
         # Logic
         # -----
@@ -57,12 +55,12 @@ function Wait-ForImageBuild {
 
         do {
             $latestStatus = Get-ImageTemplateStatus -templateResourceGroup $resourceGroupName -templateName $ImageTemplateName
-            $runState = $latestStatus.runState.ToLower()
-            if ($runState -notIn @('running', 'new')) {
 
-                if ($runState -eq 'failed') {
-                    throw $runState
-                }
+            if ($latestStatus -eq 'failed' -or $latestStatus.runState.ToLower() -eq 'failed') {
+                throw "Image Template [$ImageTemplateName] build failed with status [failed]"
+            }
+
+            if ($latestStatus.runState.ToLower() -notIn @('running', 'new')) {
                 break
             }
 

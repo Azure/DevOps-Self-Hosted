@@ -25,39 +25,30 @@ function Remove-ImageTemplate {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
+        $repoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+
         . (Join-Path -Path $PSScriptRoot 'Get-ImageTemplateStatus.ps1')
+        . (Join-Path -Path $repoRoot 'sharedScripts' 'template' 'Get-TemplateParameterValue.ps1')
     }
 
     process {
         # Fetch information
         # -----------------
-        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-        # Get Image Template name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'imageTemplateName') {
-            # Used explicit value
-            $imageTemplateName = $templateContent.resources[-1].properties.parameters['imageTemplateName'].value
-        } else {
-            # Used default value
-            $imageTemplateName = $templateContent.resources[-1].properties.template.parameters['imageTemplateName'].defaultValue
+        $templateParamInputObject = @{
+            TemplateFilePath = $TemplateFilePath
+            ParameterName    = @('resourceGroupName', 'imageTemplateName')
         }
-
-        # Get Resource Group name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-            # Used explicit value
-            $resourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-        } else {
-            # Used default value
-            $resourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-        }
+        $resourceGroupName, $imageTemplateName = Get-TemplateParameterValue @templateParamInputObject
 
         # Logic
         # -----
         $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.VirtualMachineImages/imageTemplates' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $imageTemplateName
         [array] $imageTemplateResources = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
-        [array] $filteredTemplateResource = $imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -TemplateResourceGroup $resourcegroupName -TemplateName $_.name).runState -notIn @('running', 'new') }
+        Write-Verbose ('Found [{0}] Image Templates.' -f $imageTemplateResources.Count)
 
+        [array] $filteredTemplateResource = ($imageTemplateResources.count) -gt 0 ? ($imageTemplateResources | Where-Object { (Get-ImageTemplateStatus -TemplateResourceGroup $resourcegroupName -TemplateName $_.name).runState -notIn @('running', 'new') }) : @()
         Write-Verbose ('Found [{0}] Image Templates to remove.' -f $filteredTemplateResource.Count)
+
         if ($imageTemplateResources.Count -gt $filteredTemplateResource.Count) {
             Write-Verbose ("[{0}] instances are filtered as they are still in state 'running'." -f ($imageTemplateResources.Count - $filteredTemplateResource.Count))
         }

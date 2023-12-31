@@ -1,4 +1,4 @@
-name: 'ScaleSet Image Deployment'
+name: 'Image Build $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
 
 parameters:
   - name: startEnvironment
@@ -38,7 +38,7 @@ stages:
     displayName: Deploy to SBX
     condition: and(succeeded(), eq('${{ parameters.startEnvironment }}', 'sbx'))
     jobs:
-      - template: .templates/pipeline.image.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'sbx'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
@@ -47,9 +47,14 @@ stages:
 
   - stage: DEV_Deployments
     displayName: Deploy to DEV
-    condition: and(succeeded(), in('${{ parameters.startEnvironment }}', 'sbx', 'dev'))
+    dependsOn: SBX_Deployments
+    condition: |
+      and(
+        in(dependencies.SBX_Deployments.result, '', 'Succeeded', 'Skipped'),
+        in('${{ parameters.startEnvironment }}', 'sbx', 'dev')
+      )
     jobs:
-      - template: .templates/pipeline.image.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'dev'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
@@ -58,9 +63,15 @@ stages:
 
   - stage: PRD_Deployments
     displayName: Deploy to PRD
-    condition: and(succeeded(),in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd'))
+    dependsOn: DEV_Deployments
+    condition: |
+      and(
+        in(dependencies.DEV_Deployments.result, '', 'Succeeded', 'Skipped'),
+        or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/master')),
+        in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd')
+      )
     jobs:
-      - template: .templates/pipeline.image.jobs.yml
+      - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'prd'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'

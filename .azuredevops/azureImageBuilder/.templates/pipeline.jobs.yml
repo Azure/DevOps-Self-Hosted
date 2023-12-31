@@ -1,0 +1,248 @@
+parameters:
+  - name: environment
+    default:
+  - name: deploymentsToPerform
+    default:
+  - name: waitForImageBuild
+    default:
+  - name: removeImageTemplateResources
+    default: true
+
+jobs:
+  - deployment: cleanup_job
+    displayName: Cleanup temporal resources from previous runs
+    environment: ${{ parameters.environment }}
+    timeoutInMinutes: 120
+    condition: |
+      and(
+        succeeded(),
+        eq('${{ parameters.removeImageTemplateResources }}', 'true')
+      )
+    pool:
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                    @{ Name = 'Az.Accounts' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
+            # [Sanitization] task(s)
+            #-----------------------
+            - task: AzureCLI@2
+              name: Remove_ImageTemplates_Task
+              displayName: 'Remove previous Image Template resources'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
+
+                  $functionInput = @{
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Remove-ImageTemplate @functionInput -Verbose
+            - task: AzureCLI@2
+              name: Remove_DeploymentScripts_Task
+              displayName: 'Remove previous Deployment Script resources'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
+
+                  $functionInput = @{
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Remove-DeploymentScript @functionInput -Verbose
+            - task: AzureCLI@2
+              name: Clean_StagingRG_Task
+              displayName: 'Cleanup resources from Staging Resource Group'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ResourcesInStagingRg.ps1')
+
+                  $functionInput = @{
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Remove-ResourcesInStagingRg @functionInput -Verbose
+
+  - deployment: deploy_job
+    displayName: Deploy Resources
+    dependsOn:
+      - ${{ if eq( parameters.removeImageTemplateResources, true) }}:
+          - cleanup_job
+    environment: ${{ parameters.environment }}
+    condition: |
+      and(
+        succeeded(),
+        not(eq('${{ parameters.deploymentsToPerform }}', 'Only removal'))
+      )
+    timeoutInMinutes: 120
+    pool:
+      vmImage: '$(vmImage_${{ parameters.environment }})'
+      name: '$(poolName_${{ parameters.environment }})'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            # [Agent] Prepare environment
+            #----------------------------
+            - task: PowerShell@2
+              displayName: 'Setup agent'
+              inputs:
+                targetType: inline
+                pwsh: true
+                script: |
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'agent' 'Set-EnvironmentOnAgent.ps1')
+
+                  # Define PS modules to install on the runner
+                  $Modules = @(
+                      @{ Name = 'Az.Accounts' },
+                      @{ Name = 'Az.Resources' }
+                  )
+
+                  # Set agent up
+                  Set-EnvironmentOnAgent -PSModules $Modules
+            # [Deployment] task(s)
+            #---------------------
+            - task: AzureCLI@2
+              displayName: 'Deploy [image.deploy.bicep] via service connection [$(serviceConnection_${{ parameters.environment }})]'
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  # Load used functions
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
+                  . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'Test-TemplateDeployment.ps1')
+
+                  # ----------------- #
+                  # INVOKE DEPLOYMENT #
+                  # ----------------- #
+                  $functionInput = @{
+                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    location          = '$(location)'
+                    subscriptionId    = (Get-AzContext).Subscription.Id
+                  }
+
+                  # Inject control parmaeters from pipeline
+                  $functionInput['additionalParameters'] = @{
+                    deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  # Validate deployment
+                  Test-TemplateDeployment @functionInput
+
+                  # Invoke deployment
+                  $res = New-TemplateDeployment @functionInput -Verbose
+
+                  Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
+
+                  foreach ($outputKey in $res.deploymentOutput.Keys) {
+                    Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
+                  }
+            # [Image Template Build] task(s)
+            #------------------------------
+            - task: AzureCLI@2
+              name: PostDeploy_ImageTemplates_Task
+              displayName: 'Wait for image build'
+              condition: |
+                and(
+                  succeeded(),
+                  eq('${{ parameters.waitForImageBuild }}', 'true')
+                )
+              inputs:
+                addSpnToEnvironment: true
+                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  # Log into Az-PowerShell context
+                  . $profile # Load PS-Profile configuration
+                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
+                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
+                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  Write-Verbose "Load function" -Verbose
+                  . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
+
+                  $functionInput = @{
+                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    ImageTemplateName = $env:IMAGETEMPLATENAME # template deployment output
+                  }
+
+                  Write-Verbose "Invoke task with" -Verbose
+                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+
+                  Wait-ForImageBuild @functionInput -Verbose

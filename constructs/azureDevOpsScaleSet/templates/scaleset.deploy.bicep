@@ -6,28 +6,30 @@ targetScope = 'subscription'
 
 // Resource Group Parameters
 @description('Optional. The name of the Resource Group.')
-param resourceGroupName string = 'agents-vmss-rg'
+param resourceGroupName string = 'rg-ado-agents'
 
 // Network Security Group Parameters
 @description('Optional. The name of the Network Security Group.')
-param networkSecurityGroupName string = 'vmss-nsg'
+param networkSecurityGroupName string = 'nsg-vmss'
 
 // Virtual Network Parameters
 @description('Optional. The name of the Virtual Network.')
-param virtualNetworkName string = 'vmss-vnet'
+param virtualNetworkName string = 'vnet-vmss'
 
 @description('Optional. The address space of the Virtual Network.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
-@description('Optional. The name of the Virtual Network Subnet.')
-param virutalNetworkSubnetName string = 'vmsssubnet'
-
-@description('Optional. The address space of the Virtual Network Subnet.')
-param virutalNetworkSubnetAddressPrefix string = '10.0.0.0/24'
+@description('Optional. The subnets to create in the Virtual Network.')
+param virtualNetworkSubnets array = [
+  {
+    name: 'vmsssubnet'
+    addressPrefix: '10.0.0.0/24' // 10.0.0.0 - 10.0.0.255
+  }
+]
 
 // Virtual Machine Scale Set Parameters
 @description('Optional. The name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetName string = 'agent-scaleset'
+param virtualMachineScaleSetName string = 'vmss-agents'
 
 @description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
@@ -76,7 +78,7 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.9/Microsoft.Resources/resourceGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-rg'
   params: {
     name: resourceGroupName
@@ -85,7 +87,7 @@ module rg '../../../CARML0.9/Microsoft.Resources/resourceGroups/deploy.bicep' = 
 }
 
 // Network Security Group
-module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module nsg '../../../CARML0.11/network/network-security-group/main.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-nsg'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -98,7 +100,7 @@ module nsg '../../../CARML0.9/Microsoft.Network/networkSecurityGroups/deploy.bic
 }
 
 // Virtual Network
-module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' = if (deploymentsToPerform == 'All') {
+module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -106,13 +108,7 @@ module vnet '../../../CARML0.9/Microsoft.Network/virtualNetworks/deploy.bicep' =
     addressPrefixes: [
       virtualNetworkAddressPrefix
     ]
-    subnets: [
-      {
-        name: virutalNetworkSubnetName
-        addressPrefix: virutalNetworkSubnetAddressPrefix
-        networkSecurityGroupId: nsg.outputs.resourceId
-      }
-    ]
+    subnets: virtualNetworkSubnets
     location: location
   }
   dependsOn: [
@@ -136,7 +132,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 // Virtual Machine Scale Set
-module vmss '../../../CARML0.9/Microsoft.Compute/virtualMachineScaleSets/deploy.bicep' = {
+module vmss '../../../CARML0.11/compute/virtual-machine-scale-set/main.bicep' = {
   name: '${deployment().name}-vmss'
   scope: resourceGroup(resourceGroupName)
   params: {

@@ -46,6 +46,8 @@ function Sync-ElasticPool {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper
+        $repoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+
         . (Join-Path -Path $PSScriptRoot 'Get-Project.ps1')
         . (Join-Path -Path $PSScriptRoot 'Get-Endpoint.ps1')
         . (Join-Path -Path $PSScriptRoot 'Get-ElasticPool.ps1')
@@ -53,33 +55,18 @@ function Sync-ElasticPool {
         . (Join-Path -Path $PSScriptRoot 'Set-ElasticPool.ps1')
         . (Join-Path -Path $PSScriptRoot 'Get-ElasticPoolRegisteredInProject.ps1')
         . (Join-Path -Path $PSScriptRoot 'Set-ElasticPoolRegistrationInProject.ps1')
+        . (Join-Path -Path $repoRoot 'sharedScripts' 'template' 'Get-TemplateParameterValue.ps1')
     }
 
     process {
 
         # Fetch information
         # -----------------
-
-        # Get Scale Set propoerties
-        $templateContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
-
-        ## Get VMSS name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'virtualMachineScaleSetName') {
-            # Used explicit value
-            $VMSSName = $templateContent.resources[-1].properties.parameters['virtualMachineScaleSetName'].value
-        } else {
-            # Used default value
-            $VMSSName = $templateContent.resources[-1].properties.template.parameters['virtualMachineScaleSetName'].defaultValue
+        $templateParamInputObject = @{
+            TemplateFilePath = $TemplateFilePath
+            ParameterName    = @('resourceGroupName', 'virtualMachineScaleSetName')
         }
-
-        ## Get VMMS RG name
-        if ($templateContent.resources[-1].properties.parameters.Keys -contains 'resourceGroupName') {
-            # Used explicit value
-            $VMSSResourceGroupName = $templateContent.resources[-1].properties.parameters['resourceGroupName'].value
-        } else {
-            # Used default value
-            $VMSSResourceGroupName = $templateContent.resources[-1].properties.template.parameters['resourceGroupName'].defaultValue
-        }
+        $VMSSResourceGroupName, $VMSSName = Get-TemplateParameterValue @templateParamInputObject
 
         # Get agent  pool properties
         $agentPoolParameterFileContent = ConvertFrom-Json (Get-Content $AgentParametersFilePath -Raw) -AsHashtable

@@ -50,12 +50,12 @@ $inputObject = @{
     ProjectId         = 43
     PoolName          = 'myPool'
     ServiceEndpointId = '11111-1111-11111-1111-1111111'
-    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/agents-vmss-rg/providers/Microsoft.Compute/virtualMachineScaleSets/agent-scaleset'
+    VMSSResourceID    = '/subscriptions/<subscriptionId>/resourceGroups/rg-ado-agents/providers/Microsoft.Compute/virtualMachineScaleSets/vmss-agents'
     VMSSOSType        = 'Linux'
 }
 New-ElasticPool @inputObject
 
-Register virtual machine scale set 'agent-scaleset' as agent pool 'myPool' in project [contoso|43] using the default configuration
+Register virtual machine scale set 'vmss-agents' as agent pool 'myPool' in project [contoso|43] using the default configuration
 #>
 function New-ElasticPool {
 

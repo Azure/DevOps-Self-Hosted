@@ -20,9 +20,9 @@ variables:
   poolName_dev: '' # Use this for self-hosted agents
   poolName_prd: '' # Use this for self-hosted agents
 
-  serviceConnection_sbx: 'sbxConnection'
-  serviceConnection_dev: 'devConnection'
-  serviceConnection_prd: 'prdConnection'
+  serviceConnection_sbx: '<YourServiceConnectionName>'
+  serviceConnection_dev: '<YourServiceConnectionName>'
+  serviceConnection_prd: '<YourServiceConnectionName>'
   #endregion
 
   #region specific

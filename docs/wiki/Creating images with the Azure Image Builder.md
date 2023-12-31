@@ -2,6 +2,9 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 
 ### _Navigation_
 - [Overview](#overview)
+  - [Prerequisites](#prerequisites)
+  - [Elements](#elements)
+  - [File structure & flow](#file-structure--flow)
 - [Process](#process)
   - [Initial configuration](#initial-configuration)
   - [Deployment](#deployment)
@@ -11,13 +14,27 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 - [Troubleshooting](#troubleshooting)
 
 # Overview
+
+## Prerequisites
+
+The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
+
+- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Adminitrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
+- IF you have a policy in place that prevents Storage Accounts from being deployed without a Firewall, you have to create an exemption for the Image Template / Staging Resource Group you can configure for the Image Template Resource (parameter `imageTemplateResourceGroupName`). The rationale is that the Azure-Image-Builder service uses this resource group to deploy both temporal resources used during the image build (e.g., a Virtual Machine), as well as a Storage Account to store temporal files & a 'packerlogs/customization.log' file in (which contains the logs of the image build). This Storage Account has no firewall configured, has a random name, and cannot be configured at deploy time.
+
+## Elements
 The image creation uses several components:
 
 | &nbsp;&nbsp;&nbsp; | Resource | Description |
 |--|--|--|
-| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our image resources |
-| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | Storage Account | The storage account that hosts our image customization scripts used by the _Azure Image Building_ when executing the image template |
-| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It requires contributor permissions on the subscription to be able to bake the image. |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting the image resources |
+| <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | (Image) Resource Group | The resource group hosting the resources created during the image build |
+| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | (Assets) Storage Account | The storage account that hosts the image customization scripts used by the _Azure Image Building_ when executing the image template. |
+| <img src="./media/icons/Storage-Accounts.svg" alt="Storage Account" height="12"> | (DS) Storage Account | The storage account that hosts the files of the Deployment Scripts. Required for private networking. |
+| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | (Image) User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It is assigned contributor permissions on the subscription to be able to bake the image. Further, it is assigned read permissions on the Assets Storage Account Container in order to consume the customization scripts. |
+| <img src="./media/icons/Managed-identities.svg" alt="Managed Identity" height="12"> | (DS) User-Assigned Managed Identity | Azure Active Directory feature that eliminates the need for credentials in code, rotates credentials automatically, and reduces identity maintenance. In the context of the imaging construct, the managed identity (MSI) is used by the Image Builder Service. It's assigned permissions on the Image Template to trigger it, the Deployment Script Storage Account for Private Networking, and the Assets Storage Account to upload files.  |
+| <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Storage) Deployment Script | The Deployment Script that uploads the customization scripts to the Assets Storage Account. |
+| <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Trigger) Deployment Script | The Deployment Script that triggers the Image Template build. |
 | <img src="./media/icons/AzureComputeGalleries.svg" alt="Azure Compute Gallery" height="12"> | Azure Compute Gallery | Azure service that helps to build structure and organization for managed images. Provides global replication, versioning, grouping, sharing across subscriptions and scaling. The plain resource in itself is like an empty container. |
 | <img src="./media/icons/VMImageDefinitions.svg" alt="Azure Compute Gallery Image" height="12"> | Azure Compute Gallery Image | Created within a gallery and contains information about the image and requirements for using it internally. This includes metadata like whether the image is Windows or Linux, release notes and recommended compute resources. Like the image gallery itself it acts like a container for the actual images. |
 | <img src="./media/icons/ImageTemplates.svg" alt="Image Template" height="12"> | Image Template | A standard Azure Image Builder template that defines the parameters for building a custom image with AIB. The parameters include image source (Marketplace, custom image, etc.), customization options (i.e., Updates, scripts, restarts), and distribution (i.e., managed image, Azure Compute Gallery). The template is not an actual resource. Instead, when an image template is created, Azure stores all the metadata of the referenced Azure Compute Gallery Image alongside other image backing instructions as a hidden resource in a temporary resource group. |
@@ -25,13 +42,35 @@ The image creation uses several components:
 
 <p>
 
-<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="150">
+<img src="./media/image/imageBuilderimage.png" alt="Run workflow" height="400">
 
 <p>
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
 > For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
+
+## File structure & flow
+
+This section gives you an overview of the solution's structure, that is, how its files are linked to each other.
+
+- **Pipeline Stage template:** This is the entry point for the solution. It's the pipeline template you register in Azure DevOps to trigger a deployment. It contains one stage per environment you'd want to deploy to.
+- **Pipeline Jobs template:** This template contains the actual steps of your pipeline, that is tasks that run PowerShell scripts, and or deploy Bicep templates to Azure.
+- **PowerShell scripts:** These scripts execute deployment-unrelated actions that, for example, setup your Azure environment / remove leftover artifacts.
+- **Bicep Deployment files:** The Bicep template file that contains the custom parameter you want to set per environment. By default, it only contains a subset of parameters, but can be expanded upon additional parameters available in the _Bicep template file_.
+- **Bicep template file:** The Bicep file template file that contains the blueprint / orchestration of the infrastructure you want to deploy into an environment. It has parameters for all relevant infrastructure properties, but can be extended with any additional parameter available in the contained resource (/ module) deployments. It also contains a reference to the script files to upload to the _Assets Storage Account_.
+- **Bicep CARML modules:** The resource modules imported from the CARML library that contain most of the actual resource deployment logic.
+
+<p>
+
+<img src="./media/image/structure.png" alt="Structure" height="400">
+
+<p>
+
+> **Note:** All files are written in a way that should make modifications easy. However, to help you get started, please take not of the following recommendations:
+> - If you want to add additional logic to your pipeline, make sure to modify the `pipeline.jobs.yml` template to ensure that the added / modified steps are applied equally across all stages.
+> - If you want to add additional resources to your deployment, make sure to modify the `image.deploy.bicep` file to ensure that the added / modified resources are applied to all environments equally. If you further want to ensure your template remains flexible, you can add additional parameters you can then reference from the `<env>.image.bicep` file.
+> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter for your new property to the module, but also give it a value by providing it in the ` image.deploy.bicep` file.
 
 # Process
 
@@ -46,8 +85,7 @@ To prepare the construct for usage you have to perform two fundamental steps:
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureImageBuilder\variables.yml`
-- `constructs\azureImageBuilder\Parameters\imageInfra.bicep`
-- `constructs\azureImageBuilder\Parameters\imageTemplate.bicep`
+- `constructs\azureImageBuilder\deploymentFiles\<env>.image.bicep`
 
 ### Variables
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
@@ -57,11 +95,10 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 - `location`: The location to store deployment metadata in. This variable is also used as a default location to deploy into, if no location is provided in the parameter files.
 
 ### Parameters
-Next, we have two deployment files, `imageInfra.bicep` & `imageTemplate.bicep` that correspond to the two phases in the deployment: Deploy all infrastructure components & build the image.
+Next, we have one deployment file, `<env>.image.bicep` that hosts to the two phases in the deployment: Deploy all infrastructure components & build the image.
 
-Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
+The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 - Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
-- Update any reference to the a resource accordingly. For example, the storage account you specify in the `imageInfra.bicep` parameter file should be the same you then reference in the `imageTemplate.bicep`'s `imageTemplateCustomizationSteps` parameter.
 
 > **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
@@ -71,30 +108,30 @@ As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find
 
 #### Special case: **Image Template**
 
-The image template ultimately decides what happens during the image built. In this construct, it works in combination with the PowerShell scripts provided in the `constructs\azureImageBuilder\scripts\Uploads` folder.
+The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\uploads` folder.
 
-When you eventually trigger the pipeline, it will upload any script in the `Uploads` folder to a dedicated storage account for the image building process and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
+When you eventually trigger the pipeline, it will upload any script in the `uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
 ```Bicep
 imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxInstallPowerShell.sh?${sasKey}'
+      scriptUri: 'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Install-LinuxPowerShell.sh'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://<YourStorageAccount>.blob.core.windows.net/aibscripts/LinuxPrepareMachine.ps1?${sasKey}\' -O \'LinuxPrepareMachine.ps1\''
-          'sed -i \'s/\r$//' 'LinuxPrepareMachine.ps1\''
-          'pwsh \'LinuxPrepareMachine.ps1\''
+          'wget \'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Initialize-LinuxSoftware.ps1\' -O \'Initialize-LinuxSoftware.ps1\''
+          'sed -i \'s/\r$//' 'Initialize-LinuxSoftware.ps1\''
+          'pwsh \'Initialize-LinuxSoftware.ps1\''
       ]
   }
 ]
 ```
 
-It first installs PowerShell on the target machine and then continues by executing the installation script. Feel free to modify the existing script, or add new ones with new customization steps as you see fit. You can find a full list of all available steps [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-json#properties-customize).
+By default, it first installs PowerShell on the target machine and then continues by executing the installation script. Feel free to modify the existing script, or add new ones with new customization steps as you see fit. You can find a full list of all available steps [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-json#properties-customize).
 
 </details>
 
@@ -141,7 +178,7 @@ So let's take a look at the different configuration options when running the pip
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `sbx.imageTemplate.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only deploy the storage account, upload the latest installation files from the `Uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
+| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only Infrastructure` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only infrastructure`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only storage & image`**: Only uploads the latest installation files from the `uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
 | `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs\azureImageBuilder\scripts\image\Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
 | `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter file - as long es their built is not in state `running`.  | De-select | |
 
@@ -153,8 +190,8 @@ If you did not select `All` you can then decide at any point to re-run the pipel
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the pipeline to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `PipelineAgentsScaleSet` module:
 
-- Linux:    `constructs\azureImageBuilder\scripts\Uploads\linux\LinuxPrepareMachine.ps1`
-- Windows:  `constructs\azureImageBuilder\scripts\Uploads\windows\WindowsPrepareMachine.ps1`
+- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\Initialize-LinuxSoftware.ps1`
+- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\Initialize-WindowsSoftware.ps1`
 
 One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep or Terraform.
 
@@ -197,7 +234,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
   {
     imageSource: {
       type: 'SharedImageVersion'
-      imageVersionID: '/subscriptions/c64d2kd9-4679-45f5-b17a-e27b0214acp4d/resourceGroups/scale-set-rg/providers/Microsoft.Compute/galleries/mygallery/images/mydefinition/versions/0.24457.34028'
+      imageVersionID: '/subscriptions/c64d2kd9-4679-45f5-b17a-e27b0214acp4d/resourceGroups/rg-scaleset/providers/Microsoft.Compute/galleries/galmy/images/mydefinition/versions/0.24457.34028'
     }
   }
   ```
@@ -205,7 +242,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
 
 # Out of the box installed components
 
-Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs\azureImageBuilder\scripts\Uploads` folder:
+Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs\azureImageBuilder\scripts\uploads` folder:
 
 | OS |   |   | Windows | Linux |
 | -  | - | - | -       | -     |
@@ -244,6 +281,6 @@ Following you can find an overview of the installed elements currently implement
 
 # Troubleshooting
 
-Most commonly issues with the construct occur during the image building process due to script errors. As those are hard to troubleshoot and the AIB VMs that are used to bake images are not accessible, the AIB service writes logs into a storage account in the resource group it generates during the building process (`IT_...`) as documented [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-troubleshoot#customization-log).
+Most commonly issues with the construct occur during the image building process due to script errors. As those are hard to troubleshoot and the AIB VMs that are used to bake images are not accessible, the AIB service writes logs into a storage account in the 'staging' resource group it generates during the building process as documented [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-troubleshoot#customization-log).
 
-Aside from the packer logs, it will also contain the logs generated by our provided customization scripts and hence provide you insights into 'where' something wrong, and ideally also 'what' went wrong.
+Aside from the packer logs, it will also contain the logs generated by the provided customization scripts and hence provide you insights into 'where' something wrong, and ideally also 'what' went wrong.
