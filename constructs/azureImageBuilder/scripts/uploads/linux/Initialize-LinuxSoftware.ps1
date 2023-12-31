@@ -335,11 +335,6 @@ LogInfo('########################################')
 LogInfo('#   Entering Initialize-LinuxSoftware.ps1   #')
 LogInfo('########################################')
 
-LogInfo('Set autorestart start')
-sudo NEEDRESTART_MODE=a apt-get dist-upgrade --yes
-sudo DEBIAN_FRONTEND=noninteractive
-LogInfo('Set autorestart end')
-
 ###########################
 ##   Install Azure CLI   ##
 ###########################
@@ -381,19 +376,19 @@ LogInfo('Install kubectl end')
 ##   Install Docker    #
 ########################
 LogInfo('Install docker start')
-sudo apt update
+sudo apt-get update
 
-sudo apt -y install apt-transport-https ca-certificates curl software-properties-common
+sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | sudo apt-key add -
 sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' -y
 
-sudo apt update
+sudo apt-get update
 
 apt-cache policy 'docker-ce'
 
-sudo apt update
+sudo apt-get update
 
-sudo apt -y install 'docker-ce'
+sudo apt-get -y install 'docker-ce'
 
 sudo chmod 666 '/var/run/docker.sock' # All users can read and write but cannot execute the file/folder
 LogInfo('Install docker end')
@@ -437,25 +432,14 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 # Source: https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#1804-
 LogInfo('Install dotnet (for nuget) start')
 
-# Get the version of Ubuntu
-# . /etc/os-release - does not work (yet) for image version 23.04. The package is available, but does not contain nuget
-$ubuntuBaseVersion = '22.04'
-
-# .NET-Core Runtime
-wget "https://packages.microsoft.com/config/ubuntu/$ubuntuBaseVersion/packages-microsoft-prod.deb" -O 'packages-microsoft-prod.deb'
-sudo dpkg -i packages-microsoft-prod.deb
-
 # .NET-Core SDK
 sudo apt-get update
-sudo apt-get install -y apt-transport-https
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-5.0
+sudo apt-get install -y dotnet-sdk-8.0
 
 # .NET-Core Runtime
 sudo apt-get update
-sudo apt-get install -y apt-transport-https
-sudo apt-get update
-sudo apt-get install -y aspnetcore-runtime-5.0
+sudo apt-get install -y aspnetcore-runtime-8.0
+
 LogInfo('Install dotnet (for nuget) end')
 
 ###########################
