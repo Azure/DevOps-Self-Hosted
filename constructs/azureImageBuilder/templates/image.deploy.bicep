@@ -110,7 +110,7 @@ module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploym
 
 // Always deployed as both an infra element & needed as a staging resource group for image building
 module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' = {
-  name: '${deployment().name}-rg'
+  name: '${deployment().name}-image-rg'
   params: {
     name: imageTemplateResourceGroupName
     location: location
