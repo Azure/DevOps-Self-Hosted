@@ -39,11 +39,11 @@ function Remove-StaleImageTemplate {
 
     $templates = $(az image builder list --query "[?resourceGroup == '$ImageTemplateResourceGroupName'].name" --output tsv)
 
-    foreach ($template in $templates) {
-        Write-Output "Processing $template"
-        az image builder identity remove --resource-group $ImageTemplateResourceGroupName -n $template --user-assigned -y
-        az image builder delete -g $ImageTemplateResourceGroupName -n $template 2>nul
-        az image builder identity assign -g $ImageTemplateResourceGroupName -n $template --user-assigned $userAssignedIdentityResourceId
-        az image builder delete -g $ImageTemplateResourceGroupName -n $template --only-show-errors
+    $templates | ForEach-Object -ThrottleLimit 5 -Parallel {
+        Write-Output "Processing $_"
+        az image builder identity remove --resource-group $using:ImageTemplateResourceGroupName -n $_ --user-assigned -y
+        az image builder delete -g $using:ImageTemplateResourceGroupName -n $_ 2>nul
+        az image builder identity assign -g $using:ImageTemplateResourceGroupName -n $_ --user-assigned $using:userAssignedIdentityResourceId
+        az image builder delete -g $using:ImageTemplateResourceGroupName -n $_ --only-show-errors
     }
 }
