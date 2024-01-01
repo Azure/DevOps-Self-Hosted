@@ -24,7 +24,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        computeGalleryName: '<computeGalleryName>'
+        computeGalleryName: 'aibgallery'
         imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
         computeGalleryImageDefinitions: [
             {

@@ -114,7 +114,7 @@ module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploym
 
 // Always deployed as both an infra element & needed as a staging resource group for image building
 module imageTemplateRg '../../../CARML0.11/resources/resource-group/main.bicep' = {
-  name: '${deployment().name}-rg'
+  name: '${deployment().name}-image-rg'
   params: {
     name: imageTemplateResourceGroupName
     location: location
@@ -271,6 +271,8 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
         }
       ]
     }
+    // allowBlobPublicAccess: true // -> Doesn't make a difference.
+    // publicNetworkAccess: 'Enabled' // -> Doesn't make a difference. Defaults to `null` with networkAcls enabled
     // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
     networkAcls: {
       bypass: 'AzureServices'
