@@ -99,6 +99,12 @@ param baseTime string = utcNow()
 
 var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '')
 
+// Roles
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
+  scope: tenant()
+}
+
 // =========== //
 // Deployments //
 // =========== //
@@ -296,17 +302,6 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
   ]
 }
 
-////////////////////
-// TEMP RESOURCES //
-////////////////////
-
-// Deployment scripts & their storage account
-// Role required for deployment script to be able to use a storage account via private networking
-resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
-  scope: tenant()
-}
-
 module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ds-sa'
   scope: resourceGroup(resourceGroupName)
@@ -342,6 +337,10 @@ module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' 
     vnet
   ]
 }
+
+////////////////////
+// TEMP RESOURCES //
+////////////////////
 
 // Upload storage account files
 module storageAccount_upload '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
