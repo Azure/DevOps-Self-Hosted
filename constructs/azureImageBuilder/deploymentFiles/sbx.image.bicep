@@ -24,7 +24,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     params: {
         location: location
         deploymentsToPerform: deploymentsToPerform
-        computeGalleryName: '<computeGalleryName>'
+        computeGalleryName: 'aibgallery'
         imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
         computeGalleryImageDefinitions: [
             {
@@ -37,7 +37,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             }
         ]
 
-        assetsStorageAccountName: '<assetsStorageAccountName>'
+        assetsStorageAccountName: 'stalsehraib'
         assetsStorageAccountContainerName: 'aibscripts'
 
         storageAccountFilesToUpload: {
@@ -75,12 +75,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
             {
                 type: 'Shell'
                 name: 'PowerShell installation'
-                scriptUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
+                scriptUri: 'https://stalsehraib.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
             }
             {
                 type: 'File'
                 name: 'Initialize-LinuxSoftware'
-                sourceUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
+                sourceUri: 'https://stalsehraib.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
                 destination: 'Initialize-LinuxSoftware.ps1'
             }
             {
