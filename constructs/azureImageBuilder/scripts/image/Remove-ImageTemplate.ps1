@@ -60,7 +60,7 @@ function Remove-ImageTemplate {
                     Write-Verbose ('Removed Image Template [{0}]' -f $imageTemplateResource.id) -Verbose
                 } else {
                     $restError = ($res.content | ConvertFrom-Json).error
-                    throw ('The removal of Image Template [{0}] failed with error code [{1}] and message [2}]' -f $_.name, $restError.code, $restError.message)
+                    throw ('The removal of Image Template [{0}] failed with error code [{1}] and message [2}]' -f $imageTemplateResource.name, $restError.code, $restError.message)
                 }
             }
         }
