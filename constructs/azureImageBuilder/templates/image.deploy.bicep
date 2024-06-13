@@ -35,6 +35,10 @@ param deploymentScriptStorageAccountName string = '${assetsStorageAccountName}ds
 @description('Optional. The name of container in the Storage Account.')
 param assetsStorageAccountContainerName string = 'aibscripts'
 
+// Network Security Group Parameters
+// @description('Optional. The name of the Network Security Group to create and attach to the Image Template Subnet.')
+// param networkSecurityGroupName string = 'nsg-aib'
+
 // Virtual Network Parameters
 @description('Optional. The name of the Virtual Network.')
 param virtualNetworkName string = 'vnet-it'
@@ -95,6 +99,12 @@ param baseTime string = utcNow()
 
 var formattedTime = replace(replace(replace(baseTime, ':', ''), '-', ''), ' ', '')
 
+// Roles
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
+  scope: tenant()
+}
+
 // =========== //
 // Deployments //
 // =========== //
@@ -147,11 +157,7 @@ module imageMSI '../../../CARML0.11/managed-identity/user-assigned-identity/main
 module imageMSI_rbac '../../../CARML0.11/authorization//role-assignment/subscription/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-ra'
   params: {
-    // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
-    //principalId: imageMSI.outputs.principalId // Results in: Deployment template validation failed: 'The template resource 'Microsoft.Resources/deployments/image.deploy-ra' reference to 'Microsoft.Resources/deployments/image.deploy-msi' requires an API version. Please see https://aka.ms/arm-template for usage details.'.
-    // Default: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('rgParam').name), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name))).outputs.principalId.value
-    //principalId: reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroupName), 'Microsoft.Resources/deployments', format('{0}-msi', deployment().name)),'2021-04-01').outputs.principalId.value
-    principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? imageMSI.outputs.principalId : ''
+    principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? imageMSI.outputs.principalId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
     roleDefinitionIdOrName: 'Contributor'
     location: location
   }
@@ -171,6 +177,20 @@ module azureComputeGallery '../../../CARML0.11/compute/gallery/main.bicep' = if 
   ]
 }
 
+// Network Security Group
+// module nsg '../../../CARML0.11/network/network-security-group/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+//   name: '${deployment().name}-nsg'
+//   scope: resourceGroup(resourceGroupName)
+//   params: {
+//     name: networkSecurityGroupName
+//     location: location
+//   }
+//   dependsOn: [
+//     rg
+//   ]
+// }
+// TODO:  https://learn.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-vnet#add-an-nsg-rule
+
 // Image Template Virtual Network
 module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-vnet'
@@ -184,6 +204,7 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
       {
         name: imageSubnetName
         addressPrefix: virtualNetworkSubnetAddressPrefix
+        // networkSecurityGroupId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') ? nsg.outputs.resourceId : '' // Requires condition als Bicep will otherwise try to resolve the null reference
         // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
         privateLinkServiceNetworkPolicies: 'Disabled' // Required if using Azure Image Builder with existing VNET
         serviceEndpoints: [
@@ -218,6 +239,11 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
 }
 
 // Assets Storage Account
+// Notes
+// - Subnet in Stefan's IT deployment missing?
+// -> If not provided on my end, doesn't make a difference. Still has access issues
+// Storage Firewall
+// - Access works if disabled, but is actually enabled in Stefan's deployment
 module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
   name: '${deployment().name}-files-sa'
   scope: resourceGroup(resourceGroupName)
@@ -251,21 +277,29 @@ module assetsStorageAccount '../../../CARML0.11/storage/storage-account/main.bic
         }
       ]
     }
+    // allowBlobPublicAccess: true // -> Doesn't make a difference.
+    // publicNetworkAccess: 'Enabled' // -> Doesn't make a difference. Defaults to `null` with networkAcls enabled
+    // If enabled, the IT cannot access the storage account container files. Also cannot be undone. Once enabled the storage account must be removed and recreated to reset.
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          // Allow image template to access storage account container files to download files
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0]
+        }
+        {
+          // Allow deployment script to access storage account container files to upload files
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[1]
+        }
+      ]
+    }
   }
   dependsOn: [
     rg
   ]
-}
-
-////////////////////
-// TEMP RESOURCES //
-////////////////////
-
-// Deployment scripts & their storage account
-// Role required for deployment script to be able to use a storage account via private networking
-resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Priveleged Contributor
-  scope: tenant()
 }
 
 module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
@@ -303,6 +337,10 @@ module dsStorageAccount '../../../CARML0.11/storage/storage-account/main.bicep' 
     vnet
   ]
 }
+
+////////////////////
+// TEMP RESOURCES //
+////////////////////
 
 // Upload storage account files
 module storageAccount_upload '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
@@ -367,30 +405,30 @@ module imageTemplate '../../../CARML0.11/virtual-machine-images/image-template/m
 }
 
 // Deployment script to trigger image build
-module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
-  name: '${deployment().name}-imageTemplate-trigger-ds'
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${(deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.name : ''}' // Requires condition als Bicep will otherwise try to resolve the null reference
-    userAssignedIdentities: {
-      '${az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.ManagedIdentity/userAssignedIdentities', deploymentScriptManagedIdentityName)}': {}
-    }
-    scriptContent: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.runThisCommand : '' // Requires condition als Bicep will otherwise try to resolve the null reference
-    timeout: 'PT30M'
-    cleanupPreference: 'Always'
-    location: location
-    storageAccountName: deploymentScriptStorageAccountName
-    subnetIds: [
-      az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, deploymentScriptSubnet)
-    ]
-  }
-  dependsOn: [
-    rg
-    dsMsi
-    vnet
-    dsStorageAccount
-  ]
-}
+// module imageTemplate_trigger '../../../CARML0.11/resources/deployment-script/main.bicep' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+//   name: '${deployment().name}-imageTemplate-trigger-ds'
+//   scope: resourceGroup(resourceGroupName)
+//   params: {
+//     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${(deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.name : ''}' // Requires condition als Bicep will otherwise try to resolve the null reference
+//     userAssignedIdentities: {
+//       '${az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.ManagedIdentity/userAssignedIdentities', deploymentScriptManagedIdentityName)}': {}
+//     }
+//     scriptContent: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.runThisCommand : '' // Requires condition als Bicep will otherwise try to resolve the null reference
+//     timeout: 'PT30M'
+//     cleanupPreference: 'Always'
+//     location: location
+//     storageAccountName: deploymentScriptStorageAccountName
+//     subnetIds: [
+//       az.resourceId(subscription().subscriptionId, resourceGroupName, 'Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, deploymentScriptSubnet)
+//     ]
+//   }
+//   dependsOn: [
+//     rg
+//     dsMsi
+//     vnet
+//     dsStorageAccount
+//   ]
+// }
 
 @description('The generated name of the image template.')
 output imageTemplateName string = (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.name : '' // Requires condition als Bicep will otherwise try to resolve the null reference
