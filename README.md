@@ -7,7 +7,7 @@
 
 This repository provides you with several constructs (i.e. templates & pipelines) to deploy solutions around self-hosted agents for DevOps environments.
 
-In some instances you can combine the constructs to, for example, build an image for self-hosted Azure DevOps scale set agents. Furthermore, constructs may be based on the [CARML](https://aka.ms/CARML) library to simplify deployments.
+In some instances you can combine the constructs to, for example, build an image for self-hosted Azure DevOps scale set agents. Furthermore, constructs may be based on the [Azure Verified Modules](https://aka.ms/avm) library to simplify deployments.
 
 Currently the repository contains the following constructs:
 

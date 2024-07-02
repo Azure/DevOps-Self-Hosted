@@ -18,13 +18,13 @@ Shared concepts
 
 <summary>Telemetry</summary>
 
-Each leveraged CARML module (see corresponding folder in root) contains a `defaultTelemetry` deployment  `'pid-<GUID>-${uniqueString(deployment().name)}'`, resulting in deployments such as `'pid-<GUID>-nx2c3rnlt2wru'`.
+Each leveraged AVM module (https://aka.ms/avm) contains a `defaultTelemetry` deployment  `'pid-<GUID>-${uniqueString(deployment().name)}'`, resulting in deployments such as `'pid-<GUID>-nx2c3rnlt2wru'`.
 
 > **Note:** Though implemented at each level in a module hierarchy (e.g. storage account & blobServices), the deployment will only happen for the top-level module in a deployment, but not for its children. To illustrate this better, see the following examples:
 > - Deployment of the KeyVault module and 2 Secrets: Results in 1 `PID` deployment for the KeyVault (and none for the secrets)
 > - Deployment of the Secret module: Results in 1 `PID` deployment for the Secret
 
-This resource enables the team responsible for CARML to query the number of deployments of a given template from Azure - and as such get insights into its adoption.
+This resource enables the team responsible for AVM to query the number of deployments of a given template from Azure - and as such get insights into its adoption.
 
 If you want to prevent this deployment to take place, it is enough to set the `'enableDefaultTelemetry'` parameter in each module to a default value of `'false'`.
 

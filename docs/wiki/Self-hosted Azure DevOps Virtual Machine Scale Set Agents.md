@@ -52,7 +52,7 @@ This section gives you an overview of the solution's structure, that is, how its
 - **AgentPool Config:** This JSON file contains the configuration to apply to the agent pool when registering/updating it. Only relevant if the corresponding feature (described below) is enabled.
 - **Bicep Deployment files:** The Bicep template file that contains the custom parameter you want to set per environment. By default, it only contains a subset of parameters, but can be expanded upon additional parameters available in the _Bicep template file_.
 - **Bicep template file:** The Bicep file template file that contains the blueprint / orchestration of the infrastructure you want to deploy into an environment. It has parameters for all relevant infrastructure properties, but can be extended with any additional parameter available in the contained resource (/ module) deployments.
-- **Bicep CARML modules:** The resource modules imported from the CARML library that contain most of the actual resource deployment logic.
+- **Bicep AVM modules:** The resource modules imported from the [Azure Verified Modules](https://aka.ms/avm) library that contain most of the actual resource deployment logic.
 
 <p>
 
@@ -124,7 +124,7 @@ The file comes with out-of-the box parameters that you can use aside from a few 
 
 The parameter file was created with Linux in mind. However, it also contains examples on how the same implementation would look like for Windows. Examples are always commented and can be used to replace the currently not commented values.
 
-As the deployments leverage [`CARML`](https://aka.ms/CARML) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to add specific rules to the network security group deployment. This and several other parameters are available and documented in the module's `readme.md`.
+As the deployments leverage [`AVM`](https://aka.ms/avm) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to add specific rules to the network security group deployment. This and several other parameters are available and documented in the module's `readme.md`.
 
 </details>
 

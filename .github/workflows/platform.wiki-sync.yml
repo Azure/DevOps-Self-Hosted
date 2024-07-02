@@ -17,8 +17,8 @@ env:
   wiki_source_repo_dir: '${{ github.repository }}/docs/wiki'
   wiki_target_repo: '${{ github.repository }}.wiki'
   github_commit_message: 'Wiki Sync from docs/wiki'
-  pipelinePrincipalGitUserName: 'CARMLPipelinePrincipal'
-  pipelinePrincipalGitUserEmail: 'CARML@noreply.microsoft.com'
+  pipelinePrincipalGitUserName: 'AVMPipelinePrincipal'
+  pipelinePrincipalGitUserEmail: 'avm@noreply.microsoft.com'
 
 jobs:
   sync-wiki:

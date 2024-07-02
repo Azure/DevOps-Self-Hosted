@@ -78,31 +78,25 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-module rg '../../../CARML0.11/resources/resource-group/main.bicep' = if (deploymentsToPerform == 'All') {
-  name: '${deployment().name}-rg'
-  params: {
-    name: resourceGroupName
-    location: location
-  }
+resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+  name: resourceGroupName
+  location: location
 }
 
 // Network Security Group
-module nsg '../../../CARML0.11/network/network-security-group/main.bicep' = if (deploymentsToPerform == 'All') {
+module nsg 'br/public:avm/res/network/network-security-group:0.3.0' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-nsg'
-  scope: resourceGroup(resourceGroupName)
+  scope: rg
   params: {
     name: networkSecurityGroupName
     location: location
   }
-  dependsOn: [
-    rg
-  ]
 }
 
 // Virtual Network
-module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploymentsToPerform == 'All') {
+module vnet 'br/public:avm/res/network/virtual-network:0.1.6' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
-  scope: resourceGroup(resourceGroupName)
+  scope: rg
   params: {
     name: virtualNetworkName
     addressPrefixes: [
@@ -111,14 +105,11 @@ module vnet '../../../CARML0.11/network/virtual-network/main.bicep' = if (deploy
     subnets: virtualNetworkSubnets
     location: location
   }
-  dependsOn: [
-    rg
-  ]
 }
 
 // Image Version
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
-  scope: resourceGroup(resourceGroupName)
+  scope: rg
 
   name: virtualMachineScaleSetComputeGalleryName
 
@@ -132,9 +123,9 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 // Virtual Machine Scale Set
-module vmss '../../../CARML0.11/compute/virtual-machine-scale-set/main.bicep' = {
+module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.0' = {
   name: '${deployment().name}-vmss'
-  scope: resourceGroup(resourceGroupName)
+  scope: rg
   params: {
     name: virtualMachineScaleSetName
     vmNamePrefix: virtualMachineScaleSetVMNamePrefix
@@ -149,7 +140,9 @@ module vmss '../../../CARML0.11/compute/virtual-machine-scale-set/main.bicep' = 
         storageAccountType: 'Premium_LRS'
       }
     }
-    systemAssignedIdentity: true
+    managedIdentities: {
+      systemAssigned: true
+    }
     osType: virtualMachineScaleSetOsType
     imageReference: {
       id: computeGallery::imageDefinition::imageVersion.id
@@ -181,7 +174,4 @@ module vmss '../../../CARML0.11/compute/virtual-machine-scale-set/main.bicep' = 
     publicKeys: virtualMachineScaleSetPublicKeys
     location: location
   }
-  dependsOn: [
-    vnet
-  ]
 }
