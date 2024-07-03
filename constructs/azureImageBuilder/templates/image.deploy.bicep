@@ -136,7 +136,11 @@ module imageMSI 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.2
 
 // MSI Subscription contributor assignment
 resource imageMSI_rbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
-  name: ''
+  name: guid(
+    subscription().subscriptionId,
+    imageManagedIdentityName,
+    subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  )
   properties: {
     // TODO: Tracked issue: https://github.com/Azure/bicep/issues/2371
     //principalId: imageMSI.outputs.principalId // Results in: Deployment template validation failed: 'The template resource 'Microsoft.Resources/deployments/image.deploy-ra' reference to 'Microsoft.Resources/deployments/image.deploy-msi' requires an API version. Please see https://aka.ms/arm-template for usage details.'.
