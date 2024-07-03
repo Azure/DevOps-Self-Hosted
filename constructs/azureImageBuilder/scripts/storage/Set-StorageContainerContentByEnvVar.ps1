@@ -29,6 +29,9 @@ param(
     [string] $TargetContainer
 )
 
+Write-Verbose 'Current context' -Verbose
+Write-Verbose (Get-AzContext | Out-String) -Verbose
+
 Write-Verbose 'Fetching & storing scripts' -Verbose
 $contentDirectoryName = 'scripts'
 $contentDirectory = (New-Item $contentDirectoryName -ItemType 'Directory' -Force).FullName
