@@ -374,6 +374,7 @@ module imageTemplate 'br/public:avm/res/virtual-machine-images/image-template:0.
   dependsOn: [
     azureComputeGallery
     storageAccount_upload
+    imageMSI_rbac
   ]
 }
 
