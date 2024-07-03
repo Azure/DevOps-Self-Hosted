@@ -299,6 +299,7 @@ module storageAccount_upload 'br/public:avm/res/resources/deployment-script:0.2.
     name: '${storageDeploymentScriptName}-${formattedTime}'
     kind: 'AzurePowerShell'
     azPowerShellVersion: '11.5'
+    retentionInterval: 'P1D'
     managedIdentities: {
       userAssignedResourcesIds: [
         dsMsi.outputs.resourceId
@@ -368,6 +369,7 @@ module imageTemplate_trigger 'br/public:avm/res/resources/deployment-script:0.2.
     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${(deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.name : ''}' // Requires condition als Bicep will otherwise try to resolve the null reference
     kind: 'AzurePowerShell'
     azPowerShellVersion: '11.5'
+    retentionInterval: 'P1D'
     managedIdentities: {
       userAssignedResourcesIds: [
         dsMsi.outputs.resourceId
