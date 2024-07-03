@@ -217,7 +217,7 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
   scope: rg
   params: {
     name: assetsStorageAccountName
-    allowSharedKeyAccess: false // Keys not needed if MSI is granted access
+    allowSharedKeyAccess: true // Keys not needed if MSI is granted access
     location: location
     networkAcls: {
       bypass: 'AzureServices'
