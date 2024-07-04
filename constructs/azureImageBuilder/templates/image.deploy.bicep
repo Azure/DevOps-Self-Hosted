@@ -181,7 +181,6 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.6' = if (deploymentsT
       {
         name: imageSubnetName
         addressPrefix: virtualNetworkSubnetAddressPrefix
-        // TODO: Remove once https://github.com/Azure/bicep/issues/6540 is resolved and Private Endpoints are enabled
         privateLinkServiceNetworkPolicies: 'Disabled' // Required if using Azure Image Builder with existing VNET
         serviceEndpoints: [
           {
