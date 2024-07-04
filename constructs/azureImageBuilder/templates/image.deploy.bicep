@@ -251,7 +251,7 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
             }
             {
               // Allow image MSI to access storage account container to read files - DO NOT REMOVE
-              roleDefinitionIdOrName: 'Storage Blob Data Contributor' // 'Storage Blob Data Reader'
+              roleDefinitionIdOrName: 'Storage Blob Data Reader' // 'Storage Blob Data Reader'
               principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure')
                 ? imageMSI.outputs.principalId
                 : '' // Requires condition als Bicep will otherwise try to resolve the null reference
