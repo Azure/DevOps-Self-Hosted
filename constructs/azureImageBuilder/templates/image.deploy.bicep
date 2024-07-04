@@ -191,7 +191,6 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.6' = if (deploymentsT
       {
         name: deploymentScriptSubnet
         addressPrefix: virtualNetworkDeploymentScriptSubnetAddressPrefix
-        privateLinkServiceNetworkPolicies: 'Disabled' // Required if using Azure Image Builder with existing VNET - temp
         serviceEndpoints: [
           {
             service: 'Microsoft.Storage'
