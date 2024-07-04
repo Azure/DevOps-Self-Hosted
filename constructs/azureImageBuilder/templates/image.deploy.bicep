@@ -251,7 +251,7 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
             }
             {
               // Allow image MSI to access storage account container to read files - DO NOT REMOVE
-              roleDefinitionIdOrName: 'Storage Blob Data Reader'
+              roleDefinitionIdOrName: 'Storage Blob Data Contributor' // 'Storage Blob Data Reader'
               principalId: (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure')
                 ? imageMSI.outputs.principalId
                 : '' // Requires condition als Bicep will otherwise try to resolve the null reference
@@ -308,14 +308,13 @@ module dsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = if (
 }
 
 // Upload storage account files
-module storageAccount_upload 'br/public:avm/res/resources/deployment-script:0.2.3' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
+module storageAccount_upload 'br/public:avm/res/resources/deployment-script:0.2.4' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure' || deploymentsToPerform == 'Only storage & image') {
   name: '${deployment().name}-storage-upload-ds'
   scope: rg
   params: {
     name: '${storageDeploymentScriptName}-${formattedTime}'
     kind: 'AzurePowerShell'
     azPowerShellVersion: '12.0'
-    retentionInterval: 'P1D'
     managedIdentities: {
       userAssignedResourcesIds: [
         dsMsi.outputs.resourceId
@@ -379,14 +378,13 @@ module imageTemplate 'br/public:avm/res/virtual-machine-images/image-template:0.
 }
 
 // Deployment script to trigger image build
-module imageTemplate_trigger 'br/public:avm/res/resources/deployment-script:0.2.3' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
+module imageTemplate_trigger 'br/public:avm/res/resources/deployment-script:0.2.4' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') {
   name: '${deployment().name}-imageTemplate-trigger-ds'
   scope: rg
   params: {
     name: '${imageTemplateDeploymentScriptName}-${formattedTime}-${(deploymentsToPerform == 'All' || deploymentsToPerform == 'Only storage & image' || deploymentsToPerform == 'Only image') ? imageTemplate.outputs.name : ''}' // Requires condition als Bicep will otherwise try to resolve the null reference
     kind: 'AzurePowerShell'
     azPowerShellVersion: '12.0'
-    retentionInterval: 'P1D'
     managedIdentities: {
       userAssignedResourcesIds: [
         dsMsi.outputs.resourceId
