@@ -219,21 +219,22 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
     allowSharedKeyAccess: false // Keys not needed if MSI is granted access
     location: location
     networkAcls: {
-      // bypass: 'AzureServices'
-      // defaultAction: 'Deny'
-      // virtualNetworkRules: [
-      //   {
-      //     // Allow image template to access data
-      //     action: 'Allow'
-      //     id: vnet.outputs.subnetResourceIds[0] // imageSubnet
-      //   }
-      //   {
-      //     // Allow deployment script to access storage account to upload data
-      //     action: 'Allow'
-      //     id: vnet.outputs.subnetResourceIds[1] // deploymentScriptSubnet
-      //   }
-      // ]
-      defaultAction: 'Allow'
+      // defaultAction: 'Allow'
+      // TODO: If Firewall is enabled, causes the Image Template to not be able to connect to the storage account. It's NOT a permission issue
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          // Allow image template to access data
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0] // imageSubnet
+        }
+        {
+          // Allow deployment script to access storage account to upload data
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[1] // deploymentScriptSubnet
+        }
+      ]
     }
     blobServices: {
       containers: [
