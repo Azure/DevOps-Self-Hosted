@@ -140,9 +140,6 @@ module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.0' = {
         storageAccountType: 'Premium_LRS'
       }
     }
-    managedIdentities: {
-      systemAssigned: true
-    }
     osType: virtualMachineScaleSetOsType
     imageReference: {
       id: computeGallery::imageDefinition::imageVersion.id
