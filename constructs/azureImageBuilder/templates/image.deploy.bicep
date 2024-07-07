@@ -220,8 +220,7 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
     allowSharedKeyAccess: false // Keys not needed if MSI is granted access
     location: location
     networkAcls: {
-      // bypass: 'AzureServices'
-      // TODO: If Firewall is enabled, causes the Image Template to not be able to connect to the storage account. It's NOT a permission issue
+      // NOTE: If Firewall is enabled, it causes the Image Template to not be able to connect to the storage account. It's NOT a permission issue (ref: https://github.com/danielsollondon/azvmimagebuilder/issues/31#issuecomment-1793779854)
       defaultAction: 'Allow'
       // defaultAction: 'Deny'
       // virtualNetworkRules: [
