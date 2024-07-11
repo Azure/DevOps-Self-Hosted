@@ -123,7 +123,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 // Virtual Machine Scale Set
-module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.0' = {
+module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.2' = {
   name: '${deployment().name}-vmss'
   scope: rg
   params: {
