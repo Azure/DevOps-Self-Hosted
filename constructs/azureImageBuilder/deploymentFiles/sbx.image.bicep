@@ -64,8 +64,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     imageTemplateImageSource: {
       type: 'PlatformImage'
       publisher: 'canonical'
-      offer: '0001-com-ubuntu-server-lunar'
-      sku: '23_04-gen2'
+      offer: 'ubuntu-24_04-lts'
+      sku: 'server'
       version: 'latest'
       // Custom image example
       // type: 'SharedImageVersion'
