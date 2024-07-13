@@ -221,20 +221,20 @@ module assetsStorageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = 
     location: location
     networkAcls: {
       // NOTE: If Firewall is enabled, it causes the Image Template to not be able to connect to the storage account. It's NOT a permission issue (ref: https://github.com/danielsollondon/azvmimagebuilder/issues/31#issuecomment-1793779854)
-      defaultAction: 'Allow'
-      // defaultAction: 'Deny'
-      // virtualNetworkRules: [
-      //   {
-      //     // Allow image template to access data
-      //     action: 'Allow'
-      //     id: vnet.outputs.subnetResourceIds[0] // imageSubnet
-      //   }
-      //   {
-      //     // Allow deployment script to access storage account to upload data
-      //     action: 'Allow'
-      //     id: vnet.outputs.subnetResourceIds[1] // deploymentScriptSubnet
-      //   }
-      // ]
+      // defaultAction: 'Allow'
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          // Allow image template to access data
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[0] // imageSubnet
+        }
+        {
+          // Allow deployment script to access storage account to upload data
+          action: 'Allow'
+          id: vnet.outputs.subnetResourceIds[1] // deploymentScriptSubnet
+        }
+      ]
     }
     blobServices: {
       containers: [
