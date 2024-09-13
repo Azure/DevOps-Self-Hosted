@@ -185,9 +185,7 @@ So let's take a look at the different configuration options when running the pip
 ### First deployment
 When triggering the pipeline for the first time for any environment, make sure you either select `All` or `Only Infrastructure` for the `Scope of the deployment`. In either case the pipeline will deploy all resources and scripts you will subsequently need to create the images. For any subsequent run, you can go with any option you need.
 
-If you did not select `All` you can then decide at any point to re-run the pipeline using the `All`, `Only storage & image` or `Only image` options respectively to have the image template being built.
-
-The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the pipeline to a storage account ahead of the image deployment.
+The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `PipelineAgentsScaleSet` module:
 
 - Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\Initialize-LinuxSoftware.ps1`
