@@ -78,7 +78,7 @@ param deploymentsToPerform string = 'All'
 // =========== //
 
 // Resource Group
-resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only infrastructure') {
+resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only base') {
   name: resourceGroupName
   location: location
 }

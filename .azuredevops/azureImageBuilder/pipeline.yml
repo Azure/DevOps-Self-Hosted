@@ -12,12 +12,12 @@ parameters:
   - name: deploymentsToPerform
     displayName: Scope of deployment
     type: string
-    default: Only storage & image
+    default: Only assets & image
     values:
       - All
       - Only removal
-      - Only infrastructure
-      - Only storage & image
+      - Only base
+      - Only assets & image
       - Only image
   - name: waitForImageBuild
     displayName: Wait for image build

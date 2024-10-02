@@ -6,8 +6,8 @@ targetScope = 'subscription'
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
   'All'
-  'Only infrastructure'
-  'Only storage & image'
+  'Only base'
+  'Only assets & image'
   'Only image'
 ])
 param deploymentsToPerform string = 'All'
@@ -25,7 +25,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     location: location
     deploymentsToPerform: deploymentsToPerform
     computeGalleryName: 'galaib'
-    imageTemplateComputeGalleryImageDefinitionName: 'sid-linux'
+    computeGalleryImageDefinitionName: 'sid-linux'
     computeGalleryImageDefinitions: [
       {
         hyperVGeneration: 'V2'
@@ -40,26 +40,24 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     assetsStorageAccountName: 'stshaib'
     assetsStorageAccountContainerName: 'aibscripts'
 
-    storageAccountFilesToUpload: {
-      secureList: [
-        {
-          name: 'script_Install__LinuxPowerShell_sh' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
-          value: loadTextContent('../scripts/uploads/linux/Install-LinuxPowerShell.sh')
-        }
-        {
-          name: 'script_Initialize__LinuxSoftware_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
-          value: loadTextContent('../scripts/uploads/linux/Initialize-LinuxSoftware.ps1')
-        }
-        // {
-        //     name: 'script_Install__WindowsPowerShell_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
-        //     value: loadTextContent('../scripts/uploads/windows/Install-WindowsPowerShell.ps1')
-        // }
-        // {
-        //     name: 'script_Initialize__WindowsSoftware_ps1' // May only be alphanumeric characters & underscores. The upload will replace '_' with '.' and '__' with '-'.
-        //     value: loadTextContent('../scripts/uploads/windows/Initialize-WindowsSoftware.ps1')
-        // }
-      ]
-    }
+    storageAccountFilesToUpload: [
+      {
+        name: 'Install-LinuxPowerShell.sh'
+        value: loadTextContent('../scripts/uploads/linux/Install-LinuxPowerShell.sh')
+      }
+      {
+        name: 'Initialize-LinuxSoftware.ps1'
+        value: loadTextContent('../scripts/uploads/linux/Initialize-LinuxSoftware.ps1')
+      }
+      // {
+      //   name: 'Install-WindowsPowerShell.ps1'
+      //   value: loadTextContent('../scripts/uploads/windows/Install-WindowsPowerShell.ps1')
+      // }
+      // {
+      //   name: 'Initialize-WindowsSoftware.ps1'
+      //   value: loadTextContent('../scripts/uploads/windows/Initialize-WindowsSoftware.ps1')
+      // }
+    ]
     // Linux Example
     imageTemplateImageSource: {
       type: 'PlatformImage'
@@ -140,6 +138,3 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     // ]
   }
 }
-
-@description('The generated name of the image template.')
-output imageTemplateName string = imageDeployment.outputs.imageTemplateName
