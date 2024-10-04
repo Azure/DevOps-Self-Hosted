@@ -114,26 +114,26 @@ module vnet 'br/public:avm/res/network/virtual-network:0.1.6' = if (deploymentsT
 }
 
 // Image Version
-resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
-  scope: rg
+// resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
+//   scope: rg
 
-  name: virtualMachineScaleSetComputeGalleryName
+//   name: virtualMachineScaleSetComputeGalleryName
 
-  resource imageDefinition 'images@2022-03-03' existing = {
-    name: virtualMachineScaleSetComputeGalleryImageDefinitionName
+//   resource imageDefinition 'images@2022-03-03' existing = {
+//     name: virtualMachineScaleSetComputeGalleryImageDefinitionName
 
-    resource imageVersion 'versions@2022-03-03' existing = {
-      name: virtualMachineScaleSetImageVersion
-    }
-  }
-}
+//     resource imageVersion 'versions@2022-03-03' existing = {
+//       name: virtualMachineScaleSetImageVersion
+//     }
+//   }
+// }
 
 module pool 'nestedPool.bicep' = {
   scope: rg
   name: '${deployment().name}-pool'
   params: {
     location: location
-    computeImageResourceId: computeGallery::imageDefinition::imageVersion.id
+    // computeImageResourceId: computeGallery::imageDefinition::imageVersion.id
     devCenterName: devCenterName
     devCenterProjectName: devCenterProjectName
     maximumConcurrency: 1
