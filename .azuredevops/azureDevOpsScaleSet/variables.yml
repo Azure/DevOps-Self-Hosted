@@ -20,9 +20,9 @@ variables:
   poolName_dev: '' # Use this for self-hosted agents
   poolName_prd: '' # Use this for self-hosted agents
 
-  serviceConnection_sbx: 'ModulePlaygroundPrivate'
-  serviceConnection_dev: 'ModulePlaygroundPrivate'
-  serviceConnection_prd: 'ModulePlaygroundPrivate'
+  serviceConnection_sbx: 'PrivateConnection'
+  serviceConnection_dev: 'PrivateConnection'
+  serviceConnection_prd: 'PrivateConnection'
   #endregion
 
   #region specific

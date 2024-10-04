@@ -1,9 +1,9 @@
 {
-    "Organization": "alsehr",
-    "Project": "Module Playground",
-    "ServiceConnectionName": "ModulePlaygroundPrivate",
+    "Organization": "asehr",
+    "Project": "Onyx",
+    "ServiceConnectionName": "PrivateConnection",
     "AgentPoolProperties": {
-        "ScaleSetPoolName": "moduleplayground-scaleset",
+        "ScaleSetPoolName": "onyx-pool",
         "RecycleAfterEachUse": false,
         "MaxSavedNodeCount": 0,
         "MaxCapacity": 10,
