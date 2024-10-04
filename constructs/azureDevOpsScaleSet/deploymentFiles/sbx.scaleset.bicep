@@ -44,6 +44,12 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
     ]
     virtualMachineScaleSetComputeGalleryImageDefinitionName: 'sid-linux'
 
+    devCenterName: 'myCenter'
+    devCenterProjectName: 'myProject'
+    organizationName: 'alsehr'
+    poolName: 'moduleplayground-scaleset'
+    projectNames: ['Module Playground']
+
     // Windows example
     // virtualMachineScaleSetOsType: 'Windows'
     // virtualMachineScaleSetComputeGalleryImageDefinitionName: 'sid-windows'

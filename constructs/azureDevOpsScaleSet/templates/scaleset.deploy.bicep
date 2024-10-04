@@ -62,6 +62,12 @@ param virtualMachineScaleSetComputeGalleryImageDefinitionName string
 @description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
 param virtualMachineScaleSetImageVersion string = 'latest'
 
+param poolName string
+param organizationName string
+param projectNames string[]?
+param devCenterName string
+param devCenterProjectName string
+
 // Shared Parameters
 @description('Optional. The location to deploy into')
 param location string = deployment().location
@@ -122,57 +128,73 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
   }
 }
 
-// Virtual Machine Scale Set
-module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.2' = {
-  name: '${deployment().name}-vmss'
+module pool 'nestedPool.bicep' = {
   scope: rg
+  name: '${deployment().name}-pool'
   params: {
-    name: virtualMachineScaleSetName
-    vmNamePrefix: virtualMachineScaleSetVMNamePrefix
-    skuName: virtualMachineScaleSetSKUSize
-    skuCapacity: 0
-    upgradePolicyMode: 'Manual'
-    vmPriority: 'Regular'
-    osDisk: {
-      createOption: 'fromImage'
-      diskSizeGB: 128
-      managedDisk: {
-        storageAccountType: 'Premium_LRS'
-      }
-    }
-    // orchestrationMode: 'Uniform'
-    // managedIdentities: {
-    //   systemAssigned: true
-    // }
-    osType: virtualMachineScaleSetOsType
-    imageReference: {
-      id: computeGallery::imageDefinition::imageVersion.id
-    }
-    adminUsername: virtualMachineScaleSetAdminUserName
-    disablePasswordAuthentication: virtualMachineScaleSetDisablePasswordAuthentication
-    nicConfigurations: [
-      {
-        nicSuffix: '-nic01'
-        enableAcceleratedNetworking: false
-        ipConfigurations: [
-          {
-            name: 'ipconfig1'
-            properties: {
-              subnet: {
-                id: vnet.outputs.subnetResourceIds[0]
-              }
-            }
-          }
-        ]
-      }
-    ]
-    scaleInPolicy: {
-      rules: [
-        'Default'
-      ]
-    }
-    adminPassword: virtualMachineScaleSetAdminPassword
-    publicKeys: virtualMachineScaleSetPublicKeys
     location: location
+    computeImageResourceId: computeGallery::imageDefinition::imageVersion.id
+    devCenterName: devCenterName
+    devCenterProjectName: devCenterProjectName
+    maximumConcurrency: 1
+    poolName: poolName
+    organizationName: organizationName
+    projectNames: projectNames
+    subnetResourceId: vnet.outputs.subnetResourceIds[0]
   }
 }
+
+// Virtual Machine Scale Set
+// module vmss 'br/public:avm/res/compute/virtual-machine-scale-set:0.2.2' = {
+//   name: '${deployment().name}-vmss'
+//   scope: rg
+//   params: {
+//     name: virtualMachineScaleSetName
+//     vmNamePrefix: virtualMachineScaleSetVMNamePrefix
+//     skuName: virtualMachineScaleSetSKUSize
+//     skuCapacity: 0
+//     upgradePolicyMode: 'Manual'
+//     vmPriority: 'Regular'
+//     osDisk: {
+//       createOption: 'fromImage'
+//       diskSizeGB: 128
+//       managedDisk: {
+//         storageAccountType: 'Premium_LRS'
+//       }
+//     }
+//     // orchestrationMode: 'Uniform'
+//     // managedIdentities: {
+//     //   systemAssigned: true
+//     // }
+//     osType: virtualMachineScaleSetOsType
+//     imageReference: {
+//       id: computeGallery::imageDefinition::imageVersion.id
+//     }
+//     adminUsername: virtualMachineScaleSetAdminUserName
+//     disablePasswordAuthentication: virtualMachineScaleSetDisablePasswordAuthentication
+//     nicConfigurations: [
+//       {
+//         nicSuffix: '-nic01'
+//         enableAcceleratedNetworking: false
+//         ipConfigurations: [
+//           {
+//             name: 'ipconfig1'
+//             properties: {
+//               subnet: {
+//                 id: vnet.outputs.subnetResourceIds[0]
+//               }
+//             }
+//           }
+//         ]
+//       }
+//     ]
+//     scaleInPolicy: {
+//       rules: [
+//         'Default'
+//       ]
+//     }
+//     adminPassword: virtualMachineScaleSetAdminPassword
+//     publicKeys: virtualMachineScaleSetPublicKeys
+//     location: location
+//   }
+// }
