@@ -55,26 +55,23 @@ resource imageVersionPermission 'Microsoft.Authorization/roleAssignments@2022-04
   }
   scope: computeGallery::imageDefinition // ::imageVersion Not using imageVersion as scope to enable to principal to find 'latest'. A role assignment on 'latest' is not possible
 }
-resource vnetPermissions 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for (roleDefinitionGuid, index) in ([
-    '4d97b98b-1d4f-4787-a291-c67834d212e7'
-    // Network Contributor
-    // 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
-    // Reader
-  ] ?? []): {
-    name: guid(
-      computeGallery::imageDefinition.id,
-      devOpsInfrastructureEnterpriseApplicationObjectId,
-      roleDefinitionGuid
-    )
-    properties: {
-      principalId: devOpsInfrastructureEnterpriseApplicationObjectId
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDefinitionGuid)
-      principalType: 'ServicePrincipal'
-    }
-    scope: vnet
+
+resource vnetPermissions 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(
+    vnet.id,
+    devOpsInfrastructureEnterpriseApplicationObjectId,
+    subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4d97b98b-1d4f-4787-a291-c67834d212e7')
+  )
+  properties: {
+    principalId: devOpsInfrastructureEnterpriseApplicationObjectId
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '4d97b98b-1d4f-4787-a291-c67834d212e7'
+    ) // Network Contributor
+    principalType: 'ServicePrincipal'
   }
-]
+  scope: vnet
+}
 
 resource devCenter 'Microsoft.DevCenter/devcenters@2024-02-01' = {
   name: devCenterName

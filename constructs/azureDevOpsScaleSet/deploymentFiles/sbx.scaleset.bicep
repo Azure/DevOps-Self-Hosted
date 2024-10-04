@@ -46,9 +46,9 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
 
     devCenterName: 'myCenter'
     devCenterProjectName: 'myProject'
-    organizationName: 'alsehr'
-    poolName: 'moduleplayground-scaleset'
-    projectNames: ['Module Playground']
+    organizationName: 'asehr'
+    projectNames: ['Onyx']
+    poolName: 'onyx-scaleset'
     devOpsInfrastructureEnterpriseApplicationObjectId: 'a67e26cd-08dc-47be-8217-df02edb89ba8' // Tenant-specific 'DevOpsInfrastructure' Enterprise Application objectId
 
     // Windows example
