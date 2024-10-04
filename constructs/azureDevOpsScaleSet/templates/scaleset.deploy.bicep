@@ -67,6 +67,7 @@ param organizationName string
 param projectNames string[]?
 param devCenterName string
 param devCenterProjectName string
+param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 // Shared Parameters
 @description('Optional. The location to deploy into')
@@ -144,6 +145,7 @@ module pool 'nestedPool.bicep' = {
     virtualMachineScaleSetComputeGalleryImageDefinitionName: virtualMachineScaleSetComputeGalleryImageDefinitionName
     virtualMachineScaleSetComputeGalleryName: virtualMachineScaleSetComputeGalleryName
     virtualMachineScaleSetImageVersion: virtualMachineScaleSetImageVersion
+    devOpsInfrastructureEnterpriseApplicationObjectId: devOpsInfrastructureEnterpriseApplicationObjectId
   }
 }
 

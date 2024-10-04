@@ -7,6 +7,7 @@ param organizationName string
 param projectNames string[]?
 param maximumConcurrency int
 param subnetResourceId string
+param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetComputeGalleryName string
@@ -30,9 +31,13 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 resource permission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: '${deployment().name}-roleAssignment'
+  name: guid(
+    computeGallery::imageDefinition.id,
+    devOpsInfrastructureEnterpriseApplicationObjectId,
+    subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
+  )
   properties: {
-    principalId: 'a67e26cd-08dc-47be-8217-df02edb89ba8' // Tenant-specific 'DevOpsInfrastructure' Enterprise Application objectId
+    principalId: devOpsInfrastructureEnterpriseApplicationObjectId
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'acdd72a7-3385-48ef-bd42-f606fba81ae7'
