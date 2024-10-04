@@ -6,7 +6,8 @@ param poolName string
 param organizationName string
 param projectNames string[]?
 param maximumConcurrency int
-param subnetResourceId string
+param subnetName string
+param vnetResourceId string
 param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
@@ -30,7 +31,15 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
   }
 }
 
-resource permission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource vnet 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
+  name: last(split(vnetResourceId, '/'))
+
+  resource subnet 'subnets@2024-01-01' existing = {
+    name: subnetName
+  }
+}
+
+resource imageVersionPermission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(
     computeGallery::imageDefinition.id,
     devOpsInfrastructureEnterpriseApplicationObjectId,
@@ -46,6 +55,26 @@ resource permission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
   scope: computeGallery::imageDefinition // ::imageVersion Not using imageVersion as scope to enable to principal to find 'latest'. A role assignment on 'latest' is not possible
 }
+resource vnetPermissions 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (roleDefinitionGuid, index) in ([
+    '4d97b98b-1d4f-4787-a291-c67834d212e7'
+    // Network Contributor
+    // 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+    // Reader
+  ] ?? []): {
+    name: guid(
+      computeGallery::imageDefinition.id,
+      devOpsInfrastructureEnterpriseApplicationObjectId,
+      roleDefinitionGuid
+    )
+    properties: {
+      principalId: devOpsInfrastructureEnterpriseApplicationObjectId
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDefinitionGuid)
+      principalType: 'ServicePrincipal'
+    }
+    scope: vnet
+  }
+]
 
 resource devCenter 'Microsoft.DevCenter/devcenters@2024-02-01' = {
   name: devCenterName
@@ -89,11 +118,12 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
         }
       ]
       networkProfile: {
-        subnetId: subnetResourceId
+        subnetId: vnet::subnet.id
       }
     }
   }
   dependsOn: [
-    permission
+    imageVersionPermission
+    vnetPermissions
   ]
 }

@@ -141,7 +141,8 @@ module pool 'nestedPool.bicep' = {
     poolName: poolName
     organizationName: organizationName
     projectNames: projectNames
-    subnetResourceId: vnet.outputs.subnetResourceIds[0]
+    vnetResourceId: vnet.outputs.resourceId
+    subnetName: vnet.outputs.subnetNames[0]
     virtualMachineScaleSetComputeGalleryImageDefinitionName: virtualMachineScaleSetComputeGalleryImageDefinitionName
     virtualMachineScaleSetComputeGalleryName: virtualMachineScaleSetComputeGalleryName
     virtualMachineScaleSetImageVersion: virtualMachineScaleSetImageVersion
