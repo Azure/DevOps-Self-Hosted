@@ -28,30 +28,30 @@ param virtualNetworkSubnets array = [
 ]
 
 // Virtual Machine Scale Set Parameters
-@description('Optional. The name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetName string = 'vmss-agents'
+// @description('Optional. The name of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetName string = 'vmss-agents'
 
-@description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
+// @description('Optional. The Virtual Machine name prefix of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetVMNamePrefix string = 'vmssvm'
 
-@description('Required. The OS type of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetOsType string
+// @description('Required. The OS type of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetOsType string
 
-@description('Optional. The SKU Size of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetSKUSize string = 'Standard_B2s'
+// @description('Optional. The SKU Size of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetSKUSize string = 'Standard_B2s'
 
-@description('Required. Disable/Enable password authentication of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetDisablePasswordAuthentication bool
+// @description('Required. Disable/Enable password authentication of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetDisablePasswordAuthentication bool
 
-@description('Optional. The Public Keys of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetPublicKeys array = []
+// @description('Optional. The Public Keys of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetPublicKeys array = []
 
-@description('Optional. The admin password of the Virtual Machine Scale Set.')
-@secure()
-param virtualMachineScaleSetAdminPassword string = ''
+// @description('Optional. The admin password of the Virtual Machine Scale Set.')
+// @secure()
+// param virtualMachineScaleSetAdminPassword string = ''
 
-@description('Optional. The admin user name of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetAdminUserName string = 'scaleSetAdmin'
+// @description('Optional. The admin user name of the Virtual Machine Scale Set.')
+// param virtualMachineScaleSetAdminUserName string = 'scaleSetAdmin'
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
 param virtualMachineScaleSetComputeGalleryName string
@@ -141,6 +141,9 @@ module pool 'nestedPool.bicep' = {
     organizationName: organizationName
     projectNames: projectNames
     subnetResourceId: vnet.outputs.subnetResourceIds[0]
+    virtualMachineScaleSetComputeGalleryImageDefinitionName: virtualMachineScaleSetComputeGalleryImageDefinitionName
+    virtualMachineScaleSetComputeGalleryName: virtualMachineScaleSetComputeGalleryName
+    virtualMachineScaleSetImageVersion: virtualMachineScaleSetImageVersion
   }
 }
 
