@@ -1,4 +1,4 @@
-param computeImageResourceId string
+// param computeImageResourceId string
 param devCenterName string
 param devCenterProjectName string
 param location string
@@ -15,7 +15,7 @@ param virtualMachineScaleSetComputeGalleryName string
 param virtualMachineScaleSetComputeGalleryImageDefinitionName string
 
 @description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
-param virtualMachineScaleSetImageVersion string = 'latest'
+param virtualMachineScaleSetImageVersion string = 'latest' // Note, 'latest' is not supported by resource type
 
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
   name: virtualMachineScaleSetComputeGalleryName
@@ -39,7 +39,7 @@ resource permission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
     ) // Reader
     principalType: 'ServicePrincipal'
   }
-  scope: computeGallery::imageDefinition::imageVersion
+  scope: computeGallery::imageDefinition // ::imageVersion Not using imageVersion as scope to enable to principal to find 'latest'. A role assignment on 'latest' is not possible
 }
 
 resource devCenter 'Microsoft.DevCenter/devcenters@2024-02-01' = {
@@ -80,7 +80,7 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
       kind: 'Vmss'
       images: [
         {
-          resourceId: computeImageResourceId
+          resourceId: computeGallery::imageDefinition::imageVersion.id
         }
       ]
       networkProfile: {
