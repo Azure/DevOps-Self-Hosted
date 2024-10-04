@@ -24,6 +24,7 @@ param virtualNetworkSubnets array = [
   {
     name: 'vmsssubnet'
     addressPrefix: '10.0.0.0/24' // 10.0.0.0 - 10.0.0.255
+    delegation: 'Microsoft.DevOpsInfrastructure/pools'
   }
 ]
 
@@ -101,7 +102,7 @@ module nsg 'br/public:avm/res/network/network-security-group:0.3.0' = if (deploy
 }
 
 // Virtual Network
-module vnet 'br/public:avm/res/network/virtual-network:0.1.6' = if (deploymentsToPerform == 'All') {
+module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = if (deploymentsToPerform == 'All') {
   name: '${deployment().name}-vnet'
   scope: rg
   params: {
