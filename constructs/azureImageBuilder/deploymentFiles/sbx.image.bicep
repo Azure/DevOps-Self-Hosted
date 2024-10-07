@@ -28,12 +28,20 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     computeGalleryImageDefinitionName: 'sid-linux'
     computeGalleryImageDefinitions: [
       {
-        hyperVGeneration: 'V2'
         name: 'sid-linux'
         osType: 'Linux'
-        publisher: 'devops'
-        offer: 'devops_linux'
-        sku: 'devops_linux_az'
+
+        identifier: {
+          publisher: 'devops'
+          offer: 'devops_linux'
+          sku: 'devops_linux_az'
+        }
+        osState: 'Generalized'
+
+        isAcceleratedNetworkSupported: false
+        isHibernateSupported: false
+        securityType: 'Standard'
+        hyperVGeneration: 'V2'
       }
     ]
 
@@ -95,9 +103,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     //     {
     //         name: 'sid-windows'
     //         osType: 'Windows'
-    //         publisher: 'devops'
-    //         offer: 'devops_windows'
-    //         sku: 'devops_windows_az'
+    //         identifier: {
+    //           publisher: 'devops'
+    //           offer: 'devops_windows'
+    //           sku: 'devops_windows_az'
+    //         }
+    //         osState: 'Generalized'
     //     }
     // ]
     // imageTemplateComputeGalleryImageDefinitionName: 'sid-windows'
