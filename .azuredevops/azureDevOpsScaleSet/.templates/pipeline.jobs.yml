@@ -74,7 +74,7 @@ jobs:
                     TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
                     DeploymentMetadataLocation = '$(location)'
                     SubscriptionId             = (Get-AzContext).Subscription.Id
-                    RepoRoot                   = $(System.DefaultWorkingDirectory)
+                    RepoRoot                   = '$(System.DefaultWorkingDirectory)'
                     AdditionalParameters       = @{
                       ResourceLocation = '$(location)'
                     }
