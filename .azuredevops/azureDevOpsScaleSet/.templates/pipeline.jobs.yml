@@ -74,7 +74,7 @@ jobs:
                     TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
                     DeploymentMetadataLocation = '$(location)'
                     SubscriptionId             = (Get-AzContext).Subscription.Id
-                    RepoRoot                   = $env:GITHUB_WORKSPACE
+                    RepoRoot                   = $(System.DefaultWorkingDirectory)
                     AdditionalParameters       = @{
                       ResourceLocation = '$(location)'
                     }
