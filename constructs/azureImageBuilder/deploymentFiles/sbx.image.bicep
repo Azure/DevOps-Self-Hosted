@@ -38,8 +38,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         }
         osState: 'Generalized'
 
-        isAcceleratedNetworkSupported: false
-        isHibernateSupported: false
+        // isAcceleratedNetworkSupported: false
+        // isHibernateSupported: false
         // securityType: 'Standard'
         hyperVGeneration: 'V2'
       }
