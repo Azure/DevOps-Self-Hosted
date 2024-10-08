@@ -13,7 +13,7 @@ targetScope = 'subscription'
 param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'WestEurope'
+param location string = 'NorthEurope'
 
 /////////////////////////////
 //   Template Deployment   //

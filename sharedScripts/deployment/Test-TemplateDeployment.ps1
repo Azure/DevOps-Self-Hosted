@@ -16,7 +16,7 @@ Mandatory. Path to the template file from root.
 Optional. Path to the parameter file from root.
 
 .PARAMETER location
-Mandatory. Location to test in. E.g. WestEurope
+Mandatory. Location to test in. E.g. NorthEurope
 
 .PARAMETER resourceGroupName
 Optional. Name of the resource group to deploy into. Mandatory if deploying into a resource group (resource group level)
@@ -31,19 +31,19 @@ Optional. Name of the management group to deploy into. Mandatory if deploying in
 Optional. Additional parameters you can provide with the deployment. E.g. @{ resourceGroupName = 'myResourceGroup' }
 
 .EXAMPLE
-Test-TemplateDeployment -templateFilePath 'C:/KeyVault/deploy.bicep' -parameterFilePath 'C:/KeyVault/.test/parameters.json' -location 'WestEurope' -resourceGroupName 'aLegendaryRg'
+Test-TemplateDeployment -templateFilePath 'C:/KeyVault/deploy.bicep' -parameterFilePath 'C:/KeyVault/.test/parameters.json' -location 'NorthEurope' -resourceGroupName 'aLegendaryRg'
 
-Test the deploy.bicep of the KeyVault module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'WestEurope'
-
-.EXAMPLE
-Test-TemplateDeployment -templateFilePath 'C:/KeyVault/deploy.bicep' -location 'WestEurope' -resourceGroupName 'aLegendaryRg'
-
-Test the deploy.bicep of the KeyVault module using the resource group 'aLegendaryRg' in location 'WestEurope'
+Test the deploy.bicep of the KeyVault module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'NorthEurope'
 
 .EXAMPLE
-Test-TemplateDeployment -templateFilePath 'C:/ResourceGroup/deploy.json' -parameterFilePath 'C:/ResourceGroup/.test/parameters.json' -location 'WestEurope'
+Test-TemplateDeployment -templateFilePath 'C:/KeyVault/deploy.bicep' -location 'NorthEurope' -resourceGroupName 'aLegendaryRg'
 
-Test the deploy.json of the ResourceGroup module with the parameter file 'parameters.json' in location 'WestEurope'
+Test the deploy.bicep of the KeyVault module using the resource group 'aLegendaryRg' in location 'NorthEurope'
+
+.EXAMPLE
+Test-TemplateDeployment -templateFilePath 'C:/ResourceGroup/deploy.json' -parameterFilePath 'C:/ResourceGroup/.test/parameters.json' -location 'NorthEurope'
+
+Test the deploy.json of the ResourceGroup module with the parameter file 'parameters.json' in location 'NorthEurope'
 #>
 function Test-TemplateDeployment {
 

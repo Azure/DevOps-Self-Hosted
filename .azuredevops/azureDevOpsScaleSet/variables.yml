@@ -30,5 +30,5 @@ variables:
   deploymentFilesPath: 'constructs/azureDevOpsScaleSet/deploymentFiles'
   orchestrationFunctionsPath: 'constructs/azureDevOpsScaleSet/scripts'
   sharedOrchestrationFunctionsPath: 'sharedScripts'
-  location: westeurope
+  location: NorthEurope
   #endregion
