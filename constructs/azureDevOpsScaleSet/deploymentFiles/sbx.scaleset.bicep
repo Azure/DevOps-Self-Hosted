@@ -44,8 +44,8 @@ module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
     // ]
     virtualMachineScaleSetComputeGalleryImageDefinitionName: 'sid-linux'
 
-    devCenterName: 'myCenter'
-    devCenterProjectName: 'myProject'
+    devCenterName: 'my-center'
+    devCenterProjectName: 'my-project'
     organizationName: 'asehr'
     projectNames: ['Onyx']
     poolName: 'onyx-pool'
