@@ -438,7 +438,7 @@ function New-TemplateDeployment {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
 
         # Load helper functions
-        . (Join-Path $repoRoot 'avm' 'utilities' 'pipelines' 'sharedScripts' 'Get-ScopeOfTemplateFile.ps1')
+        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {
