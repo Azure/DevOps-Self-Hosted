@@ -63,6 +63,7 @@ param virtualMachineScaleSetComputeGalleryImageDefinitionName string
 @description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
 param virtualMachineScaleSetImageVersion string = 'latest'
 
+// TODO: Add descriptions
 param poolName string
 param organizationName string
 param projectNames string[]?
@@ -72,7 +73,7 @@ param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 // Shared Parameters
 @description('Optional. The location to deploy into')
-param location string = deployment().location
+param resourceLocation string = deployment().location
 
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
@@ -88,7 +89,7 @@ param deploymentsToPerform string = 'All'
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deploymentsToPerform == 'All' || deploymentsToPerform == 'Only base') {
   name: resourceGroupName
-  location: location
+  location: resourceLocation
 }
 
 // Network Security Group
@@ -97,7 +98,7 @@ module nsg 'br/public:avm/res/network/network-security-group:0.3.0' = if (deploy
   scope: rg
   params: {
     name: networkSecurityGroupName
-    location: location
+    location: resourceLocation
   }
 }
 
@@ -111,7 +112,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = if (deploymentsT
       virtualNetworkAddressPrefix
     ]
     subnets: virtualNetworkSubnets
-    location: location
+    location: resourceLocation
   }
 }
 
@@ -134,7 +135,7 @@ module pool 'nestedPool.bicep' = {
   scope: rg
   name: '${deployment().name}-pool'
   params: {
-    location: location
+    location: resourceLocation
     // computeImageResourceId: computeGallery::imageDefinition::imageVersion.id
     devCenterName: devCenterName
     devCenterProjectName: devCenterProjectName
@@ -202,6 +203,6 @@ module pool 'nestedPool.bicep' = {
 //     }
 //     adminPassword: virtualMachineScaleSetAdminPassword
 //     publicKeys: virtualMachineScaleSetPublicKeys
-//     location: location
+//     location: resourceLocation
 //   }
 // }

@@ -13,7 +13,7 @@ targetScope = 'subscription'
 param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'NorthEurope'
+param resourceLocation string = 'NorthEurope'
 
 /////////////////////////////
 //   Template Deployment   //
@@ -22,7 +22,7 @@ param location string = 'NorthEurope'
 module imageDeployment '../templates/image.deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-image-sbx'
   params: {
-    location: location
+    resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
     computeGalleryName: 'galaib'
     computeGalleryImageDefinitionName: 'sid-linux'
@@ -40,7 +40,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
 
         isAcceleratedNetworkSupported: false
         isHibernateSupported: false
-        securityType: 'Standard'
+        // securityType: 'Standard'
         hyperVGeneration: 'V2'
       }
     ]

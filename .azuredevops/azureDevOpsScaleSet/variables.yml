@@ -16,9 +16,9 @@ variables:
   vmImage_dev: '' # 'ubuntu-latest' # Use this for microsoft-hosted agents
   vmImage_prd: '' # 'ubuntu-latest' # Use this for microsoft-hosted agents
 
-  poolName_sbx: 'core-scale-set' # Use this for self-hosted agents
-  poolName_dev: 'core-scale-set' # Use this for self-hosted agents
-  poolName_prd: 'core-scale-set' # Use this for self-hosted agents
+  poolName_sbx: 'core-vmss' # Use this for self-hosted agents
+  poolName_dev: 'core-vmss' # Use this for self-hosted agents
+  poolName_prd: 'core-vmss' # Use this for self-hosted agents
 
   serviceConnection_sbx: 'PrivateConnection'
   serviceConnection_dev: 'PrivateConnection'

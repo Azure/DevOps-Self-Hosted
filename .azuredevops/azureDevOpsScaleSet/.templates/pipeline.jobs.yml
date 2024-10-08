@@ -71,9 +71,14 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
-                    location          = '$(location)'
-                    subscriptionId    = (Get-AzContext).Subscription.Id
+                    TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
+                    DeploymentMetadataLocation = '$(location)'
+                    SubscriptionId             = (Get-AzContext).Subscription.Id
+                    DoNotThrow                 = $false
+                    RepoRoot                   = $env:GITHUB_WORKSPACE
+                    AdditionalParameters       = @{
+                      ResourceLocation = '$(location)'
+                    }
                   }
 
                   # Inject control parmaeters from pipeline
@@ -114,7 +119,7 @@ jobs:
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'registerAgentPool' 'Sync-ElasticPool.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath        =  Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
+                    TemplateFilePath        = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.scaleset.bicep'
                     AgentParametersFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.agentpool.config.json'
                     PAT                     = '$(System.AccessToken)'
                   }

@@ -91,7 +91,7 @@ param waitDeploymentScriptName string = 'ds-wait-imageTemplate-build'
 
 // Shared Parameters
 @description('Optional. The location to deploy into')
-param location string = deployment().location
+param resourceLocation string = deployment().location
 
 @description('Optional. A parameter to control which deployments should be executed')
 @allowed([
@@ -111,7 +111,7 @@ module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-buil
   params: {
     deploymentsToPerform: deploymentsToPerform
     resourceGroupName: resourceGroupName
-    location: location
+    location: resourceLocation
     enableTelemetry: enableAVMTelemetry
 
     computeGalleryImageDefinitionName: computeGalleryImageDefinitionName

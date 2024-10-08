@@ -188,9 +188,14 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
-                    location          = '$(location)'
-                    subscriptionId    = (Get-AzContext).Subscription.Id
+                    TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    DeploymentMetadataLocation = '$(location)'
+                    SubscriptionId             = (Get-AzContext).Subscription.Id
+                    DoNotThrow                 = $false
+                    RepoRoot                   = $env:GITHUB_WORKSPACE
+                    AdditionalParameters       = @{
+                      ResourceLocation = '$(location)'
+                    }
                   }
 
                   # Inject control parmaeters from pipeline

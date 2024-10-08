@@ -11,7 +11,7 @@ targetScope = 'subscription'
 param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
-param location string = 'NorthEurope'
+param resourceLocation string = 'NorthEurope'
 
 ///////////////////////////////
 //   Deployment Properties   //
@@ -29,7 +29,7 @@ param location string = 'NorthEurope'
 module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-scaleSet-sbx'
   params: {
-    location: location
+    resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
     virtualMachineScaleSetComputeGalleryName: 'galaib'
 
