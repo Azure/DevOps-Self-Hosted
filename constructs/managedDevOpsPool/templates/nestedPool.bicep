@@ -83,7 +83,7 @@ resource imageVersionPermission 'Microsoft.Authorization/roleAssignments@2022-04
   scope: computeGallery::imageDefinition // ::imageVersion Not using imageVersion as scope to enable to principal to find 'latest'. A role assignment on 'latest' is not possible
 }
 
-resource vnetPermissions 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource vnetPermission 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(
     vnet.id,
     devOpsInfrastructureEnterpriseApplicationObjectId,
@@ -174,6 +174,6 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
   }
   dependsOn: [
     imageVersionPermission
-    vnetPermissions
+    vnetPermission
   ]
 }

@@ -27,7 +27,7 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 
 ## Elements
 
-<img src="./media/scaleSet/scaleSetSetup.png" alt="Scale Set infrastructure" height="200">
+<img src="./media/pool/scaleSetSetup.png" alt="Scale Set infrastructure" height="200">
 
 The scale set agents deployment includes several components:
 
@@ -36,7 +36,7 @@ The scale set agents deployment includes several components:
 | <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our resources |
 | <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12"> | Network Security Group | The network security group linked to the Managed DevOps Pool's virtual network subnet |
 | <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12"> | Virtual Network | The virtual network (and subnet) used by the Managed DevOps Pool to deploy instances into |
-| <img src="./media/icons/managed-devops-pool.svg" alt="Managed DevOps Pool" height="12"> | Managed DevOps Pool | The Managed DevOps Pool that will host our pipeline agents on its agents |
+| <img src="./media/icons/Managed-Devops-Pools.svg" alt="Managed DevOps Pool" height="12"> | Managed DevOps Pool | The Managed DevOps Pool that will host our pipeline agents on its agents |
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
@@ -54,14 +54,14 @@ This section gives you an overview of the solution's structure, that is, how its
 
 <p>
 
-<img src="./media/scaleSet/structure.png" alt="Structure" height="400">
+<img src="./media/pool/structure.png" alt="Structure" height="400">
 
 <p>
 
 > **Note:** All files are written in a way that should make modifications easy. However, to help you get started, please take not of the following recommendations:
 > - If you want to add additional logic to your pipeline, make sure to modify the `pipeline.jobs.yml` template to ensure that the added / modified steps are applied equally across all stages.
 > - If you want to add additional resources to your deployment, make sure to modify the `image.deploy.bicep` file to ensure that the added / modified resources are applied to all environments equally. If you further want to ensure your template remains flexible, you can add additional parameters you can then reference from the `<env>.image.bicep` file.
-> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter for your new property to the module, but also give it a value by providing it in the ` image.deploy.bicep` file.
+> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter for your new property to the module, but also give it a value by providing it in the `image.deploy.bicep` file.
 
 
 # Process
@@ -123,31 +123,21 @@ As the deployments leverage [`AVM`](https://aka.ms/avm) modules you can find a f
 <details>
 <summary>1.1 Configure the Azure DevOps environment to enable the pipeline to read & register the resources</summary>
 
-TODO: Update
+Since the Managed DevOps Pool resource (`Microsoft.DevOpsInfrastructure/pools`) not only manages the agents but also registers their Agent Pool in the configured Azure DevOps instance, the deploying identity (e.g., Service Principal) must be granted the required permissions. The official documentation of the required steps can be found [here](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/prerequisites?view=azure-devops&tabs=azure-portal#configure-your-azure-devops-organization) and they come down to
+1. Connecting the Azure DevOps organization with the Tenant containing both the deploying principal, as well as the future Managed DevOps Pool
 
-Since the pipeline uses the `$(System.AccessToken)` to interact with the environment, and its principal `<Project> Build Service (<Organization>)` (for example: `My Contoso Project Build Service (Contoso)`) does not have the required permissions by default, you need to [set two permissions](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml#manage-build-service-account-permissions) in the project's settings to enable the automatic agent pool registration:
+   <img src="./media/pool/linkTenant.png" alt="Link tenant" height="300">
 
-> Note: The `<Project> Build Service (<Organization>)` is created on the organizational level for every new Azure DevOps project. You can find it when you navigate to your 'Organization Settings', Permissions (`'Security'` section), in the `Users` tab.
+1. Adding the deploying principal as a 'User' to the Azure DevOps Organization (by default with the 'Basic' License)
 
-1.  Enable the build service to list service connections
+   <img src="./media/pool/addUser.png" alt="Add user" height="300">
 
-    1. Navigate to the Azure DevOps's `Project settings`
-    1. In the left menu, select `Service connections` of the `Pipelines` section
-    1. Then, next to the `New service conncection` button on the top right of the view, select the three `...` and further choose `Security`
-    1. Now, select the `+ Add` button on the top of the security menu
-    1. Finally, in the opening popup, add the `<Project> Build Service (<Organization>)` user with role `User` and select `Add`
+1. Configuring the deploying principal in the Azure DevOps organization's agent pool security settings as an 'Administrator'
 
-       <img src="./media/scaleSet/configureServiceConnection.png" alt="Service connection security" height="400">
+   <img src="./media/pool/setPoolPermissionsAdmin.png" alt="Add user" height="300">
 
-1.  Enable the build service to create agent pools
-
-    1. Navigate to the Azure DevOps's `Project settings`
-    1. In the left menu, select `Agent pools` of the `Pipelines` section
-    1. Select the `Security` button on the top right
-    1. Now, select the `+ Add` button on the top of the security menu
-    1. Finally, in the opening popup, add the `<Project> Build Service (<Organization>)` user with role `Creator` and select `Add`
-
-       <img src="./media/scaleSet/configureAgentPool.png" alt="Agent pool security" height="350">
+   > **Note:** Due to an unknown issue on the Provider's side, it can happen that the 'Administrator' permissions are not sufficient. If the case, you have to add the User to the `Project Collection Administrators` group (in the organization settings' 'Permissions' configuration)
+   > <img src="./media/pool/projectCollection.png" alt="Add user" height="300">
 
 </details>
 
@@ -191,13 +181,11 @@ The creation of the scale set alongside its resources is handled by the `.azured
 
 Also, when triggering the pipeline you have several configuration options to chose from:
 
-  <img src="./media/scaleSet/scaleSetPipelineParameters.png" alt="Scale Set Runtime parameters" height="250">
+  <img src="./media/pool/scaleSetPipelineParameters.png" alt="Scale Set Runtime parameters" height="250">
 
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline) | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, only the scale set, or only register the agent pool (if configured) | Set to `All` | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including the optional agent pool registration (if enabled)</li><li>**`Only Scale Set`**: Deploys only the scale set and optionally registers the agent pool (if enabled)</li><li>**`Only add/update Agent Pool`**: Only executes the agent pool registration (if enabled)</li> |
-| `Add/Update agent pool` | Register or update the agent pool automatically in an Azure DevOps project. Operates independent of the `Scope of the deployment` selection. | Select (if pre-requisites are accounted for) | Requires the corresponding parameter file & environment to be configured correctly as documented in the [parameters](#parameters) section 'Configure the agent pool parameters & environment'. |
 
 ### First deployment
 
