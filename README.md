@@ -14,7 +14,7 @@ Currently the repository contains the following constructs:
 | Construct | Description | Path |
 | - | - | - |
 | Azure Image Builder | This construct provides a packages solution to create custom images using the Azure Image Builder service with an Azure Compute Gallery, including guidelines to operate it. | [`constructs\azureImageBuilder`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/azureImageBuilder) |
-| Azure DevOps Scale Set | This construct provides a packaged solution to deploy the infrastructure for self-hosted Azure DevOps scale sets, including guidelines to maintain it. | [`constructs\azureDevOpsScaleSet`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/azureDevOpsScaleSet) |
+| Azure DevOps Scale Set | This construct provides a packaged solution to deploy the infrastructure for self-hosted Azure DevOps scale sets, including guidelines to maintain it. | [`constructs\managedDevOpsPool`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/managedDevOpsPool) |
 
 For detailed information on the constructs and how to get started, please continue to the [Wiki](https://github.com/Azure/DevOps-Self-Hosted/wiki).
 

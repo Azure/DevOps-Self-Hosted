@@ -1,0 +1,52 @@
+name: 'ScaleSet Deployment $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
+
+parameters:
+  - name: startEnvironment
+    displayName: Environment to start from
+    type: string
+    default: sbx
+    values:
+      - sbx
+      - dev
+      - prd
+
+variables:
+  - template: variables.yml
+
+trigger: none
+
+stages:
+  - stage: SBX_Deployments
+    displayName: Deploy to SBX
+    condition: and(succeeded(), eq('${{ parameters.startEnvironment }}', 'sbx'))
+    jobs:
+      - template: .templates/pipeline.jobs.yml
+        parameters:
+          environment: 'sbx'
+
+  - stage: DEV_Deployments
+    displayName: Deploy to DEV
+    dependsOn: SBX_Deployments
+    condition: |
+      and(
+        in(dependencies.SBX_Deployments.result, '', 'Succeeded', 'Skipped'),
+        in('${{ parameters.startEnvironment }}', 'sbx', 'dev')
+      )
+    jobs:
+      - template: .templates/pipeline.jobs.yml
+        parameters:
+          environment: 'dev'
+
+  - stage: PRD_Deployments
+    displayName: Deploy to PRD
+    dependsOn: DEV_Deployments
+    condition: |
+      and(
+        in(dependencies.DEV_Deployments.result, '', 'Succeeded', 'Skipped'),
+        or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/master')),
+        in('${{ parameters.startEnvironment }}', 'sbx', 'dev', 'prd')
+      )
+    jobs:
+      - template: .templates/pipeline.jobs.yml
+        parameters:
+          environment: 'prd'

@@ -17,22 +17,17 @@ param resourceLocation string = 'NorthEurope'
 //   Deployment Properties   //
 ///////////////////////////////
 
-// For the Windows example (secret must exist ahead of deployment)
-// resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
-//   name: 'agent-vmss-core'
-//   scope: resourceGroup(subscription().subscriptionId, 'rg-ado-agents')
-// }
-
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
-module scaleSetDeployment '../templates/scaleset.deploy.bicep' = {
+module scaleSetDeployment '../templates/pool.deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-scaleSet-sbx'
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
     virtualMachineScaleSetComputeGalleryName: 'galaib'
 
+    // TODO: Clean up
     // Linux example
     // virtualMachineScaleSetOsType: 'Linux'
     // virtualMachineScaleSetDisablePasswordAuthentication: true

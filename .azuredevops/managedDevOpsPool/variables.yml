@@ -26,9 +26,9 @@ variables:
   #endregion
 
   #region specific
-  templatesPath: 'constructs/azureDevOpsScaleSet/templates'
-  deploymentFilesPath: 'constructs/azureDevOpsScaleSet/deploymentFiles'
-  orchestrationFunctionsPath: 'constructs/azureDevOpsScaleSet/scripts'
+  templatesPath: 'constructs/managedDevOpsPool/templates'
+  deploymentFilesPath: 'constructs/managedDevOpsPool/deploymentFiles'
+  orchestrationFunctionsPath: 'constructs/managedDevOpsPool/scripts'
   sharedOrchestrationFunctionsPath: 'sharedScripts'
   location: NorthEurope
   #endregion

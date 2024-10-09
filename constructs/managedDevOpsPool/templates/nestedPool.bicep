@@ -1,13 +1,40 @@
-// param computeImageResourceId string
-param devCenterName string
-param devCenterProjectName string
+@description('Required. ')
 param location string
-param poolName string
-param organizationName string
-param projectNames string[]?
+
+@description('Required. Defines how many resources can there be created at any given time.')
+@minValue(1)
+@maxValue(10000)
 param maximumConcurrency int
+
+@description('Required. The name of the subnet the agents should be deployed into.')
 param subnetName string
-param vnetResourceId string
+
+@description('Required. The resource Id of the Virtual Network the agents should be deployed into.')
+param virtualNetworkResourceId string
+
+@description('Required. The name of the Azure DevOps agent pool to create.')
+param poolName string
+
+@description('Required. The name of the Azure DevOps organization to register the agent pools in.')
+param organizationName string
+
+@description('Optional. The Azure DevOps projects to register the agent pools in. In none is provided, the pool is only registered in the organization.')
+param projectNames string[]?
+
+@description('Required. The name of the Dev Center to use for the DevOps Infrastructure Pool. Must be lower case and may contain hyphens.')
+@minLength(3)
+@maxLength(26)
+param devCenterName string
+
+@description('Required. The name of the Dev Center project to use for the DevOps Infrastructure Pool.')
+@minLength(3)
+@maxLength(63)
+param devCenterProjectName string
+
+@description('Optional. The Azure SKU name of the machines in the pool.')
+param devOpsInfrastructurePoolSize string = 'Standard_B1ms'
+
+@description('Required. The object ID (principal id) of the \'DevOpsInfrastructure\' Enterprise Application in your tenant.')
 param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
@@ -32,7 +59,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
-  name: last(split(vnetResourceId, '/'))
+  name: last(split(virtualNetworkResourceId, '/'))
 
   resource subnet 'subnets@2024-01-01' existing = {
     name: subnetName
@@ -86,6 +113,32 @@ resource devCenterProject 'Microsoft.DevCenter/projects@2024-02-01' = {
   }
 }
 
+// Requires: https://github.com/Azure/bicep-registry-modules/pull/3401
+// module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.0' = {
+//   name:
+//   params: {
+//     name: poolName
+//     agentProfile: agentProfile
+//     concurrency: maximumConcurrency
+//     devCenterProjectResourceId: devCenterProject.id
+//     fabricProfileSkuName: devOpsInfrastructurePoolSize
+//     images:  [
+//       {
+//          resourceId: computeGallery::imageDefinition::imageVersion.id
+//       }
+//     ]
+//     organizationProfile: {
+//       kind: 'AzureDevOps'
+//       organizations: [
+//         {
+//           url: 'https://dev.azure.com/${organizationName}'
+//           projects: projectNames
+//         }
+//       ]
+//     }
+//   }
+// }
+
 resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
   name: poolName
   location: location
@@ -106,7 +159,7 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
     devCenterProjectResourceId: devCenterProject.id
     fabricProfile: {
       sku: {
-        name: 'Standard_B1ms'
+        name: devOpsInfrastructurePoolSize
       }
       kind: 'Vmss'
       images: [
