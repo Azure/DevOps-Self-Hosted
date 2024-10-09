@@ -130,14 +130,14 @@ Since the Managed DevOps Pool resource (`Microsoft.DevOpsInfrastructure/pools`) 
 
 1. Adding the deploying principal as a 'User' to the Azure DevOps Organization (by default with the 'Basic' License)
 
-   <img src="./media/pool/addUser.png" alt="Add user" height="350">
+   <img src="./media/pool/addUser.png" alt="Add user" height="300">
 
 1. Configuring the deploying principal in the Azure DevOps organization's agent pool security settings as an 'Administrator'
 
-   <img src="./media/pool/setPoolPermissionsAdmin.png" alt="Add user" height="500">
+   <img src="./media/pool/setPoolPermissionsAdmin.png" alt="Add user" height="400">
 
    > **Note:** Due to an unknown issue on the Provider's side, it can happen that the 'Administrator' permissions are not sufficient. If the case, you have to add the User to the `Project Collection Administrators` group (in the organization settings' 'Permissions' configuration)
-   > <img src="./media/pool/projectCollection.png" alt="Add user" height="350">
+   > <img src="./media/pool/projectCollection.png" alt="Add user" height="300">
 
 </details>
 
