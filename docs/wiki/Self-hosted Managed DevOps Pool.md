@@ -36,7 +36,7 @@ The scale set agents deployment includes several components:
 | <img src="./media/icons/Resource-Groups.svg" alt="ResourceGroup" height="12"> | Resource Group | The resource group hosting our resources |
 | <img src="./media/icons/Network-Security-Groups.svg" alt="Network Security Group" height="12"> | Network Security Group | The network security group linked to the Managed DevOps Pool's virtual network subnet |
 | <img src="./media/icons/Virtual-Networks.svg" alt="Virtual Network" height="12"> | Virtual Network | The virtual network (and subnet) used by the Managed DevOps Pool to deploy instances into |
-| <img src="./media/icons/Managed-Devops-Pools.svg" alt="Managed DevOps Pool" height="12"> | Managed DevOps Pool | The Managed DevOps Pool that will host our pipeline agents on its agents |
+| <img src="./media/icons/Managed-DevOps-Pool.svg" alt="Managed DevOps Pool" height="12"> | Managed DevOps Pool | The Managed DevOps Pool that will host our pipeline agents on its agents |
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
