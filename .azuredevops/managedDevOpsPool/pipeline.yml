@@ -1,4 +1,4 @@
-name: 'ScaleSet Deployment $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
+name: 'Managed DevOps Pool Deployment $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
 
 parameters:
   - name: startEnvironment

@@ -80,7 +80,7 @@ As mentioned previously, the constructs come with differently named parameter fi
 The first thing to do when configuring the environment, is to add/remove parameter files or variables as per your requirements (i.e. if you need more or less stages) and also update the `pipeline.yml` file that consumes these (i.e. add / remove stages & optionally also update the pipeline's runtime parameters & conditions).
 
 ## 2. Configure environments
-Once set, you have to update the values as per your requirements. For example, when selecting a virtual network for a virtual machine scale set, you will most likely use a different one for each environment. Hence navigate to the corresponding parameter files and update each value to match the configuration of this environment.
+Once set, you have to update the values as per your requirements. For example, when selecting a virtual network for a Managed DevOps Pool, you will most likely use a different one for each environment. Hence navigate to the corresponding parameter files and update each value to match the configuration of this environment.
 
 Example:
 - `sbx.bicep`
@@ -153,7 +153,7 @@ If you have no need for a staging approach, you can also remove any trace of it.
      - stage: Deployments
        displayName: Deploy
        jobs:
-       - template: .templates/pipeline.scaleset.jobs.yml
+       - template: .templates/pipeline.jobs.yml
          parameters:
            deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
      ```

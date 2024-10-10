@@ -7,14 +7,14 @@
 
 This repository provides you with several constructs (i.e. templates & pipelines) to deploy solutions around self-hosted agents for DevOps environments.
 
-In some instances you can combine the constructs to, for example, build an image for self-hosted Azure DevOps scale set agents. Furthermore, constructs may be based on the [Azure Verified Modules](https://aka.ms/avm) library to simplify deployments.
+In some instances you can combine the constructs to, for example, build an image for self-hosted Managed DevOps Pool agents. Furthermore, constructs may be based on the [Azure Verified Modules](https://aka.ms/avm) library to simplify deployments.
 
 Currently the repository contains the following constructs:
 
 | Construct | Description | Path |
 | - | - | - |
 | Azure Image Builder | This construct provides a packages solution to create custom images using the Azure Image Builder service with an Azure Compute Gallery, including guidelines to operate it. | [`constructs\azureImageBuilder`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/azureImageBuilder) |
-| Azure DevOps Scale Set | This construct provides a packaged solution to deploy the infrastructure for self-hosted Azure DevOps scale sets, including guidelines to maintain it. | [`constructs\managedDevOpsPool`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/managedDevOpsPool) |
+| Managed DevOps Pool | This construct provides a packaged solution to deploy the infrastructure for self-hosted Managed DevOps Pools, including guidelines to maintain it. | [`constructs\managedDevOpsPool`](https://github.com/Azure/DevOps-Self-Hosted/tree/main/constructs/managedDevOpsPool) |
 
 For detailed information on the constructs and how to get started, please continue to the [Wiki](https://github.com/Azure/DevOps-Self-Hosted/wiki).
 

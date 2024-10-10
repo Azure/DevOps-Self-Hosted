@@ -28,13 +28,13 @@ param virtualNetworkSubnets array = [
   }
 ]
 
-@description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+@description('Required. The name of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
 param computeGalleryName string
 
-@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
 param computeGalleryImageDefinitionName string
 
-@description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
+@description('Optional. The version of the image to use in the Managed DevOps Pool.')
 param imageVersion string = 'latest'
 
 @description('Required. The name of the Azure DevOps agent pool to create.')

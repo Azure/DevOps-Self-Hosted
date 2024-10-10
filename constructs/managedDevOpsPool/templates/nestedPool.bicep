@@ -37,13 +37,13 @@ param devOpsInfrastructurePoolSize string = 'Standard_B1ms'
 @description('Required. The object ID (principal id) of the \'DevOpsInfrastructure\' Enterprise Application in your tenant.')
 param devOpsInfrastructureEnterpriseApplicationObjectId string
 
-@description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+@description('Required. The name of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
 param computeGalleryName string
 
-@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
+@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
 param computeGalleryImageDefinitionName string
 
-@description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
+@description('Optional. The version of the image to use in the Managed DevOps Pool.')
 param imageVersion string = 'latest' // Note, 'latest' is not supported by resource type
 
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
@@ -52,7 +52,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
   resource imageDefinition 'images@2022-03-03' existing = {
     name: computeGalleryImageDefinitionName
 
-    resource imageVersion 'versions@2022-03-03' existing = {
+    resource version 'versions@2022-03-03' existing = {
       name: imageVersion
     }
   }
@@ -164,7 +164,7 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
       kind: 'Vmss'
       images: [
         {
-          resourceId: computeGallery::imageDefinition::imageVersion.id
+          resourceId: computeGallery::imageDefinition::version.id
         }
       ]
       networkProfile: {

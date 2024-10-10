@@ -1,4 +1,4 @@
-# Azure DevOps Scale Set
+# Managed DevOps Pool
 
 This construct consists of several components in different places. You can use the following table to make sure you are aware of all the ones you need:
 

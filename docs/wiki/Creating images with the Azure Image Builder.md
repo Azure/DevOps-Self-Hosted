@@ -186,7 +186,7 @@ So let's take a look at the different configuration options when running the pip
 When triggering the pipeline for the first time for any environment, make sure you either select `All` or `Only base` for the `Scope of the deployment`. In either case the pipeline will deploy all resources and scripts you will subsequently need to create the images. For any subsequent run, you can go with any option you need.
 
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
-The scripts are different for the type of OS and hence are also stored in two different folders in the `PipelineAgentsScaleSet` module:
+The scripts are different for the type of OS and hence are also stored in two different folders in the `azureImageBuilder` construct:
 
 - Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\Initialize-LinuxSoftware.ps1`
 - Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\Initialize-WindowsSoftware.ps1`
@@ -232,7 +232,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
   {
     imageSource: {
       type: 'SharedImageVersion'
-      imageVersionID: '/subscriptions/c64d2kd9-4679-45f5-b17a-e27b0214acp4d/resourceGroups/rg-scaleset/providers/Microsoft.Compute/galleries/galmy/images/mydefinition/versions/0.24457.34028'
+      imageVersionID: '/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg-pool/providers/Microsoft.Compute/galleries/mygallery/images/mydefinition/versions/0.24457.34028'
     }
   }
   ```

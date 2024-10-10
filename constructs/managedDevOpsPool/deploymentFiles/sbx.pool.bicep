@@ -3,12 +3,6 @@ targetScope = 'subscription'
 //////////////////////////
 //   Input Parameters   //
 //////////////////////////
-@description('Optional. A parameter to control which deployments should be executed')
-@allowed([
-  'All'
-  'Only Scale Set'
-])
-param deploymentsToPerform string = 'All'
 
 @description('Optional. Specifies the location for resources.')
 param resourceLocation string = 'NorthEurope'
@@ -20,11 +14,10 @@ param resourceLocation string = 'NorthEurope'
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
-module scaleSetDeployment '../templates/pool.deploy.bicep' = {
+module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
   name: '${uniqueString(deployment().name)}-scaleSet-sbx'
   params: {
     resourceLocation: resourceLocation
-    deploymentsToPerform: deploymentsToPerform
     computeGalleryName: 'galaib'
 
     // TODO: Clean up
