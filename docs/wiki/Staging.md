@@ -86,13 +86,13 @@ Example:
 - `sbx.bicep`
   ```Bicep
   subnet: {
-    id: 'subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg-ado-agents/providers/Microsoft.Network/virtualNetworks/vnet-vmss/subnets/vmsssubnet'
+    id: 'subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg-ado-agents/providers/Microsoft.Network/virtualNetworks/vnet-pool/subnets/poolsubnet'
   }
   ```
 - `dev.bicep`
   ```Bicep
   subnet: {
-    id: 'subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/rg-ado-agents/providers/Microsoft.Network/virtualNetworks/vnet-vmss/subnets/vmsssubnet'
+    id: 'subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/rg-ado-agents/providers/Microsoft.Network/virtualNetworks/vnet-pool/subnets/poolsubnet'
   }
   ```
 

@@ -10,11 +10,11 @@ param resourceGroupName string = 'rg-ado-agents'
 
 // Network Security Group Parameters
 @description('Optional. The name of the Network Security Group.')
-param networkSecurityGroupName string = 'nsg-vmss'
+param networkSecurityGroupName string = 'nsg-pool'
 
 // Virtual Network Parameters
 @description('Optional. The name of the Virtual Network.')
-param virtualNetworkName string = 'vnet-vmss'
+param virtualNetworkName string = 'vnet-pool'
 
 @description('Optional. The address space of the Virtual Network.')
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
@@ -22,7 +22,7 @@ param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 @description('Optional. The subnets to create in the Virtual Network.')
 param virtualNetworkSubnets array = [
   {
-    name: 'vmsssubnet'
+    name: 'poolsubnet'
     addressPrefix: cidrSubnet('10.0.0.0', 24, 0) // 10.0.0.0 - 10.0.0.255
     delegation: 'Microsoft.DevOpsInfrastructure/pools'
   }

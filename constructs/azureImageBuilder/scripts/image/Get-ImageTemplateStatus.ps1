@@ -12,7 +12,7 @@ Required. The resource group the image template was deployed into
 Required. The name of the image template
 
 .EXAMPLE
-Get-ImageTemplateStatus -templateResourceGroup 'agent-vmss-rg' -templateName 'aibIt-2023-02-01-14-24-34'
+Get-ImageTemplateStatus -templateResourceGroup 'agent-pool-rg' -templateName 'aibIt-2023-02-01-14-24-34'
 
 Get the status of Image Template 'aibIt-2023-02-01-14-24-34'. Returns an object such as
 
