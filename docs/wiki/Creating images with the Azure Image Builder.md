@@ -19,7 +19,7 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 
 The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
 
-- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Adminitrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
+- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Administrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
 - IF you have a policy in place that prevents Storage Accounts from being deployed without a Firewall, you have to create an exemption for the Image Template / Staging Resource Group you can configure for the Image Template Resource (parameter `imageTemplateResourceGroupName`). The rationale is that the Azure-Image-Builder service uses this resource group to deploy both temporal resources used during the image build (e.g., a Virtual Machine), as well as a Storage Account to store temporal files & a 'packerlogs/customization.log' file in (which contains the logs of the image build). This Storage Account has no firewall configured, has a random name, and cannot be configured at deploy time.
 
 ## Elements
@@ -36,7 +36,7 @@ The image creation uses several components:
 | <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Storage) Deployment Script | The Deployment Script that uploads the customization scripts to the Assets Storage Account. |
 | <img src="./media/icons/Deployment-Script.png" alt="Managed Identity" height="12"> | (Trigger) Deployment Script | The Deployment Script that triggers the Image Template build. |
 | <img src="./media/icons/AzureComputeGalleries.svg" alt="Azure Compute Gallery" height="12"> | Azure Compute Gallery | Azure service that helps to build structure and organization for managed images. Provides global replication, versioning, grouping, sharing across subscriptions and scaling. The plain resource in itself is like an empty container. |
-| <img src="./media/icons/VMImageDefinitions.svg" alt="Azure Compute Gallery Image" height="12"> | Azure Compute Gallery Image | Created within a gallery and contains information about the image and requirements for using it internally. This includes metadata like whether the image is Windows or Linux, release notes and recommended compute resources. Like the image gallery itself it acts like a container for the actual images. |
+| <img src="./media/icons/VMImageDefinitions.svg" alt="Azure Compute Gallery Image Definition" height="12"> | Azure Compute Gallery Image Definition | Created within a gallery and contains information about the image and requirements for using it internally. This includes metadata like whether the image is Windows or Linux, release notes and recommended compute resources. Like the image gallery itself it acts like a container for the actual images. |
 | <img src="./media/icons/ImageTemplates.svg" alt="Image Template" height="12"> | Image Template | A standard Azure Image Builder template that defines the parameters for building a custom image with AIB. The parameters include image source (Marketplace, custom image, etc.), customization options (i.e., Updates, scripts, restarts), and distribution (i.e., managed image, Azure Compute Gallery). The template is not an actual resource. Instead, when an image template is created, Azure stores all the metadata of the referenced Azure Compute Gallery Image alongside other image backing instructions as a hidden resource in a temporary resource group. |
 | <img src="./media/icons/VMImageVersions.svg" alt="Image Version" height="12"> | Image Version | An image version (for example `0.24322.55884`) is what you use to create a VM when using a gallery. You can have multiple versions of an image as needed for your environment. This value **cannot** be chosen. |
 
@@ -97,16 +97,37 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 ### Parameters
 Next, we have one deployment file, `<env>.image.bicep` that hosts to the two phases in the deployment: Deploy all infrastructure components & build the image.
 
-The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
-- Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
+The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions: Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
 
 > **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
 The parameter files are created with a Linux-Image in mind. However, they also contain examples on how the same implementation would look like for Windows images. Examples are always commented and can be used to replace the currently not commented values.
 
-As the deployments leverage [`AVM`](https://aka.ms/avm) modules you can find a full list of all supported parameters per module in that repository's modules. A valid example may be that you want to deploy the Image Template into a specific subnet for networking access. This and several other parameters are available and documented in the module's `readme.md`.
+As the deployments leverage [`AVM`](https://aka.ms/avm) modules you can find a full list of all supported parameters per module in that [repository's](https://www.github.com/Azure/bicep-registry-modules) modules. A valid example may be that you want to deploy the Image Template into a specific subnet for networking access. This and several other parameters are available and documented in the module's `readme.md`.
 
-#### Special case: **Image Template**
+#### Special case: Parameter **storageAccountFilesToUpload**
+
+Please note that the Deployment Script that uploads files to the Assets Storage Account does so by processing the input values provided via the `storageAccountFilesToUpload` parameter. A typical syntax may look like the following:
+```bicep
+storageAccountFilesToUpload: [
+  {
+    name: 'Script1.sh'
+    value: loadTextContent('../scripts/uploads/Script1.sh')
+  }
+  {
+    name: 'Script2.ps1'
+    value: loadTextContent('../scripts/uploads/linux/Script2.ps1')
+  }
+]
+```
+As you may notice, the parameter expects that the `value` of each file is a string containing each file's content, **not** a path. This design is rooted in the fact that the Deployment would not be able to access your local files from inside the Azure Environment. So, upon triggering the deployment, the template loads the files into its compiled template before sending the entire file to Azure.
+While this is a very seamless experience, it has some limitations you must be aware of. For one, the `loadTextContent()` function can only load files with up to 131.072 characters. Further, as the files will be part of the template itself, you are limited by the maximum template size of 4 mb for the compiled JSON file.
+For reference, in the provided Linux example we're looking at the following sizes:
+- `Initialize-LinuxSoftware.ps1`: 18.042 characters
+- `Install-LinuxPowerShell.sh`: 1.272 characters
+- Total size of compiled `sbx.image.bicep` template: 1.15 mb
+
+#### Special case: Resource **Image Template**
 
 The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\uploads` folder.
 
@@ -188,10 +209,10 @@ When triggering the pipeline for the first time for any environment, make sure y
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `azureImageBuilder` construct:
 
-- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux\Initialize-LinuxSoftware.ps1`
-- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows\Initialize-WindowsSoftware.ps1`
+- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux`
+- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows`
 
-One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep or Terraform.
+One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep CLI and Terraform CLI.
 
 ### Consecutive deployments
 
