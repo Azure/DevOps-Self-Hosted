@@ -1,4 +1,4 @@
-This sections gives you an overview on how to use the Virtual Machine Scale Set pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Virtual Machine Scale Sets](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/scale-set-agents?view=azure-devops).
+This sections gives you an overview on how to use the Managed DevOps Pool pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Managed DevOps Pools service](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/?view=azure-devops).
 
 ### _Navigation_
 
@@ -22,14 +22,14 @@ This sections gives you an overview on how to use the Virtual Machine Scale Set 
 
 - Each pipeline job can use a dedicated new host (if configured accordingly)
 - Saving money
-  - As the Virtual Machine Scale Set can be configured to e.g. scale in to 0 and spin up a new VM only if a job is scheduled
+  - As the Managed DevOps Pool can be configured to e.g. scale in to 0 and spin up a new VM only if a job is scheduled
   - As a single agent is installed on a new instance. Hence virtual machines can be deployed using a SKU with less compute power
 
 ## Elements
 
-<img src="./media/pool/scaleSetSetup.png" alt="Scale Set infrastructure" height="200">
+<img src="./media/pool/managedPoolSetup.png" alt="Managed DevOps Pool infrastructure" height="200">
 
-The scale set agents deployment includes several components:
+The Managed DevOps Pool deployment includes several components:
 
 | &nbsp;&nbsp;&nbsp; | Resource | Description |
 | - | - | - |
@@ -66,7 +66,7 @@ This section gives you an overview of the solution's structure, that is, how its
 
 # Process
 
-This section explains how to deploy & maintain the scale set construct.
+This section explains how to deploy & maintain the Managed DevOps Pool construct.
 
 ## Initial configuration
 
@@ -101,12 +101,12 @@ You configure one primary parameter file: `pool.bicep`.
 The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions:
 
 - Update any subscription ID you come across (for example `/subscriptions/11111111-1111-1111-1111-111111111111/`)
-- For the image reference you can choose an image from a Shared Image Gallery using both the `virtualMachineScaleSetComputeGalleryName` & `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameters. If you don't define the `virtualMachineScaleSetComputeGalleryImageDefinitionName` parameter with a specific version, it will assume `latest`.
+- For the image reference you can choose an image from a Shared Image Gallery using both the `computeGalleryName` & `computeGalleryImageDefinitionName` parameters. If you don't define the `computeGalleryImageDefinitionName` parameter with a specific version, it will assume `latest`.
   Example
   ```Bicep
-  virtualMachineScaleSetComputeGalleryName: 'myGallery'
-  virtualMachineScaleSetComputeGalleryImageDefinitionName: 'sid-linux'
-  virtualMachineScaleSetImageVersion: '0.24470.675' // (optional)
+  computeGalleryName: 'myGallery'
+  computeGalleryImageDefinitionName: 'sid-linux'
+  imageVersion: '0.24470.675' // (optional)
   ```
 - Make sure the scaling is configured as `'manual'` (as Azure DevOps will control the scaling)
 
@@ -177,11 +177,11 @@ To do so, you have to perform the following steps:
 
 ## Deployment
 
-The creation of the scale set alongside its resources is handled by the `.azuredevops\managedDevOpsPool\pipeline.yml` pipeline. Given a proper configuration, it creates all required resources in the designated environment. However, if you did not optionally configure the agent-pool parameter file & environment described the [parameters](#parameters) section 'Configure the agent pool parameters & environment', you need to perform an additional manual step afterwards to use the scale set for your agents.
+The creation of the Managed DevOps Pool alongside its resources is handled by the `.azuredevops\managedDevOpsPool\pipeline.yml` pipeline. Given a proper configuration, it creates all required resources in the designated environment, including the agent pool's registration in Azure DevOps.
 
 Also, when triggering the pipeline you have several configuration options to chose from:
 
-  <img src="./media/pool/scaleSetPipelineParameters.png" alt="Scale Set Runtime parameters" height="250">
+  <img src="./media/pool/managedPoolPipelineParameters.png" alt="Managed DevOps Pool Runtime parameters" height="250">
 
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |

@@ -38,22 +38,22 @@ param devOpsInfrastructurePoolSize string = 'Standard_B1ms'
 param devOpsInfrastructureEnterpriseApplicationObjectId string
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetComputeGalleryName string
+param computeGalleryName string
 
 @description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetComputeGalleryImageDefinitionName string
+param computeGalleryImageDefinitionName string
 
 @description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
-param virtualMachineScaleSetImageVersion string = 'latest' // Note, 'latest' is not supported by resource type
+param imageVersion string = 'latest' // Note, 'latest' is not supported by resource type
 
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
-  name: virtualMachineScaleSetComputeGalleryName
+  name: computeGalleryName
 
   resource imageDefinition 'images@2022-03-03' existing = {
-    name: virtualMachineScaleSetComputeGalleryImageDefinitionName
+    name: computeGalleryImageDefinitionName
 
     resource imageVersion 'versions@2022-03-03' existing = {
-      name: virtualMachineScaleSetImageVersion
+      name: imageVersion
     }
   }
 }

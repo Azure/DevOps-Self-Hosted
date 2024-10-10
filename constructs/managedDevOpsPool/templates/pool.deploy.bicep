@@ -29,13 +29,13 @@ param virtualNetworkSubnets array = [
 ]
 
 @description('Required. The name of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetComputeGalleryName string
+param computeGalleryName string
 
 @description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Virtual Machine Scale Set.')
-param virtualMachineScaleSetComputeGalleryImageDefinitionName string
+param computeGalleryImageDefinitionName string
 
 @description('Optional. The version of the image to use in the Virtual Machine Scale Set.')
-param virtualMachineScaleSetImageVersion string = 'latest'
+param imageVersion string = 'latest'
 
 @description('Required. The name of the Azure DevOps agent pool to create.')
 param poolName string
@@ -114,9 +114,9 @@ module pool 'nestedPool.bicep' = {
     virtualNetworkResourceId: vnet.outputs.resourceId
     devOpsInfrastructurePoolSize: devOpsInfrastructurePoolSize
     subnetName: vnet.outputs.subnetNames[0]
-    virtualMachineScaleSetComputeGalleryImageDefinitionName: virtualMachineScaleSetComputeGalleryImageDefinitionName
-    virtualMachineScaleSetComputeGalleryName: virtualMachineScaleSetComputeGalleryName
-    virtualMachineScaleSetImageVersion: virtualMachineScaleSetImageVersion
+    computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
+    computeGalleryName: computeGalleryName
+    imageVersion: imageVersion
     devOpsInfrastructureEnterpriseApplicationObjectId: devOpsInfrastructureEnterpriseApplicationObjectId
   }
 }
