@@ -44,8 +44,10 @@ function Remove-DeploymentScript {
         foreach ($deploymentScriptName in @($imageTemplateDeploymentScriptName, $storageAccountDeploymentScriptName)) {
             $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.Resources/deploymentScripts' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $deploymentScriptName
             [array] $deploymentScripts = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
+            Write-Verbose ('Found [{0}] Deployment Scripts.' -f $deploymentScripts.Count)
 
             $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.ProvisioningState -ne 'Running' }
+            Write-Verbose ('Found [{0}] Deployment Scripts not in state [running].' -f $deploymentScriptsToRemove.Count)
 
             foreach ($deploymentScript in $deploymentScriptsToRemove) {
                 if ($PSCmdlet.ShouldProcess('Deplyoment Script [{0}]' -f $deploymentScript.name, 'Remove')) {
