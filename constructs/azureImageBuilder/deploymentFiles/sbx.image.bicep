@@ -15,6 +15,9 @@ param deploymentsToPerform string = 'All'
 @description('Optional. Specifies the location for resources.')
 param resourceLocation string = 'NorthEurope'
 
+@description('Optional. A parameter to control if the deployment should wait for the image build to complete.')
+param waitForImageBuild bool = true
+
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
@@ -26,6 +29,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     deploymentsToPerform: deploymentsToPerform
     computeGalleryName: 'galaib'
     computeGalleryImageDefinitionName: 'sid-linux'
+    waitForImageBuild: waitForImageBuild
     computeGalleryImageDefinitions: [
       {
         name: 'sid-linux'

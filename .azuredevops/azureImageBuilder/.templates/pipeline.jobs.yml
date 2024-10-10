@@ -194,6 +194,7 @@ jobs:
                     RepoRoot                   = '$(System.DefaultWorkingDirectory)'
                     AdditionalParameters       = @{
                       ResourceLocation = '$(location)'
+                      waitForImageBuild = '${{ parameters.waitForImageBuild }}'
                     }
                   }
 
