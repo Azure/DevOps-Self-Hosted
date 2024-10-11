@@ -188,13 +188,17 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    templateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
-                    location          = '$(location)'
-                    subscriptionId    = (Get-AzContext).Subscription.Id
+                    TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    DeploymentMetadataLocation = '$(deploymentMetadataLocation)'
+                    SubscriptionId             = (Get-AzContext).Subscription.Id
+                    RepoRoot                   = '$(System.DefaultWorkingDirectory)'
+                    AdditionalParameters       = @{
+                      waitForImageBuild = [System.Convert]::ToBoolean('${{ parameters.waitForImageBuild }}')
+                    }
                   }
 
                   # Inject control parmaeters from pipeline
-                  $functionInput['additionalParameters'] = @{
+                  $functionInput['additionalParameters'] += @{
                     deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
                   }
 
@@ -205,44 +209,4 @@ jobs:
                   Test-TemplateDeployment @functionInput
 
                   # Invoke deployment
-                  $res = New-TemplateDeployment @functionInput -Verbose
-
-                  Write-Verbose ($res | ConvertTo-Json | Out-String) -Verbose
-
-                  foreach ($outputKey in $res.deploymentOutput.Keys) {
-                    Write-Output ('##vso[task.setvariable variable={0}]{1}' -f $outputKey, $res.deploymentOutput[$outputKey].Value)
-                  }
-            # [Image Template Build] task(s)
-            #------------------------------
-            - task: AzureCLI@2
-              name: PostDeploy_ImageTemplates_Task
-              displayName: 'Wait for image build'
-              condition: |
-                and(
-                  succeeded(),
-                  eq('${{ parameters.waitForImageBuild }}', 'true')
-                )
-              inputs:
-                addSpnToEnvironment: true
-                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                scriptType: pscore
-                scriptLocation: inlineScript
-                inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
-
-                  Write-Verbose "Load function" -Verbose
-                  . '$(Build.Repository.LocalPath)/$(orchestrationFunctionsPath)/image/Wait-ForImageBuild.ps1'
-
-                  $functionInput = @{
-                    TemplateFilePath  = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
-                    ImageTemplateName = $env:IMAGETEMPLATENAME # template deployment output
-                  }
-
-                  Write-Verbose "Invoke task with" -Verbose
-                  Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
-
-                  Wait-ForImageBuild @functionInput -Verbose
+                  New-TemplateDeployment @functionInput -Verbose

@@ -42,7 +42,7 @@ function Get-ErrorMessageForScope {
 
     switch ($deploymentScope) {
         'resourcegroup' {
-            $deployments = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $resourceGroupName
+            $deployments = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName
             break
         }
         'subscription' {
@@ -71,152 +71,157 @@ Run a template deployment using a given parameter file
 Run a template deployment using a given parameter file.
 Works on a resource group, subscription, managementgroup and tenant level
 
-.PARAMETER templateFilePath
+.PARAMETER TemplateFilePath
 Mandatory. The path to the deployment file
 
-.PARAMETER parameterFilePath
+.PARAMETER ParameterFilePath
 Optional. Path to the parameter file from root. Can be a single file, multiple files, or directory that contains (.json) files.
 
-.PARAMETER location
-Mandatory. Location to test in. E.g. WestEurope
+.PARAMETER DeploymentMetadataLocation
+Mandatory. The location to store the deployment metadata.
 
-.PARAMETER resourceGroupName
+.PARAMETER ResourceGroupName
 Optional. Name of the resource group to deploy into. Mandatory if deploying into a resource group (resource group level)
 
-.PARAMETER subscriptionId
+.PARAMETER SubscriptionId
 Optional. ID of the subscription to deploy into. Mandatory if deploying into a subscription (subscription level) using a Management groups service connection
 
-.PARAMETER managementGroupId
+.PARAMETER ManagementGroupId
 Optional. Name of the management group to deploy into. Mandatory if deploying into a management group (management group level)
 
-.PARAMETER additionalTags
+.PARAMETER AdditionalTags
 Optional. Provde a Key Value Pair (Object) that will be appended to the Parameter file tags. Example: @{myKey = 'myValue',myKey2 = 'myValue2'}.
 
-.PARAMETER additionalParameters
+.PARAMETER AdditionalParameters
 Optional. Additional parameters you can provide with the deployment. E.g. @{ resourceGroupName = 'myResourceGroup' }
 
-.PARAMETER retryLimit
+.PARAMETER RetryLimit
 Optional. Maximum retry limit if the deployment fails. Default is 3.
 
-.PARAMETER doNotThrow
+.PARAMETER DoNotThrow
 Optional. Do not throw an exception if it failed. Still returns the error message though
 
-.EXAMPLE
-New-TemplateDeploymentInner -templateFilePath 'C:/KeyVault/deploy.json' -parameterFilePath 'C:/KeyVault/.test/parameters.json' -location 'WestEurope' -resourceGroupName 'aLegendaryRg'
-
-Deploy the deploy.json of the KeyVault module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'WestEurope'
+.PARAMETER RepoRoot
+Mandatory. Path to the root of the repository.
 
 .EXAMPLE
-New-TemplateDeploymentInner -templateFilePath 'C:/KeyVault/deploy.bicep' -location 'WestEurope' -resourceGroupName 'aLegendaryRg'
+New-TemplateDeploymentInner -TemplateFilePath 'C:/key-vault/vault/main.json' -ParameterFilePath 'C:/key-vault/vault/.test/parameters.json' -DeploymentMetadataLocation 'WestEurope' -ResourceGroupName 'aLegendaryRg'
 
-Deploy the deploy.bicep of the KeyVault module using the resource group 'aLegendaryRg' in location 'WestEurope'
+Deploy the main.json of the KeyVault module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'WestEurope'
 
 .EXAMPLE
-New-TemplateDeploymentInner -templateFilePath 'C:/ResourceGroup/deploy.json' -location 'WestEurope'
+New-TemplateDeploymentInner -TemplateFilePath 'C:/key-vault/vault/main.bicep' -DeploymentMetadataLocation 'WestEurope' -ResourceGroupName 'aLegendaryRg'
 
-Deploy the deploy.json of the ResourceGroup module without a parameter file in location 'WestEurope'
+Deploy the main.bicep of the KeyVault module using the resource group 'aLegendaryRg' in location 'WestEurope'
+
+.EXAMPLE
+New-TemplateDeploymentInner -TemplateFilePath 'C:/resources/resource-group/main.json' -DeploymentMetadataLocation 'WestEurope'
+
+Deploy the main.json of the ResourceGroup module without a parameter file in location 'WestEurope'
 #>
 function New-TemplateDeploymentInner {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-        [Parameter(Mandatory)]
-        [string] $templateFilePath,
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFilePath,
 
         [Parameter(Mandatory = $false)]
-        [string] $parameterFilePath,
+        [string] $ParameterFilePath,
 
         [Parameter(Mandatory = $false)]
-        [string] $resourceGroupName = '',
+        [string] $ResourceGroupName = '',
 
-        [Parameter(Mandatory)]
-        [string] $location,
-
-        [Parameter(Mandatory = $false)]
-        [string] $subscriptionId,
+        [Parameter(Mandatory = $true)]
+        [string] $DeploymentMetadataLocation,
 
         [Parameter(Mandatory = $false)]
-        [string] $managementGroupId,
+        [string] $SubscriptionId,
 
         [Parameter(Mandatory = $false)]
-        [PSCustomObject] $additionalTags,
+        [string] $ManagementGroupId,
 
         [Parameter(Mandatory = $false)]
-        [Hashtable] $additionalParameters,
+        [PSCustomObject] $AdditionalTags,
 
         [Parameter(Mandatory = $false)]
-        [switch] $doNotThrow,
+        [Hashtable] $AdditionalParameters,
 
         [Parameter(Mandatory = $false)]
-        [int]$retryLimit = 3
+        [switch] $DoNotThrow,
+
+        [Parameter(Mandatory = $false)]
+        [int] $RetryLimit = 3,
+
+        [Parameter(Mandatory = $false)]
+        [string] $RepoRoot
     )
 
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
-
-        # Load helper
-        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {
-        $deploymentNamePrefix = Split-Path -Path (Split-Path $templateFilePath -Parent) -LeafBase
+        $deploymentNamePrefix = Split-Path -Path (Split-Path $TemplateFilePath -Parent) -LeafBase
         if ([String]::IsNullOrEmpty($deploymentNamePrefix)) {
-            $deploymentNamePrefix = 'templateDeployment-{0}' -f (Split-Path $templateFilePath -LeafBase)
+            $deploymentNamePrefix = 'templateDeployment-{0}' -f (Split-Path $TemplateFilePath -LeafBase)
         }
-        if ($templateFilePath -match '.*(\\|\/)Microsoft.+') {
-            # If we can assume we're operating in a module structure, we can further fetch the provider namespace & resource type
-            $shortPathElem = (($templateFilePath -split 'Microsoft\.')[1] -replace '\\', '/') -split '/' # e.g., AppConfiguration, configurationStores, .test, common, deploy.test.bicep
-            $providerNamespace = $shortPathElem[0] # e.g., AppConfiguration
-            $providerNamespaceShort = ($providerNamespace -creplace '[^A-Z]').ToLower() # e.g., ac
 
-            $resourceType = $shortPathElem[1] # e.g., configurationStores
-            $resourceTypeShort = ('{0}{1}' -f ($resourceType.ToLower())[0], ($resourceType -creplace '[^A-Z]')).ToLower() # e.g. cs
-
-            $testFolderShort = Split-Path (Split-Path $templateFilePath -Parent) -Leaf  # e.g., common
-
-            $deploymentNamePrefix = "$providerNamespaceShort-$resourceTypeShort-$testFolderShort" # e.g., ac-cs-common
+        # Convert, e.g., [C:\myFork\avm\res\kubernetes-configuration\flux-configuration\tests\e2e\defaults\main.test.bicep] to [a-r-kc-fc-defaults]
+        $shortPathElems = ((Split-Path $TemplateFilePath) -replace ('{0}[\\|\/]' -f [regex]::Escape($repoRoot))) -split '[\\|\/]' | Where-Object { $_ -notin @('tests', 'e2e') }
+        # Shorten all elements but the last
+        $reducedElem = $shortPathElems[0 .. ($shortPathElems.Count - 2)] | ForEach-Object {
+            $shortPathElem = $_
+            if ($shortPathElem -match '-') {
+                ($shortPathElem -split '-' | ForEach-Object { $_[0] }) -join ''
+            } else {
+                $shortPathElem[0]
+            }
         }
+        # Add the last back and join the elements together
+        $deploymentNamePrefix = ($reducedElem + @($shortPathElems[-1])) -join '-'
 
         $DeploymentInputs = @{
-            TemplateFile = $templateFilePath
+            TemplateFile = $TemplateFilePath
             Verbose      = $true
             ErrorAction  = 'Stop'
         }
 
         # Parameter file provided yes/no
-        if (-not [String]::IsNullOrEmpty($parameterFilePath)) {
-            $DeploymentInputs['TemplateParameterFile'] = $parameterFilePath
+        if (-not [String]::IsNullOrEmpty($ParameterFilePath)) {
+            $DeploymentInputs['TemplateParameterFile'] = $ParameterFilePath
         }
 
         # Additional parameter object provided yes/no
-        if ($additionalParameters) {
-            $DeploymentInputs += $additionalParameters
+        if ($AdditionalParameters) {
+            $DeploymentInputs += $AdditionalParameters
         }
 
         # Additional tags provides yes/no
         # Append tags to parameters if resource supports them (all tags must be in one object)
-        if ($additionalTags) {
+        if ($AdditionalTags) {
 
             # Parameter tags
-            if (-not [String]::IsNullOrEmpty($parameterFilePath)) {
-                $parameterFileTags = (ConvertFrom-Json (Get-Content -Raw -Path $parameterFilePath) -AsHashtable).parameters.tags.value
+            if (-not [String]::IsNullOrEmpty($ParameterFilePath)) {
+                $parameterFileTags = (ConvertFrom-Json (Get-Content -Raw -Path $ParameterFilePath) -AsHashtable).parameters.tags.value
             }
             if (-not $parameterFileTags) { $parameterFileTags = @{} }
 
             # Pipeline tags
-            if ($additionalTags) { $parameterFileTags += $additionalTags } # If additionalTags object is provided, append tag to the resource
+            if ($AdditionalTags) { $parameterFileTags += $AdditionalTags } # If additionalTags object is provided, append tag to the resource
 
             # Overwrites parameter file tags parameter
-            Write-Verbose ("additionalTags: $(($additionalTags) ? ($additionalTags | ConvertTo-Json) : '[]')")
+            Write-Verbose ("additionalTags: $(($AdditionalTags) ? ($AdditionalTags | ConvertTo-Json) : '[]')")
             $DeploymentInputs += @{Tags = $parameterFileTags }
         }
 
         #######################
         ## INVOKE DEPLOYMENT ##
         #######################
-        $deploymentScope = Get-ScopeOfTemplateFile -TemplateFilePath $templateFilePath
+        $deploymentScope = Get-ScopeOfTemplateFile -TemplateFilePath $TemplateFilePath
         [bool]$Stoploop = $false
         [int]$retryCount = 1
+        $usedDeploymentNames = @()
 
         do {
             # Generate a valid deployment name. Must match ^[-\w\._\(\)]+$
@@ -225,44 +230,46 @@ function New-TemplateDeploymentInner {
             } while ($deploymentName -notmatch '^[-\w\._\(\)]+$')
 
             Write-Verbose "Deploying with deployment name [$deploymentName]" -Verbose
+            $usedDeploymentNames += $deploymentName
             $DeploymentInputs['DeploymentName'] = $deploymentName
 
             try {
                 switch ($deploymentScope) {
                     'resourcegroup' {
-                        if (-not [String]::IsNullOrEmpty($subscriptionId)) {
-                            Write-Verbose ('Setting context to subscription [{0}]' -f $subscriptionId)
-                            $null = Set-AzContext -Subscription $subscriptionId
+                        if (-not [String]::IsNullOrEmpty($SubscriptionId)) {
+                            Write-Verbose ('Setting context to subscription [{0}]' -f $SubscriptionId)
+                            $null = Set-AzContext -Subscription $SubscriptionId
                         }
-                        if (-not (Get-AzResourceGroup -Name $resourceGroupName -ErrorAction 'SilentlyContinue')) {
-                            if ($PSCmdlet.ShouldProcess("Resource group [$resourceGroupName] in location [$location]", 'Create')) {
-                                $null = New-AzResourceGroup -Name $resourceGroupName -Location $location
+                        if (-not (Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction 'SilentlyContinue')) {
+                            $resourceGroupLocation = $AdditionalParameters.resourceLocation ?? $DeploymentMetadataLocation
+                            if ($PSCmdlet.ShouldProcess("Resource group [$ResourceGroupName] in (metadata) location [$resourceGroupLocation]", 'Create')) {
+                                $null = New-AzResourceGroup -Name $ResourceGroupName -Location $resourceGroupLocation
                             }
                         }
                         if ($PSCmdlet.ShouldProcess('Resource group level deployment', 'Create')) {
-                            $res = New-AzResourceGroupDeployment @DeploymentInputs -ResourceGroupName $resourceGroupName
+                            $res = New-AzResourceGroupDeployment @DeploymentInputs -ResourceGroupName $ResourceGroupName
                         }
                         break
                     }
                     'subscription' {
-                        if (-not [String]::IsNullOrEmpty($subscriptionId)) {
-                            Write-Verbose ('Setting context to subscription [{0}]' -f $subscriptionId)
-                            $null = Set-AzContext -Subscription $subscriptionId
+                        if (-not [String]::IsNullOrEmpty($SubscriptionId)) {
+                            Write-Verbose ('Setting context to subscription [{0}]' -f $SubscriptionId)
+                            $null = Set-AzContext -Subscription $SubscriptionId
                         }
                         if ($PSCmdlet.ShouldProcess('Subscription level deployment', 'Create')) {
-                            $res = New-AzSubscriptionDeployment @DeploymentInputs -Location $location
+                            $res = New-AzSubscriptionDeployment @DeploymentInputs -Location $DeploymentMetadataLocation
                         }
                         break
                     }
                     'managementgroup' {
                         if ($PSCmdlet.ShouldProcess('Management group level deployment', 'Create')) {
-                            $res = New-AzManagementGroupDeployment @DeploymentInputs -Location $location -ManagementGroupId $managementGroupId
+                            $res = New-AzManagementGroupDeployment @DeploymentInputs -Location $DeploymentMetadataLocation -ManagementGroupId $ManagementGroupId
                         }
                         break
                     }
                     'tenant' {
                         if ($PSCmdlet.ShouldProcess('Tenant level deployment', 'Create')) {
-                            $res = New-AzTenantDeployment @DeploymentInputs -Location $location
+                            $res = New-AzTenantDeployment @DeploymentInputs -Location $DeploymentMetadataLocation
                         }
                         break
                     }
@@ -277,7 +284,7 @@ function New-TemplateDeploymentInner {
                     $errorInputObject = @{
                         DeploymentScope   = $deploymentScope
                         DeploymentName    = $deploymentName
-                        ResourceGroupName = $resourceGroupName
+                        ResourceGroupName = $ResourceGroupName
                     }
                     $exceptionMessage = Get-ErrorMessageForScope @errorInputObject
 
@@ -285,15 +292,15 @@ function New-TemplateDeploymentInner {
                 }
                 $Stoploop = $true
             } catch {
-                if ($retryCount -ge $retryLimit) {
-                    if ($doNotThrow) {
+                if ($retryCount -ge $RetryLimit) {
+                    if ($DoNotThrow) {
 
                         # In case a deployment failes but not throws an exception (i.e. the exception message is empty) we try to fetch it via the deployment name
                         if ([String]::IsNullOrEmpty($PSitem.Exception.Message)) {
                             $errorInputObject = @{
                                 DeploymentScope   = $deploymentScope
                                 DeploymentName    = $deploymentName
-                                ResourceGroupName = $resourceGroupName
+                                ResourceGroupName = $ResourceGroupName
                             }
                             $exceptionMessage = Get-ErrorMessageForScope @errorInputObject
                         } else {
@@ -301,29 +308,29 @@ function New-TemplateDeploymentInner {
                         }
 
                         return @{
-                            DeploymentName = $deploymentName
-                            Exception      = $exceptionMessage
+                            DeploymentNames = $usedDeploymentNames
+                            Exception       = $exceptionMessage
                         }
                     } else {
                         throw $PSitem.Exception.Message
                     }
                     $Stoploop = $true
                 } else {
-                    Write-Verbose "Resource deployment Failed.. ($retryCount/$retryLimit) Retrying in 5 Seconds.. `n"
+                    Write-Verbose "Resource deployment Failed.. ($retryCount/$RetryLimit) Retrying in 5 Seconds.. `n"
                     Write-Verbose ($PSitem.Exception.Message | Out-String) -Verbose
                     Start-Sleep -Seconds 5
                     $retryCount++
                 }
             }
         }
-        until ($Stoploop -eq $true -or $retryCount -gt $retryLimit)
+        until ($Stoploop -eq $true -or $retryCount -gt $RetryLimit)
 
         Write-Verbose 'Result' -Verbose
         Write-Verbose '------' -Verbose
         Write-Verbose ($res | Out-String) -Verbose
         return @{
-            deploymentName   = $deploymentName
-            deploymentOutput = $res.Outputs
+            DeploymentNames  = $usedDeploymentNames
+            DeploymentOutput = $res.Outputs
         }
     }
 
@@ -341,122 +348,132 @@ Run a template deployment using a given parameter file
 Run a template deployment using a given parameter file.
 Works on a resource group, subscription, managementgroup and tenant level
 
-.PARAMETER templateFilePath
+.PARAMETER TemplateFilePath
 Mandatory. The path to the deployment file
 
-.PARAMETER parameterFilePath
+.PARAMETER ParameterFilePath
 Optional. Path to the parameter file from root. Can be a single file, multiple files, or directory that contains (.json) files.
 
-.PARAMETER location
-Mandatory. Location to test in. E.g. WestEurope
+.PARAMETER DeploymentMetadataLocation
+Mandatory. The location to store the deployment metadata.
 
-.PARAMETER resourceGroupName
+.PARAMETER ResourceGroupName
 Optional. Name of the resource group to deploy into. Mandatory if deploying into a resource group (resource group level)
 
-.PARAMETER subscriptionId
+.PARAMETER SubscriptionId
 Optional. ID of the subscription to deploy into. Mandatory if deploying into a subscription (subscription level) using a Management groups service connection
 
-.PARAMETER managementGroupId
+.PARAMETER ManagementGroupId
 Optional. Name of the management group to deploy into. Mandatory if deploying into a management group (management group level)
 
-.PARAMETER additionalTags
-Optional. Provde a Key Value Pair (Object) that will be appended to the Parameter file tags. Example: @{myKey = 'myValue',myKey2 = 'myValue2'}.
+.PARAMETER AdditionalTags
+Optional. Provide a Key Value Pair (Object) that will be appended to the Parameter file tags. Example: @{myKey = 'myValue', myKey2 = 'myValue2'}.
 
-.PARAMETER additionalParameters
+.PARAMETER AdditionalParameters
 Optional. Additional parameters you can provide with the deployment. E.g. @{ resourceGroupName = 'myResourceGroup' }
 
-.PARAMETER retryLimit
+.PARAMETER RetryLimit
 Optional. Maximum retry limit if the deployment fails. Default is 3.
 
-.PARAMETER doNotThrow
+.PARAMETER DoNotThrow
 Optional. Do not throw an exception if it failed. Still returns the error message though
 
-.EXAMPLE
-New-TemplateDeployment -templateFilePath 'C:/KeyVault/deploy.bicep' -parameterFilePath 'C:/KeyVault/.test/parameters.json' -location 'WestEurope' -resourceGroupName 'aLegendaryRg'
-
-Deploy the deploy.bicep of the KeyVault module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'WestEurope'
+.PARAMETER RepoRoot
+Optional. Path to the root of the repository.
 
 .EXAMPLE
-New-TemplateDeployment -templateFilePath 'C:/ResourceGroup/deploy.bicep' -location 'WestEurope'
+New-TemplateDeployment -TemplateFilePath 'C:/key-vault/vault/main.bicep' -ParameterFilePath 'C:/key-vault/vault/.test/parameters.json' -DeploymentMetadataLocation 'WestEurope' -ResourceGroupName 'aLegendaryRg'
 
-Deploy the deploy.bicep of the ResourceGroup module in location 'WestEurope' without a parameter file
+Deploy the main.bicep of the 'key-vault/vault' module with the parameter file 'parameters.json' using the resource group 'aLegendaryRg' in location 'WestEurope'
 
 .EXAMPLE
-New-TemplateDeployment -templateFilePath 'C:/ResourceGroup/deploy.json' -parameterFilePath 'C:/ResourceGroup/.test/parameters.json' -location 'WestEurope'
+New-TemplateDeployment -TemplateFilePath 'C:/resources/resource-group/main.bicep' -DeploymentMetadataLocation 'WestEurope'
 
-Deploy the deploy.json of the ResourceGroup module with the parameter file 'parameters.json' in location 'WestEurope'
+Deploy the main.bicep of the 'resources/resource-group' module in location 'WestEurope' without a parameter file
+
+.EXAMPLE
+New-TemplateDeployment -TemplateFilePath 'C:/resources/resource-group/main.json' -ParameterFilePath 'C:/resources/resource-group/.test/parameters.json' -DeploymentMetadataLocation 'WestEurope'
+
+Deploy the main.json of the 'resources/resource-group' module with the parameter file 'parameters.json' in location 'WestEurope'
 #>
 function New-TemplateDeployment {
 
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory)]
-        [string] $templateFilePath,
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFilePath,
+
+        [Parameter(Mandatory = $true)]
+        [string] $DeploymentMetadataLocation,
 
         [Parameter(Mandatory = $false)]
-        [string[]] $parameterFilePath,
-
-        [Parameter(Mandatory)]
-        [string] $location,
+        [string[]] $ParameterFilePath,
 
         [Parameter(Mandatory = $false)]
-        [string] $resourceGroupName = '',
+        [string] $ResourceGroupName = '',
 
         [Parameter(Mandatory = $false)]
-        [string] $subscriptionId,
+        [string] $SubscriptionId,
 
         [Parameter(Mandatory = $false)]
-        [string] $managementGroupId,
+        [string] $ManagementGroupId,
 
         [Parameter(Mandatory = $false)]
-        [Hashtable] $additionalParameters,
+        [Hashtable] $AdditionalParameters,
 
         [Parameter(Mandatory = $false)]
-        [PSCustomObject] $additionalTags,
+        [PSCustomObject] $AdditionalTags,
 
         [Parameter(Mandatory = $false)]
-        [switch] $doNotThrow,
+        [switch] $DoNotThrow,
 
         [Parameter(Mandatory = $false)]
-        [int]$retryLimit = 3
+        [int] $RetryLimit = 1,
+
+        [Parameter(Mandatory = $false)]
+        [string] $RepoRoot = (Get-Item -Path $PSScriptRoot).parent.parent.parent.parent.parent.FullName
     )
 
     begin {
         Write-Debug ('{0} entered' -f $MyInvocation.MyCommand)
+
+        # Load helper functions
+        . (Join-Path $PSScriptRoot 'helper' 'Get-ScopeOfTemplateFile.ps1')
     }
 
     process {
         ## Assess Provided Parameter Path
-        if ((-not [String]::IsNullOrEmpty($parameterFilePath)) -and (Test-Path -Path $parameterFilePath -PathType 'Container') -and $parameterFilePath.Length -eq 1) {
+        if ((-not [String]::IsNullOrEmpty($ParameterFilePath)) -and (Test-Path -Path $ParameterFilePath -PathType 'Container') -and $ParameterFilePath.Length -eq 1) {
             ## Transform Path to Files
-            $parameterFilePath = Get-ChildItem $parameterFilePath -Recurse -Filter *.json | Select-Object -ExpandProperty FullName
-            Write-Verbose "Detected Parameter File(s)/Directory - Count: `n $($parameterFilePath.Count)"
+            $ParameterFilePath = Get-ChildItem $ParameterFilePath -Recurse -Filter *.json | Select-Object -ExpandProperty FullName
+            Write-Verbose "Detected Parameter File(s)/Directory - Count: `n $($ParameterFilePath.Count)"
         }
 
         ## Iterate through each file
         $deploymentInputObject = @{
-            templateFilePath     = $templateFilePath
-            additionalTags       = $additionalTags
-            additionalParameters = $additionalParameters
-            location             = $location
-            resourceGroupName    = $resourceGroupName
-            subscriptionId       = $subscriptionId
-            managementGroupId    = $managementGroupId
-            doNotThrow           = $doNotThrow
-            retryLimit           = $retryLimit
+            TemplateFilePath           = $TemplateFilePath
+            AdditionalTags             = $AdditionalTags
+            AdditionalParameters       = $AdditionalParameters
+            DeploymentMetadataLocation = $DeploymentMetadataLocation
+            ResourceGroupName          = $ResourceGroupName
+            SubscriptionId             = $SubscriptionId
+            ManagementGroupId          = $ManagementGroupId
+            DoNotThrow                 = $DoNotThrow
+            RetryLimit                 = $RetryLimit
+            RepoRoot                   = $RepoRoot
         }
-        if ($parameterFilePath) {
-            if ($parameterFilePath -is [array]) {
+        if ($ParameterFilePath) {
+            if ($ParameterFilePath -is [array]) {
                 $deploymentResult = [System.Collections.ArrayList]@()
-                foreach ($path in $parameterFilePath) {
-                    if ($PSCmdlet.ShouldProcess("Deployment for parameter file [$parameterFilePath]", 'Trigger')) {
-                        $deploymentResult += New-TemplateDeploymentInner @deploymentInputObject -parameterFilePath $path
+                foreach ($path in $ParameterFilePath) {
+                    if ($PSCmdlet.ShouldProcess("Deployment for parameter file [$ParameterFilePath]", 'Trigger')) {
+                        $deploymentResult += New-TemplateDeploymentInner @deploymentInputObject -ParameterFilePath $path
                     }
                 }
                 return $deploymentResult
             } else {
-                if ($PSCmdlet.ShouldProcess("Deployment for single parameter file [$parameterFilePath]", 'Trigger')) {
-                    return New-TemplateDeploymentInner @deploymentInputObject -parameterFilePath $parameterFilePath
+                if ($PSCmdlet.ShouldProcess("Deployment for single parameter file [$ParameterFilePath]", 'Trigger')) {
+                    return New-TemplateDeploymentInner @deploymentInputObject -ParameterFilePath $ParameterFilePath
                 }
             }
         } else {

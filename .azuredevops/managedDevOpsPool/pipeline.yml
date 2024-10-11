@@ -1,4 +1,4 @@
-name: 'Image Build $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
+name: 'Managed DevOps Pool Deployment $(SourceBranchName) $(Date:yyyyMMdd)-$(Hours)$(Minutes)$(Seconds)'
 
 parameters:
   - name: startEnvironment
@@ -9,24 +9,6 @@ parameters:
       - sbx
       - dev
       - prd
-  - name: deploymentsToPerform
-    displayName: Scope of deployment
-    type: string
-    default: Only assets & image
-    values:
-      - All
-      - Only removal
-      - Only base
-      - Only assets & image
-      - Only image
-  - name: waitForImageBuild
-    displayName: Wait for image build
-    type: boolean
-    default: false
-  - name: removeImageTemplateResources
-    displayName: Cleanup temporal resources from previous runs
-    type: boolean
-    default: true
 
 variables:
   - template: variables.yml
@@ -41,9 +23,6 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'sbx'
-          deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
-          waitForImageBuild: '${{ parameters.waitForImageBuild }}'
-          removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
 
   - stage: DEV_Deployments
     displayName: Deploy to DEV
@@ -57,9 +36,6 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'dev'
-          deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
-          waitForImageBuild: '${{ parameters.waitForImageBuild }}'
-          removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
 
   - stage: PRD_Deployments
     displayName: Deploy to PRD
@@ -74,6 +50,3 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'prd'
-          deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
-          waitForImageBuild: '${{ parameters.waitForImageBuild }}'
-          removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'

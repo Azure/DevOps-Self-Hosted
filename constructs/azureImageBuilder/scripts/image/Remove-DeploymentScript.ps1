@@ -35,17 +35,19 @@ function Remove-DeploymentScript {
         # -----------------
         $templateParamInputObject = @{
             TemplateFilePath = $TemplateFilePath
-            ParameterName    = @('resourceGroupName', 'imageTemplateDeploymentScriptName', 'storageDeploymentScriptName')
+            ParameterName    = @('resourceGroupName', 'imageTemplateDeploymentScriptName', 'storageDeploymentScriptName', 'waitDeploymentScriptName')
         }
-        $resourceGroupName, $imageTemplateDeploymentScriptName, $storageAccountDeploymentScriptName = Get-TemplateParameterValue @templateParamInputObject
+        $resourceGroupName, $imageTemplateDeploymentScriptName, $storageAccountDeploymentScriptName, $waitDeploymentScriptName = Get-TemplateParameterValue @templateParamInputObject
 
         # Logic
         # -----
-        foreach ($deploymentScriptName in @($imageTemplateDeploymentScriptName, $storageAccountDeploymentScriptName)) {
+        foreach ($deploymentScriptName in @($imageTemplateDeploymentScriptName, $storageAccountDeploymentScriptName, $waitDeploymentScriptName)) {
             $fetchUri = "https://management.azure.com/subscriptions/{0}/resources?api-version=2021-04-01&`$expand=provisioningState&`$filter=resourceGroup EQ '{1}' and resourceType EQ 'Microsoft.Resources/deploymentScripts' and substringof(name, '{2}')" -f (Get-AzContext).Subscription.Id, $resourcegroupName, $deploymentScriptName
             [array] $deploymentScripts = ((Invoke-AzRestMethod -Method 'GET' -Uri $fetchUri).Content | ConvertFrom-Json).Value
+            Write-Verbose ('Found [{0}] Deployment Scripts matching the name [{1}].' -f $deploymentScripts.Count, $deploymentScriptName)
 
             $deploymentScriptsToRemove = $deploymentScripts | Where-Object { $_.ProvisioningState -ne 'Running' }
+            Write-Verbose ('Found [{0}] Deployment Scripts matching the name [{1}] that are not in state [running].' -f $deploymentScriptsToRemove.Count, $deploymentScriptName)
 
             foreach ($deploymentScript in $deploymentScriptsToRemove) {
                 if ($PSCmdlet.ShouldProcess('Deplyoment Script [{0}]' -f $deploymentScript.name, 'Remove')) {
