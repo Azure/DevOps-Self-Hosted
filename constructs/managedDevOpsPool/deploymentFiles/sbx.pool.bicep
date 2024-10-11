@@ -25,7 +25,7 @@ module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
     organizationName: 'asehr'
     projectNames: ['Onyx']
     poolName: 'onyx-pool'
-    poolMaximumConcurrency: 10
+    poolMaximumConcurrency: 5
     devOpsInfrastructureEnterpriseApplicationObjectId: 'a67e26cd-08dc-47be-8217-df02edb89ba8' // Tenant-specific 'DevOpsInfrastructure' Enterprise Application objectId
   }
 }
