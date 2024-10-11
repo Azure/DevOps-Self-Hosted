@@ -48,6 +48,10 @@ param poolMaximumConcurrency int = 1
 @description('Optional. The Azure SKU name of the machines in the pool.')
 param poolSize string = 'Standard_B1ms'
 
+@description('Optional. The managed identity definition for the Managed DevOps Pool.')
+import { managedIdentitiesType } from './nestedPool.bicep'
+param poolManagedIdentities managedIdentitiesType?
+
 @description('Optional. Defines how the machine will be handled once it executed a job.')
 import { agentProfileType } from './nestedPool.bicep'
 param poolAgentProfile agentProfileType = {
@@ -121,6 +125,7 @@ module pool 'nestedPool.bicep' = {
     maximumConcurrency: poolMaximumConcurrency
     poolName: poolName
     poolSize: poolSize
+    poolManagedIdentities: poolManagedIdentities
     agentProfile: poolAgentProfile
     organizationName: organizationName
     projectNames: projectNames

@@ -51,6 +51,22 @@ param computeGalleryImageDefinitionName string
 @description('Optional. The version of the image to use in the Managed DevOps Pool.')
 param imageVersion string = 'latest' // Note, 'latest' is not supported by resource type
 
+@description('Optional. The managed identity definition for the Managed DevOps Pool.')
+param poolManagedIdentities managedIdentitiesType?
+
+var formattedUserAssignedIdentities = reduce(
+  map((poolManagedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
+  {},
+  (cur, next) => union(cur, next)
+) // Converts the flat array to an object like { '${id1}': {}, '${id2}': {} }
+
+var poolIdentity = !empty(poolManagedIdentities)
+  ? {
+      type: !empty(poolManagedIdentities.?userAssignedResourceIds ?? {}) ? 'UserAssigned' : 'None'
+      userAssignedIdentities: !empty(formattedUserAssignedIdentities) ? formattedUserAssignedIdentities : null
+    }
+  : null
+
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
   name: computeGalleryName
 
@@ -147,6 +163,7 @@ resource devCenterProject 'Microsoft.DevCenter/projects@2024-02-01' = {
 resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
   name: poolName
   location: location
+  identity: poolIdentity
   properties: {
     maximumConcurrency: maximumConcurrency
     agentProfile: agentProfile
@@ -255,4 +272,10 @@ type resourcePredictionsProfileAutomaticType = {
 type resourcePredictionsProfileManualType = {
   @description('Required. Customer provides the stand-by agent scheme.')
   kind: 'Manual'
+}
+
+@export()
+type managedIdentitiesType = {
+  @description('Optional. The resource ID(s) to assign to the resource. Required if a user assigned identity is used for encryption.')
+  userAssignedResourceIds: string[]?
 }
