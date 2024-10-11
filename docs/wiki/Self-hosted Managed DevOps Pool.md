@@ -1,5 +1,7 @@
 This sections gives you an overview on how to use the Managed DevOps Pool pipeline to deploy & maintain self-hosted Azure DevOps Agents using [Managed DevOps Pools service](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/?view=azure-devops).
 
+> **NOTE:** By the time of this release (2024-10-11), the 'Managed Agent Pool' service is still in Public Preview ([ref](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/overview?view=azure-devops)). While stable, it is something to consider before deploying the construct.
+
 ### _Navigation_
 
 - [Overview](#overview)
