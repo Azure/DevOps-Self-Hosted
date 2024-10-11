@@ -32,7 +32,12 @@ param devCenterName string
 param devCenterProjectName string
 
 @description('Optional. The Azure SKU name of the machines in the pool.')
-param devOpsInfrastructurePoolSize string = 'Standard_B1ms'
+param poolSize string = 'Standard_B1ms'
+
+@description('Optional. Defines how the machine will be handled once it executed a job.')
+param agentProfile agentProfileType = {
+  kind: 'Stateless'
+}
 
 @description('Required. The object ID (principal id) of the \'DevOpsInfrastructure\' Enterprise Application in your tenant.')
 param devOpsInfrastructureEnterpriseApplicationObjectId string
@@ -144,9 +149,7 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
   location: location
   properties: {
     maximumConcurrency: maximumConcurrency
-    agentProfile: {
-      kind: 'Stateless'
-    }
+    agentProfile: agentProfile
     organizationProfile: {
       kind: 'AzureDevOps'
       organizations: [
@@ -159,7 +162,7 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
     devCenterProjectResourceId: devCenterProject.id
     fabricProfile: {
       sku: {
-        name: devOpsInfrastructurePoolSize
+        name: poolSize
       }
       kind: 'Vmss'
       images: [
@@ -176,4 +179,80 @@ resource name 'Microsoft.DevOpsInfrastructure/pools@2024-04-04-preview' = {
     imageVersionPermission
     vnetPermission
   ]
+}
+
+/////////////////////
+//   Definitions   //
+/////////////////////
+
+@export()
+@discriminator('kind')
+type agentProfileType = agentStatefulType | agentStatelessType
+
+type agentStatefulType = {
+  @description('Required. Stateful profile meaning that the machines will be returned to the pool after running a job.')
+  kind: 'Stateful'
+
+  @description('Required. How long should stateful machines be kept around. The maximum is one week.')
+  maxAgentLifetime: string
+
+  @description('Required. How long should the machine be kept around after it ran a workload when there are no stand-by agents. The maximum is one week.')
+  gracePeriodTimeSpan: string
+
+  @description('Optional. Defines pool buffer/stand-by agents.')
+  resourcePredictions: object?
+
+  @discriminator('kind')
+  @description('Optional. Determines how the stand-by scheme should be provided.')
+  resourcePredictionsProfile: (resourcePredictionsProfileAutomaticType | resourcePredictionsProfileManualType)?
+}
+
+type agentStatelessType = {
+  @description('Required. Stateless profile meaning that the machines will be cleaned up after running a job.')
+  kind: 'Stateless'
+
+  @description('Optional. Defines pool buffer/stand-by agents.')
+  resourcePredictions: {
+    @description('Required. The time zone in which the daysData is provided. To see the list of available time zones, see: https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/default-time-zones?view=windows-11#time-zones or via PowerShell command `(Get-TimeZone -ListAvailable).StandardName`.')
+    timeZone: string
+
+    @description('Optional. The number of agents needed at a specific time.')
+    @metadata({
+      example: '''
+      [
+        { // Monday
+          '09:00': 5
+          '22:00': 0
+        }
+        {} // Tuesday
+        {} // Wednesday
+        {} // Thursday
+        { // Friday
+          '09:00': 5
+          '22:00': 0
+        }
+        {} // Saturday
+        {} // Sunday
+      ]
+      '''
+    })
+    daysData: object[]?
+  }?
+
+  @discriminator('kind')
+  @description('Optional. Determines how the stand-by scheme should be provided.')
+  resourcePredictionsProfile: (resourcePredictionsProfileAutomaticType | resourcePredictionsProfileManualType)?
+}
+
+type resourcePredictionsProfileAutomaticType = {
+  @description('Required. The stand-by agent scheme is determined based on historical demand.')
+  kind: 'Automatic'
+
+  @description('Required. Determines the balance between cost and performance.')
+  predictionPreference: 'Balanced' | 'MostCostEffective' | 'MoreCostEffective' | 'MorePerformance' | 'BestPerformance'
+}
+
+type resourcePredictionsProfileManualType = {
+  @description('Required. Customer provides the stand-by agent scheme.')
+  kind: 'Manual'
 }

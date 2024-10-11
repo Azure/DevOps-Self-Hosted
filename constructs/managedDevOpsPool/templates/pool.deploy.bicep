@@ -40,6 +40,20 @@ param imageVersion string = 'latest'
 @description('Required. The name of the Azure DevOps agent pool to create.')
 param poolName string
 
+@description('Required. Defines how many agents can there be deployed at any given time.')
+@minValue(1)
+@maxValue(10000)
+param poolMaximumConcurrency int = 1
+
+@description('Optional. The Azure SKU name of the machines in the pool.')
+param poolSize string = 'Standard_B1ms'
+
+@description('Optional. Defines how the machine will be handled once it executed a job.')
+import { agentProfileType } from './nestedPool.bicep'
+param poolAgentProfile agentProfileType = {
+  kind: 'Stateless'
+}
+
 @description('Required. The name of the Azure DevOps organization to register the agent pools in.')
 param organizationName string
 
@@ -55,9 +69,6 @@ param devCenterName string
 @minLength(3)
 @maxLength(63)
 param devCenterProjectName string
-
-@description('Optional. The Azure SKU name of the machines in the pool.')
-param devOpsInfrastructurePoolSize string = 'Standard_B1ms'
 
 @description('Required. The object ID (principal id) of the \'DevOpsInfrastructure\' Enterprise Application in your tenant.')
 param devOpsInfrastructureEnterpriseApplicationObjectId string
@@ -107,12 +118,13 @@ module pool 'nestedPool.bicep' = {
     location: resourceLocation
     devCenterName: devCenterName
     devCenterProjectName: devCenterProjectName
-    maximumConcurrency: 1
+    maximumConcurrency: poolMaximumConcurrency
     poolName: poolName
+    poolSize: poolSize
+    agentProfile: poolAgentProfile
     organizationName: organizationName
     projectNames: projectNames
     virtualNetworkResourceId: vnet.outputs.resourceId
-    devOpsInfrastructurePoolSize: devOpsInfrastructurePoolSize
     subnetName: vnet.outputs.subnetNames[0]
     computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     computeGalleryName: computeGalleryName

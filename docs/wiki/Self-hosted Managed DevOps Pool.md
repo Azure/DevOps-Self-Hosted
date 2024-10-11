@@ -108,6 +108,43 @@ The file comes with out-of-the box parameters that you can use aside from a few 
   computeGalleryImageDefinitionName: 'sid-linux'
   imageVersion: '0.24470.675' // (optional)
   ```
+- For the Agent Pool, you can configure diverse settings, especially with respect to the scaling. By default the template deploys stateless agents without any automated scaling. In other words, each time a pipeline referencing this pool would be triggered, a new agent would be created and torn down after. However, via the `poolAgentProfile` parameter you can set a wide range of settings ([docs](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/configure-scaling?view=azure-devops&tabs=arm)). For example, if you want to keep 1 agent on stand-by for every day of the week you can use the following configuration:
+   ```bicep
+   agentProfile: {
+     kind: 'Stateless'
+     resourcePredictions: {
+       timeZone: 'UTC'
+       daysData: [
+         {} // Sunday
+         {
+           '09:00:00': 1
+           '17:00:00': 0
+         }
+         {
+           '09:00:00': 1
+           '17:00:00': 0
+         }
+         {
+           '09:00:00': 1
+           '17:00:00': 0
+         }
+         {
+           '09:00:00': 1
+           '17:00:00': 0
+         }
+         {
+           '09:00:00': 1
+           '17:00:00': 0
+         }
+         {} // Saturday
+       ]
+     }
+     resourcePredictionsProfile: {
+       kind: 'Manual'
+     }
+   }
+   ```
+
 
 > **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
