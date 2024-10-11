@@ -28,8 +28,14 @@ param virtualNetworkSubnets array = [
   }
 ]
 
-@description('Required. The resource Id of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
-param computeGalleryImageDefinitionResourceId string
+@description('Required. The name of the Resource Group containing the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
+param computeGalleryResourceGroupName string = resourceGroupName
+
+@description('Required. The name of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
+param computeGalleryName string
+
+@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
+param computeGalleryImageDefinitionName string
 
 @description('Optional. The version of the image to use in the Managed DevOps Pool.')
 param imageVersion string = 'latest'
@@ -123,14 +129,11 @@ module devCenter 'devCenter.bicep' = {
 }
 
 resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
-  name: split(computeGalleryImageDefinitionResourceId, '/')[8]
-  scope: resourceGroup(
-    split(computeGalleryImageDefinitionResourceId, '/')[2],
-    split(computeGalleryImageDefinitionResourceId, '/')[4]
-  )
+  name: computeGalleryName
+  scope: resourceGroup(computeGalleryResourceGroupName)
 
   resource imageDefinition 'images@2022-03-03' existing = {
-    name: last(split(computeGalleryImageDefinitionResourceId, '/'))
+    name: computeGalleryImageDefinitionName
 
     resource version 'versions@2022-03-03' existing = {
       name: imageVersion
@@ -139,14 +142,11 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 }
 
 module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
-  scope: resourceGroup(
-    split(computeGalleryImageDefinitionResourceId, '/')[2],
-    split(computeGalleryImageDefinitionResourceId, '/')[4]
-  )
+  scope: resourceGroup(computeGalleryResourceGroupName)
   name: 'devOpsInfrastructureEnterpriseApplicationObjectId-permission-image'
   params: {
     principalId: devOpsInfrastructureEnterpriseApplicationObjectId
-    resourceId: computeGalleryImageDefinitionResourceId
+    resourceId: computeGallery::imageDefinition.id
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'acdd72a7-3385-48ef-bd42-f606fba81ae7'
