@@ -189,11 +189,11 @@ jobs:
                   # ----------------- #
                   $functionInput = @{
                     TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
-                    DeploymentMetadataLocation = '$(location)'
+                    DeploymentMetadataLocation = '$(deploymentMetadataLocation)'
                     SubscriptionId             = (Get-AzContext).Subscription.Id
                     RepoRoot                   = '$(System.DefaultWorkingDirectory)'
                     AdditionalParameters       = @{
-                      waitForImageBuild = '${{ parameters.waitForImageBuild }}'
+                      waitForImageBuild = [System.Convert]::ToBoolean('${{ parameters.waitForImageBuild }}')
                     }
                   }
 
