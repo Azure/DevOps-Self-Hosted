@@ -41,10 +41,6 @@ module imageDeployment '../templates/image.deploy.bicep' = {
           sku: 'devops_linux_az'
         }
         osState: 'Generalized'
-
-        // isAcceleratedNetworkSupported: false
-        // isHibernateSupported: false
-        // securityType: 'Standard'
         hyperVGeneration: 'V2'
       }
     ]
