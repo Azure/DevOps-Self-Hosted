@@ -28,11 +28,8 @@ param virtualNetworkSubnets array = [
   }
 ]
 
-@description('Required. The name of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
-param computeGalleryName string
-
-@description('Required. The name of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
-param computeGalleryImageDefinitionName string
+@description('Required. The resource Id of Image Definition of the Azure Compute Gallery that hosts the image of the Managed DevOps Pool.')
+param computeGalleryImageDefinitionResourceId string
 
 @description('Optional. The version of the image to use in the Managed DevOps Pool.')
 param imageVersion string = 'latest'
@@ -49,11 +46,11 @@ param poolMaximumConcurrency int = 1
 param poolSize string = 'Standard_B1ms'
 
 @description('Optional. The managed identity definition for the Managed DevOps Pool.')
-import { managedIdentitiesType } from './nestedPool.bicep'
+import { managedIdentitiesType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
 param poolManagedIdentities managedIdentitiesType?
 
 @description('Optional. Defines how the machine will be handled once it executed a job.')
-import { agentProfileType } from './nestedPool.bicep'
+import { agentProfileType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
 param poolAgentProfile agentProfileType = {
   kind: 'Stateless'
 }
@@ -115,25 +112,88 @@ module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = {
   }
 }
 
-module pool 'nestedPool.bicep' = {
+module devCenter 'devCenter.bicep' = {
   scope: rg
   name: '${deployment().name}-pool'
   params: {
     location: resourceLocation
     devCenterName: devCenterName
     devCenterProjectName: devCenterProjectName
-    maximumConcurrency: poolMaximumConcurrency
-    poolName: poolName
-    poolSize: poolSize
-    poolManagedIdentities: poolManagedIdentities
-    agentProfile: poolAgentProfile
-    organizationName: organizationName
-    projectNames: projectNames
-    virtualNetworkResourceId: vnet.outputs.resourceId
-    subnetName: vnet.outputs.subnetNames[0]
-    computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
-    computeGalleryName: computeGalleryName
-    imageVersion: imageVersion
-    devOpsInfrastructureEnterpriseApplicationObjectId: devOpsInfrastructureEnterpriseApplicationObjectId
   }
+}
+
+resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
+  name: split(computeGalleryImageDefinitionResourceId, '/')[8]
+  scope: resourceGroup(
+    split(computeGalleryImageDefinitionResourceId, '/')[2],
+    split(computeGalleryImageDefinitionResourceId, '/')[4]
+  )
+
+  resource imageDefinition 'images@2022-03-03' existing = {
+    name: last(split(computeGalleryImageDefinitionResourceId, '/'))
+
+    resource version 'versions@2022-03-03' existing = {
+      name: imageVersion
+    }
+  }
+}
+
+module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
+  scope: resourceGroup(
+    split(computeGalleryImageDefinitionResourceId, '/')[2],
+    split(computeGalleryImageDefinitionResourceId, '/')[4]
+  )
+  name: 'devOpsInfrastructureEnterpriseApplicationObjectId-permission-image'
+  params: {
+    principalId: devOpsInfrastructureEnterpriseApplicationObjectId
+    resourceId: computeGalleryImageDefinitionResourceId
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+    ) // Reader
+  }
+}
+module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
+  scope: rg
+  name: 'devOpsInfrastructureEnterpriseApplicationObjectId-permission-vnet'
+  params: {
+    principalId: devOpsInfrastructureEnterpriseApplicationObjectId
+    resourceId: vnet.outputs.resourceId
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '4d97b98b-1d4f-4787-a291-c67834d212e7'
+    ) // Network Contributor
+  }
+}
+
+module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1' = {
+  name: '${deployment().name}-pool'
+  scope: rg
+  params: {
+    name: poolName
+    managedIdentities: poolManagedIdentities
+    agentProfile: poolAgentProfile
+    concurrency: poolMaximumConcurrency
+    devCenterProjectResourceId: devCenter.outputs.devCenterProjectResourceId
+    fabricProfileSkuName: poolSize
+    images: [
+      {
+        resourceId: computeGallery::imageDefinition::version.id
+      }
+    ]
+    organizationProfile: {
+      kind: 'AzureDevOps'
+      organizations: [
+        {
+          url: 'https://dev.azure.com/${organizationName}'
+          projects: projectNames
+        }
+      ]
+    }
+    subnetResourceId: vnet.outputs.subnetResourceIds[0]
+  }
+  dependsOn: [
+    imagePermission
+    vnetPermission
+  ]
 }
