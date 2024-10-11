@@ -38,7 +38,7 @@ jobs:
           repository: ${{ env.wiki_target_repo }}
           path: ${{ env.wiki_target_repo }}
           token: '${{ secrets.PLATFORM_REPO_UPDATE_PAT }}' # Sets general GIT credentials up
-          ref: main
+          ref: master
 
       - name: Configure Local Git
         run: |
