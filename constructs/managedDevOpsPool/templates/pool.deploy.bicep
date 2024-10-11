@@ -96,7 +96,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 
 // Network Security Group
 module nsg 'br/public:avm/res/network/network-security-group:0.3.0' = {
-  name: '${deployment().name}-nsg'
+  name: '${uniqueString(deployment().name, resourceLocation)}-nsg'
   scope: rg
   params: {
     name: networkSecurityGroupName
@@ -106,7 +106,7 @@ module nsg 'br/public:avm/res/network/network-security-group:0.3.0' = {
 
 // Virtual Network
 module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = {
-  name: '${deployment().name}-vnet'
+  name: '${uniqueString(deployment().name, resourceLocation)}-vnet'
   scope: rg
   params: {
     name: virtualNetworkName
@@ -120,7 +120,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = {
 
 module devCenter 'devCenter.bicep' = {
   scope: rg
-  name: '${deployment().name}-devCenter'
+  name: '${uniqueString(deployment().name, resourceLocation)}-devCenter'
   params: {
     location: resourceLocation
     devCenterName: devCenterName
@@ -143,7 +143,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 
 module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup(computeGalleryResourceGroupName)
-  name: '${deployment().name}-devOpsInfrastructureEAObjectId-permission-image'
+  name: '${uniqueString(deployment().name, resourceLocation)}-devOpsInfrastructureEAObjectId-permission-image'
   params: {
     principalId: devOpsInfrastructureEnterpriseApplicationObjectId
     resourceId: computeGallery::imageDefinition.id
@@ -155,7 +155,7 @@ module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment
 }
 module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: rg
-  name: '${deployment().name}-devOpsInfrastructureEAObjectId-permission-vnet'
+  name: '${uniqueString(deployment().name, resourceLocation)}-devOpsInfrastructureEAObjectId-permission-vnet'
   params: {
     principalId: devOpsInfrastructureEnterpriseApplicationObjectId
     resourceId: vnet.outputs.resourceId
@@ -167,7 +167,7 @@ module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:
 }
 
 module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1' = {
-  name: '${deployment().name}-pool'
+  name: '${uniqueString(deployment().name, resourceLocation)}-pool'
   scope: rg
   params: {
     name: poolName

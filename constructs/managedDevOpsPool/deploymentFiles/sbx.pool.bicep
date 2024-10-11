@@ -11,7 +11,7 @@ param resourceLocation string = 'NorthEurope'
 //   Template Deployment   //
 /////////////////////////////
 module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-managedPool-sbx'
+  name: '${uniqueString(deployment().name, resourceLocation)}-managedPool-sbx'
   params: {
     resourceLocation: resourceLocation
     computeGalleryResourceGroupName: 'core-rg'
