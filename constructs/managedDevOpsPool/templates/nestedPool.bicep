@@ -237,19 +237,28 @@ type agentStatelessType = {
     @metadata({
       example: '''
       [
-        { // Monday
-          '09:00': 5
-          '22:00': 0
+        {} // Sunday
+        {  // Monday
+          '09:00:00': 1
+          '17:00:00': 0
         }
-        {} // Tuesday
-        {} // Wednesday
-        {} // Thursday
+        { // Tuesday
+          '09:00:00': 1
+          '17:00:00': 0
+        }
+        { // Wednesday
+          '09:00:00': 1
+          '17:00:00': 0
+        }
+        { // Thursday
+          '09:00:00': 1
+          '17:00:00': 0
+        }
         { // Friday
-          '09:00': 5
-          '22:00': 0
+          '09:00:00': 1
+          '17:00:00': 0
         }
         {} // Saturday
-        {} // Sunday
       ]
       '''
     })

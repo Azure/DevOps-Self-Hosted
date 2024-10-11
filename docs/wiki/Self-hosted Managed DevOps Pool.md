@@ -115,28 +115,28 @@ The file comes with out-of-the box parameters that you can use aside from a few 
      resourcePredictions: {
        timeZone: 'UTC'
        daysData: [
-         {} // Sunday
-         {
-           '09:00:00': 1
-           '17:00:00': 0
-         }
-         {
-           '09:00:00': 1
-           '17:00:00': 0
-         }
-         {
-           '09:00:00': 1
-           '17:00:00': 0
-         }
-         {
-           '09:00:00': 1
-           '17:00:00': 0
-         }
-         {
-           '09:00:00': 1
-           '17:00:00': 0
-         }
-         {} // Saturday
+          {} // Sunday
+          {  // Monday
+            '09:00:00': 1
+            '17:00:00': 0
+          }
+          { // Tuesday
+            '09:00:00': 1
+            '17:00:00': 0
+          }
+          { // Wednesday
+            '09:00:00': 1
+            '17:00:00': 0
+          }
+          { // Thursday
+            '09:00:00': 1
+            '17:00:00': 0
+          }
+          { // Friday
+            '09:00:00': 1
+            '17:00:00': 0
+          }
+          {} // Saturday
        ]
      }
      resourcePredictionsProfile: {
