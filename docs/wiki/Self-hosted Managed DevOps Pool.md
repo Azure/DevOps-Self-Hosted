@@ -108,43 +108,47 @@ The file comes with out-of-the box parameters that you can use aside from a few 
   computeGalleryImageDefinitionName: 'sid-linux'
   imageVersion: '0.24470.675' // (optional)
   ```
-- For the Agent Pool, you can configure diverse settings, especially with respect to the scaling. By default the template deploys stateless agents without any automated scaling. In other words, each time a pipeline referencing this pool would be triggered, a new agent would be created and torn down after. However, via the `poolAgentProfile` parameter you can set a wide range of settings ([docs](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/configure-scaling?view=azure-devops&tabs=arm)). For example, if you want to keep 1 agent on stand-by for every day of the week you can use the following configuration:
-   ```bicep
-   agentProfile: {
-     kind: 'Stateless'
-     resourcePredictions: {
-       timeZone: 'UTC'
-       daysData: [
-          {} // Sunday
-          {  // Monday
-            '09:00:00': 1
-            '17:00:00': 0
-          }
-          { // Tuesday
-            '09:00:00': 1
-            '17:00:00': 0
-          }
-          { // Wednesday
-            '09:00:00': 1
-            '17:00:00': 0
-          }
-          { // Thursday
-            '09:00:00': 1
-            '17:00:00': 0
-          }
-          { // Friday
-            '09:00:00': 1
-            '17:00:00': 0
-          }
-          {} // Saturday
-       ]
+- For the Agent Pool, you can configure diverse settings:
+  - `organizationName`: The name of the Azure DevOps Organization to register the Agent Pool in
+  - `projectNames`: The name(s) of the Azure DevOps Project to register the Agent Pool in
+  - `poolName`: The name to use when registering the Agent Pool (will have the same name in Azure)
+  - `devOpsInfrastructureEnterpriseApplicationObjectId`: Tenant-specific 'DevOpsInfrastructure' Enterprise Application objectId. Can be fetched by running `(Get-AzAdServicePrincipal -DisplayName 'DevOpsInfrastructure').Id` while logged into the tenant to deploy into.
+  - `poolAgentProfile`: By default the template deploys stateless agents without any automated scaling. In other words, each time a pipeline referencing this pool would be triggered, a new agent would be created and torn down after. However, via the `poolAgentProfile` parameter you can set a wide range of settings ([docs](https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/configure-scaling?view=azure-devops&tabs=arm)). For example, if you want to keep 1 agent on stand-by for every day of the week you can use the following configuration:
+     ```bicep
+     agentProfile: {
+       kind: 'Stateless'
+       resourcePredictions: {
+         timeZone: 'UTC'
+         daysData: [
+            {} // Sunday
+            {  // Monday
+              '09:00:00': 1
+              '17:00:00': 0
+            }
+            { // Tuesday
+              '09:00:00': 1
+              '17:00:00': 0
+            }
+            { // Wednesday
+              '09:00:00': 1
+              '17:00:00': 0
+            }
+            { // Thursday
+              '09:00:00': 1
+              '17:00:00': 0
+            }
+            { // Friday
+              '09:00:00': 1
+              '17:00:00': 0
+            }
+            {} // Saturday
+         ]
+       }
+       resourcePredictionsProfile: {
+         kind: 'Manual'
+       }
      }
-     resourcePredictionsProfile: {
-       kind: 'Manual'
-     }
-   }
-   ```
-
+     ```
 
 > **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
 
