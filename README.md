@@ -1,6 +1,6 @@
 # DevOps Self-Hosted Constructs Repository
 
-<img src="./docs/wiki/media/homeOverviewImage.png" alt="Overview" height="450">
+<img src="./docs/wiki/media/homeOverviewImage.png" alt="Overview" height="350">
 
 
 ## Description
