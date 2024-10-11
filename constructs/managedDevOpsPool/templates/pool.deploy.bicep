@@ -120,7 +120,7 @@ module vnet 'br/public:avm/res/network/virtual-network:0.4.0' = {
 
 module devCenter 'devCenter.bicep' = {
   scope: rg
-  name: '${deployment().name}-pool'
+  name: '${deployment().name}-devCenter'
   params: {
     location: resourceLocation
     devCenterName: devCenterName
@@ -143,7 +143,7 @@ resource computeGallery 'Microsoft.Compute/galleries@2022-03-03' existing = {
 
 module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup(computeGalleryResourceGroupName)
-  name: 'devOpsInfrastructureEnterpriseApplicationObjectId-permission-image'
+  name: '${deployment().name}-devOpsInfrastructureEAObjectId-permission-image'
   params: {
     principalId: devOpsInfrastructureEnterpriseApplicationObjectId
     resourceId: computeGallery::imageDefinition.id
@@ -155,7 +155,7 @@ module imagePermission 'br/public:avm/ptn/authorization/resource-role-assignment
 }
 module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: rg
-  name: 'devOpsInfrastructureEnterpriseApplicationObjectId-permission-vnet'
+  name: '${deployment().name}-devOpsInfrastructureEAObjectId-permission-vnet'
   params: {
     principalId: devOpsInfrastructureEnterpriseApplicationObjectId
     resourceId: vnet.outputs.resourceId
