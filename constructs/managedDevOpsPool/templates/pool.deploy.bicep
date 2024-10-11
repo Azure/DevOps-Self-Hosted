@@ -40,7 +40,7 @@ param imageVersion string = 'latest'
 @description('Required. The name of the Azure DevOps agent pool to create.')
 param poolName string
 
-@description('Required. Defines how many agents can there be deployed at any given time.')
+@description('Optional. Defines how many agents can there be deployed at any given time.')
 @minValue(1)
 @maxValue(10000)
 param poolMaximumConcurrency int = 1
