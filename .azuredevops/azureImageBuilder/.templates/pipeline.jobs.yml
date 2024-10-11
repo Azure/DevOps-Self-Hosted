@@ -193,13 +193,12 @@ jobs:
                     SubscriptionId             = (Get-AzContext).Subscription.Id
                     RepoRoot                   = '$(System.DefaultWorkingDirectory)'
                     AdditionalParameters       = @{
-                      ResourceLocation = '$(location)'
                       waitForImageBuild = '${{ parameters.waitForImageBuild }}'
                     }
                   }
 
                   # Inject control parmaeters from pipeline
-                  $functionInput['additionalParameters'] = @{
+                  $functionInput['additionalParameters'] += @{
                     deploymentsToPerform = '${{ parameters.deploymentsToPerform }}'
                   }
 

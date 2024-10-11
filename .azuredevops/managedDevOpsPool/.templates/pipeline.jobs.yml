@@ -61,12 +61,10 @@ jobs:
                   # ----------------- #
                   $functionInput = @{
                     TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.pool.bicep'
-                    DeploymentMetadataLocation = '$(location)'
+                    DeploymentMetadataLocation = '$(deploymentMetadataLocation)'
                     SubscriptionId             = (Get-AzContext).Subscription.Id
                     RepoRoot                   = '$(System.DefaultWorkingDirectory)'
-                    AdditionalParameters       = @{
-                      ResourceLocation = '$(location)'
-                    }
+                    AdditionalParameters       = @{}
                   }
 
                   Write-Verbose "Invoke task with" -Verbose

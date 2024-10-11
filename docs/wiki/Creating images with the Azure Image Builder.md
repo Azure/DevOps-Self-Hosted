@@ -92,7 +92,7 @@ The first file, `variables.yml`, is a pipeline variable file. You should update 
 - `vmImage`: Set this to for example `ubuntu-latest` to leverage Microsoft-hosted agents. Leave it empty (`''`) if you use self-hosted agents. Do not remove it.
 - `poolName`: Set this to for example `myHostPool` to leverage your self-hosted agent pool. Leave it empty (`''`) if you use Microsoft-hosted agents. Do not remove it.
 - `serviceConnection`: This refers to your Azure DevOps service connection you use for your deployments. It should point into the subscription you want to deploy into.
-- `location`: The location to store deployment metadata in. This variable is also used as a default location to deploy into, if no location is provided in the parameter files.
+- `deploymentMetadataLocation`: The location to store deployment metadata in. The location of the resources it specified directly in the deployment/parameter file.
 
 ### Parameters
 Next, we have one deployment file, `<env>.image.bicep` that hosts to the two phases in the deployment: Deploy all infrastructure components & build the image.

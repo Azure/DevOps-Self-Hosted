@@ -30,5 +30,5 @@ variables:
   deploymentFilesPath: 'constructs/azureImageBuilder/deploymentFiles'
   orchestrationFunctionsPath: 'constructs/azureImageBuilder/scripts'
   sharedOrchestrationFunctionsPath: 'sharedScripts'
-  location: NorthEurope
+  deploymentMetadataLocation: NorthEurope
   #endregion

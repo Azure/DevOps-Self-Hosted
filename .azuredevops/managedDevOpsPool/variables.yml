@@ -30,5 +30,5 @@ variables:
   deploymentFilesPath: 'constructs/managedDevOpsPool/deploymentFiles'
   orchestrationFunctionsPath: 'constructs/managedDevOpsPool/scripts'
   sharedOrchestrationFunctionsPath: 'sharedScripts'
-  location: NorthEurope
+  deploymentMetadataLocation: NorthEurope
   #endregion
