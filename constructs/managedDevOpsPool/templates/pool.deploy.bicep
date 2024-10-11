@@ -53,7 +53,10 @@ param poolSize string = 'Standard_B1ms'
 
 @description('Optional. The managed identity definition for the Managed DevOps Pool.')
 import { managedIdentitiesType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
-param poolManagedIdentities managedIdentitiesType?
+param poolManagedIdentities managedIdentitiesType
+
+// import { managedIdentityOnlyUserAssignedType } from 'br/public:avm/utl/types/avm-common-types:0.1.0'
+// param poolManagedIdentities managedIdentityOnlyUserAssignedType?
 
 @description('Optional. Defines how the machine will be handled once it executed a job.')
 import { agentProfileType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
