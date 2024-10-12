@@ -23,7 +23,7 @@ param waitForImageBuild bool = true
 /////////////////////////////
 
 module imageDeployment '../templates/image.deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-image-sbx'
+  name: '${uniqueString(deployment().name, resourceLocation)}-image-sbx'
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform

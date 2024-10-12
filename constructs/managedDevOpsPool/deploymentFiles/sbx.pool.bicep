@@ -7,15 +7,11 @@ targetScope = 'subscription'
 @description('Optional. Specifies the location for resources.')
 param resourceLocation string = 'NorthEurope'
 
-///////////////////////////////
-//   Deployment Properties   //
-///////////////////////////////
-
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
 module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
-  name: '${uniqueString(deployment().name)}-managedPool-sbx'
+  name: '${uniqueString(deployment().name, resourceLocation)}-managedPool-sbx'
   params: {
     resourceLocation: resourceLocation
     computeGalleryName: '<computeGalleryName>'
