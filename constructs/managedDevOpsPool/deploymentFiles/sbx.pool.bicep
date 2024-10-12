@@ -14,7 +14,6 @@ module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-managedPool-sbx'
   params: {
     resourceLocation: resourceLocation
-    computeGalleryResourceGroupName: 'core-rg'
     computeGalleryName: '<computeGalleryName>'
     computeGalleryImageDefinitionName: 'sid-linux'
     devCenterName: 'my-center'
