@@ -79,13 +79,14 @@ jobs:
                   # $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   # $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
 
-                  $authInput = @{
-                    KeyVaultAccessToken = az account get-access-token --resource https://vault.azure.net --query 'accessToken' --output 'tsv'
-                    AccessToken         = az account get-access-token --query 'accessToken' --output 'tsv'
-                    AccountId           = $userId["value"]
-                  }
-                  Connect-AzAccount @authInput
+                  # $authInput = @{
+                  #   KeyVaultAccessToken = az account get-access-token --resource https://vault.azure.net --query 'accessToken' --output 'tsv'
+                  #   AccessToken         = az account get-access-token --query 'accessToken' --output 'tsv'
+                  #   AccountId           = $userId["value"]
+                  # }
+                  # Connect-AzAccount @authInput
 
+                  $null = Connect-AzAccount -ApplicationId $env:servicePrincipalId -Tenant $env:tenantId -FederatedToken $env:idToken
 
                   # ----
 
