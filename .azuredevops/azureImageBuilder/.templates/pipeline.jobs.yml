@@ -54,6 +54,8 @@ jobs:
               displayName: 'Some script'
               inputs:
                 azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+                azurePowerShellVersion: LatestVersion
+                pwsh: true
                 ScriptType: InlineScript
                 inline: ''
             - task: AzureCLI@2
