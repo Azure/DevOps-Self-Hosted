@@ -27,7 +27,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
-    computeGalleryName: '<computeGalleryName>'
+    computeGalleryName: 'alsehrcg'
     computeGalleryImageDefinitionName: 'sid-linux'
     waitForImageBuild: waitForImageBuild
     computeGalleryImageDefinitions: [
@@ -75,7 +75,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       version: 'latest'
       // Custom image example
       // type: 'SharedImageVersion'
-      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<computeGalleryName>/images/sid-linux/versions/0.24470.675'
+      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/alsehrcg/images/sid-linux/versions/0.24470.675'
     }
     imageTemplateCustomizationSteps: [
       {
