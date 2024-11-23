@@ -50,14 +50,16 @@ jobs:
             # Steps
             # - In Azure DevOps create new service connection OIDC Manual. Give it a name and select 'next/create'. This will then show the Issuer & Subject identifier we need in Azure to be configured in the federated credential of the managed identity (ref: https://blog.cellenza.com/en/cloud/federated-credentials-how-to-deploy-an-azure-pipeline-without-secrets-or-certificates/)
             # - Note: When configuring remaining steps of the service connection, especially the principal, the requested princial ID is the Client ID shown in the managed identity, NOT the object (principal) ID
-            - task: AzurePowerShell@5
-              displayName: 'Some script'
-              inputs:
-                azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
-                azurePowerShellVersion: LatestVersion
-                pwsh: true
-                ScriptType: InlineScript
-                inline: ''
+
+            # Clears authentication after running again - meh
+            # - task: AzurePowerShell@5
+            #   displayName: 'Some script'
+            #   inputs:
+            #     azureSubscription: '$(serviceConnection_${{ parameters.environment }})'
+            #     azurePowerShellVersion: LatestVersion
+            #     pwsh: true
+            #     ScriptType: InlineScript
+            #     inline: ''
             - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
               displayName: 'Remove previous Image Template resources'
@@ -71,9 +73,21 @@ jobs:
                   . $profile # Load PS-Profile configuration
 
                   # Login to Azure-Powershell context
+
+                  # Not working with oidc out of the box
                   # $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
                   # $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
                   # $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+
+                  $authInput = @{
+                    KeyVaultAccessToken = az account get-access-token --resource https://vault.azure.net --query 'accessToken' --output 'tsv'
+                    AccessToken         = az account get-access-token --query 'accessToken' --output 'tsv'
+                    AccountId           = $userId["value"]
+                  }
+                  Connect-AzAccount @authInput
+
+
+                  # ----
 
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
