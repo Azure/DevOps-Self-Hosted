@@ -18,8 +18,8 @@ This sections gives you an overview on how to use the Azure Image Builder (AIB) 
 ## Prerequisites
 
 The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
-
-- The deployment principal (e.g., the Service Principal tied to the deploying Service Connection) must have at least `Contributor` & `User Access Administrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
+- The deployment principal (i.e., the principal tied to the deploying Service Connection) **must** be setup for OIDC. This is required so that all AzureCLI that also run _pwsh_ commands can log into the Azure PowerShell context too. For instructions on this matter, please refer to [this guide](./OIDC).
+- The deployment principal must have at least `Contributor` & `Role Based Access Control Administrator` permissions on the target subscription to be able to deploy both resources and assign permissions to created user-assigned identities
 - IF you have a policy in place that prevents Storage Accounts from being deployed without a Firewall, you have to create an exemption for the Image Template / Staging Resource Group you can configure for the Image Template Resource (parameter `imageTemplateResourceGroupName`). The rationale is that the Azure-Image-Builder service uses this resource group to deploy both temporal resources used during the image build (e.g., a Virtual Machine), as well as a Storage Account to store temporal files & a 'packerlogs/customization.log' file in (which contains the logs of the image build). This Storage Account has no firewall configured, has a random name, and cannot be configured at deploy time.
 
 ## Elements

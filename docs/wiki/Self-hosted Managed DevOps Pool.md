@@ -6,6 +6,7 @@ This sections gives you an overview on how to use the Managed DevOps Pool pipeli
 
 - [Overview](#overview)
   - [Advantages](#Advantages)
+  - [Prerequisites](#prerequisites)
   - [Elements](#elements)
   - [File structure & flow](#file-structure--flow)
 - [Process](#process)
@@ -26,6 +27,11 @@ This sections gives you an overview on how to use the Managed DevOps Pool pipeli
 - Saving money
   - As the Managed DevOps Pool can be configured to e.g. scale in to 0 and spin up a new VM only if a job is scheduled
   - As a single agent is installed on a new instance. Hence virtual machines can be deployed using a SKU with less compute power
+
+## Prerequisites
+
+The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
+- The deployment principal (i.e., the principal tied to the deploying Service Connection) **must** be setup for OIDC. This is required so that all AzureCLI that also run _pwsh_ commands can log into the Azure PowerShell context too. For instructions on this matter, please refer to [this guide](./OIDC).
 
 ## Elements
 
