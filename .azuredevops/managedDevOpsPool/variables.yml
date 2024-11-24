@@ -12,17 +12,17 @@ variables:
   ## GENERAL ##
   #############
   #region shared
-  vmImage_sbx: 'ubuntu-latest' # Use this for microsoft-hosted agents
-  vmImage_dev: 'ubuntu-latest' # Use this for microsoft-hosted agents
-  vmImage_prd: 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_sbx: '' # 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_dev: '' # 'ubuntu-latest' # Use this for microsoft-hosted agents
+  vmImage_prd: '' # 'ubuntu-latest' # Use this for microsoft-hosted agents
 
-  poolName_sbx: '' # Use this for self-hosted agents
-  poolName_dev: '' # Use this for self-hosted agents
-  poolName_prd: '' # Use this for self-hosted agents
+  poolName_sbx: 'core-vmss' # Use this for self-hosted agents
+  poolName_dev: 'core-vmss' # Use this for self-hosted agents
+  poolName_prd: 'core-vmss' # Use this for self-hosted agents
 
-  serviceConnection_sbx: '<PrivateConnection>'
-  serviceConnection_dev: '<PrivateConnection>'
-  serviceConnection_prd: '<PrivateConnection>'
+  serviceConnection_sbx: 'OIDC-Private' # '<PrivateConnection>'
+  serviceConnection_dev: 'OIDC-Private' # '<PrivateConnection>'
+  serviceConnection_prd: 'OIDC-Private' # '<PrivateConnection>'
   #endregion
 
   #region specific
