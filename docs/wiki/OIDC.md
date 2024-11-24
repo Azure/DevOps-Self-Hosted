@@ -18,7 +18,7 @@ This section gives you an overview of how to set up a managed identity and use i
 
 1. When asked which type of authentication you'd like to use, select 'Workload Identity Federation (manual)'
 
-   <img src="./media/oidc/serviceConnection-authentication.png" alt="Select service connection authentication" height="300">
+   <img src="./media/oidc/serviceConnection-authentication.png" alt="Select service connection authentication" height="350">
 
 1. Finally, give the to-be service connection a name, and select 'Next' one last time (for now)
 
@@ -26,7 +26,7 @@ This section gives you an overview of how to set up a managed identity and use i
 
 1. In this following view, take not of the 'Issuer' & 'Subject identifier' values. You'll need those to create the federated credential
 
-   <img src="./media/oidc/serviceConnection-issuer.png" alt="Select service connection issuer info" height="300">
+   <img src="./media/oidc/serviceConnection-issuer.png" alt="Select service connection issuer info" height="350">
 
 # Create managed identity
 
@@ -48,7 +48,7 @@ With the service connection prepared, we can now move on the the Managed Identit
 
 1. On the managed identity resource, select 'Federated credentials' in the resource blade, followed by '+ Add Credential'
 
-   <img src="./media/oidc/credentialInit.png" alt="Init credential" height="300">
+   <img src="./media/oidc/credentialInit.png" alt="Init credential" height="350">
 
 1. Now, for the
    - 'Federated credential scenario', select '**Other** Configure an identity managed by an external OpenID Connect Provider to access Azure resources as this application'
@@ -70,7 +70,7 @@ Now, with the federated credential ready, we can return to the creation of the S
    - Service Principal Id: The client ID of the created Managed Identity, taken from its overview page. **Note:** This refers to the Client ID, not the Object / Principal ID
    - Tenant ID: The ID of the Tenant containing the created Managed Identity
 
-   <img src="./media/oidc/serviceConnection-finish.png" alt="Service Connection finish" height="500">
+   <img src="./media/oidc/serviceConnection-finish.png" alt="Service Connection finish" height="600">
 
 1. Finally, select 'Verify and save' and you should be good to go to use the Service Connection in your pipelines.
 
