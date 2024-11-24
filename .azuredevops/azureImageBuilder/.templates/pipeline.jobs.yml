@@ -44,13 +44,6 @@ jobs:
 
                   # Set agent up
                   Set-EnvironmentOnAgent -PSModules $Modules
-            # [Sanitization] task(s)
-            #-----------------------
-            # TODO: Test if login can be used in seperate tasks and re-used across tasks (to enable both a pwsh login & Azure CLI login)
-            # Steps
-            # - In Azure DevOps create new service connection OIDC Manual. Give it a name and select 'next/create'. This will then show the Issuer & Subject identifier we need in Azure to be configured in the federated credential of the managed identity (ref: https://blog.cellenza.com/en/cloud/federated-credentials-how-to-deploy-an-azure-pipeline-without-secrets-or-certificates/)
-            # - Note: When configuring remaining steps of the service connection, especially the principal, the requested princial ID is the Client ID shown in the managed identity, NOT the object (principal) ID
-            # - Note: OIDC MSI needs permissions like 'Contributor' + 'Role Based Access Control Administrator'
             - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
               displayName: 'Remove previous Image Template resources'
