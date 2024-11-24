@@ -70,7 +70,7 @@ Now, with the federated credential ready, we can return to the creation of the S
    - Service Principal Id: The client ID of the created Managed Identity, taken from its overview page. **Note:** This refers to the Client ID, not the Object / Principal ID
    - Tenant ID: The ID of the Tenant containing the created Managed Identity
 
-   <img src="./media/oidc/serviceConnection-finish.png" alt="Service Connection finish" height="600">
+   <img src="./media/oidc/serviceConnection-finish.png" alt="Service Connection finish" height="700">
 
 1. Finally, select 'Verify and save' and you should be good to go to use the Service Connection in your pipelines.
 
