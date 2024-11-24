@@ -40,7 +40,9 @@ With the service connection prepared, we can now move on the the Managed Identit
 
    <img src="./media/oidc/managedIdentityDetails.png" alt="MSI details" height="400">
 
-1. Once the resource is created, navigate to it so that we can start creating the federated credential
+1. Once the resource is created, navigate to it so that we can start creating the federated credential. Also, take note of the 'Client ID' in the resource's overview which we will need again to finish up the Service Connection creation later.
+
+   <img src="./media/oidc/managedIdentityId.png" alt="MSI details" height="400">
 
 # Create federated credential
 
@@ -50,8 +52,8 @@ With the service connection prepared, we can now move on the the Managed Identit
 
 1. Now, for the
    - 'Federated credential scenario', select '**Other** Configure an identity managed by an external OpenID Connect Provider to access Azure resources as this application'
-   - 'Issuer Url' provide the 'Issuer' value from the last step in the preceding Service Connection creation.
-   - 'Subject identifier' provide the 'Subject identifier' value from the last step in the preceding Service Connection creation.
+   - 'Issuer Url' provide the 'Issuer' value from the last step in the preceding Service Connection creation
+   - 'Subject identifier' provide the 'Subject identifier' value from the last step in the preceding Service Connection creation
    - Name, a name of your choice
 
    <img src="./media/oidc/credentialDetails.png" alt="Credential details" height="400">
@@ -60,4 +62,16 @@ With the service connection prepared, we can now move on the the Managed Identit
 
 # Create Service Connection (Part 2)
 
+Now, with the federated credential ready, we can return to the creation of the Service Connection to wrap it up. To do so,
 
+1. Provide all required details in the Service connection's form, including
+   - Subscription ID: Must be the Subscription ID of the Subscription containing the created Managed Identity
+   - Subscription Name: The name of the Subscription
+   - Service Principal Id: The client ID of the created Managed Identity, taken from its overview page. **Note:** This refers to the Client ID, not the Object / Principal ID
+   - Tenant ID: The ID of the Tenant containing the created Managed Identity
+
+   <img src="./media/oidc/serviceConnection-finish.png" alt="Service Connection finish" height="400">
+
+1. Finally, select 'Verify and save' and you should be good to go to use the Service Connection in your pipelines.
+
+   > **NOTE:** Don't forget to grant your Managed Identity the permissions it needs to perform its tasks (e.g., create resources)
