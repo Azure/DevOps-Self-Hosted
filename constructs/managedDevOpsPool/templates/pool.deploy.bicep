@@ -166,7 +166,7 @@ module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:
   }
 }
 
-module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.2.0' = {
+module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.3.0' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-pool'
   scope: rg
   params: {
