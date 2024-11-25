@@ -31,7 +31,7 @@ This sections gives you an overview on how to use the Managed DevOps Pool pipeli
 ## Prerequisites
 
 The deployments described in the following sections assume certain prerequisites to be in place prior to deployment.
-- The deployment principal (i.e., the principal tied to the deploying Service Connection) **must** be setup for OIDC. This is required so that all AzureCLI that also run _pwsh_ commands can log into the Azure PowerShell context too. For instructions on this matter, please refer to [this guide](./OIDC).
+- The deployment principal (i.e., the principal tied to the deploying Service Connection) **must** be setup for OIDC. This is required so that all AzureCLI tasks that also run _pwsh_ commands can log into the Azure PowerShell context too. For instructions on this matter, please refer to [this guide](./OIDC).
 
 ## Elements
 
