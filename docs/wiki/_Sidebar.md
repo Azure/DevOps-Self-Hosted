@@ -6,4 +6,5 @@ Core
 - [Self-hosted Managed DevOps Pool](./Self-hosted%20Managed%20DevOps%20Pool)
 
 Shared concepts
+- [OIDC](./OIDC)
 - [Staging](./Staging)
