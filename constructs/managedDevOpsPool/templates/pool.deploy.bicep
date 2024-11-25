@@ -52,14 +52,11 @@ param poolMaximumConcurrency int = 1
 param poolSize string = 'Standard_B1ms'
 
 @description('Optional. The managed identity definition for the Managed DevOps Pool.')
-import { managedIdentitiesType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
-param poolManagedIdentities managedIdentitiesType
-
-// import { managedIdentityOnlyUserAssignedType } from 'br/public:avm/utl/types/avm-common-types:0.1.0'
-// param poolManagedIdentities managedIdentityOnlyUserAssignedType?
+import { managedIdentityOnlyUserAssignedType } from 'br/public:avm/utl/types/avm-common-types:0.3.0'
+param poolManagedIdentities managedIdentityOnlyUserAssignedType?
 
 @description('Optional. Defines how the machine will be handled once it executed a job.')
-import { agentProfileType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1'
+import { agentProfileType } from 'br/public:avm/res/dev-ops-infrastructure/pool:0.2.0'
 param poolAgentProfile agentProfileType = {
   kind: 'Stateless'
 }
@@ -169,7 +166,7 @@ module vnetPermission 'br/public:avm/ptn/authorization/resource-role-assignment:
   }
 }
 
-module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.1.1' = {
+module pool 'br/public:avm/res/dev-ops-infrastructure/pool:0.3.0' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-pool'
   scope: rg
   params: {

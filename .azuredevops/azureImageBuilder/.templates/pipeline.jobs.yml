@@ -44,8 +44,6 @@ jobs:
 
                   # Set agent up
                   Set-EnvironmentOnAgent -PSModules $Modules
-            # [Sanitization] task(s)
-            #-----------------------
             - task: AzureCLI@2
               name: Remove_ImageTemplates_Task
               displayName: 'Remove previous Image Template resources'
@@ -55,11 +53,11 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  # Load PS-Profile configuration
+                  . $profile
+
+                  # Login to Azure-Powershell context
+                  $null = Connect-AzAccount -ApplicationId $env:servicePrincipalId -Tenant $env:tenantId -FederatedToken $env:idToken
 
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
@@ -81,11 +79,11 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  # Load PS-Profile configuration
+                  . $profile
+
+                  # Login to Azure-Powershell context
+                  $null = Connect-AzAccount -ApplicationId $env:servicePrincipalId -Tenant $env:tenantId -FederatedToken $env:idToken
 
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
@@ -107,11 +105,11 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  # Load PS-Profile configuration
+                  . $profile
+
+                  # Login to Azure-Powershell context
+                  $null = Connect-AzAccount -ApplicationId $env:servicePrincipalId -Tenant $env:tenantId -FederatedToken $env:idToken
 
                   Write-Verbose "Load function" -Verbose
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ResourcesInStagingRg.ps1')
@@ -174,11 +172,11 @@ jobs:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  # Log into Az-PowerShell context
-                  . $profile # Load PS-Profile configuration
-                  $SecuredPassword = ConvertTo-SecureString -AsPlainText -String $env:servicePrincipalKey
-                  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $env:servicePrincipalId, $SecuredPassword
-                  $null = Connect-AzAccount -ServicePrincipal -TenantId $env:tenantId -Credential $Credential
+                  # Load PS-Profile configuration
+                  . $profile
+
+                  # Login to Azure-Powershell context
+                  $null = Connect-AzAccount -ApplicationId $env:servicePrincipalId -Tenant $env:tenantId -FederatedToken $env:idToken
 
                   # Load used functions
                   . (Join-Path '$(System.DefaultWorkingDirectory)' '$(sharedOrchestrationFunctionsPath)' 'deployment' 'New-TemplateDeployment.ps1')
