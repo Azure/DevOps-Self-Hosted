@@ -21,6 +21,11 @@ param waitForImageBuild bool = true
 /////////////////////////////
 //   Template Deployment   //
 /////////////////////////////
+var computeGalleryImageDefinitionName = 'sid-linux'
+var assetsStorageAccountName = '<assetsStorageAccountName>'
+var assetsStorageAccountContainerName = 'aibscripts'
+var installPwshScriptName = 'Install-LinuxPowerShell.sh'
+var initializeSoftwareScriptName = 'Initialize-LinuxSoftware.ps1'
 
 module imageDeployment '../templates/image.deploy.bicep' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-image-sbx'
@@ -28,13 +33,12 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
     computeGalleryName: '<computeGalleryName>'
-    computeGalleryImageDefinitionName: 'sid-linux'
+    computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     waitForImageBuild: waitForImageBuild
     computeGalleryImageDefinitions: [
       {
-        name: 'sid-linux'
+        name: computeGalleryImageDefinitionName
         osType: 'Linux'
-
         identifier: {
           publisher: 'devops'
           offer: 'devops_linux'
@@ -45,26 +49,18 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       }
     ]
 
-    assetsStorageAccountName: '<assetsStorageAccountName>'
-    assetsStorageAccountContainerName: 'aibscripts'
+    assetsStorageAccountName: assetsStorageAccountName
+    assetsStorageAccountContainerName: assetsStorageAccountContainerName
 
     storageAccountFilesToUpload: [
       {
-        name: 'Install-LinuxPowerShell.sh'
-        value: loadTextContent('../scripts/uploads/linux/Install-LinuxPowerShell.sh')
+        name: installPwshScriptName
+        value: loadTextContent('../scripts/uploads/linux/${installPwshScriptName}')
       }
       {
-        name: 'Initialize-LinuxSoftware.ps1'
-        value: loadTextContent('../scripts/uploads/linux/Initialize-LinuxSoftware.ps1')
+        name: initializeSoftwareScriptName
+        value: loadTextContent('../scripts/uploads/linux/${initializeSoftwareScriptName}')
       }
-      // {
-      //   name: 'Install-WindowsPowerShell.ps1'
-      //   value: loadTextContent('../scripts/uploads/windows/Install-WindowsPowerShell.ps1')
-      // }
-      // {
-      //   name: 'Initialize-WindowsSoftware.ps1'
-      //   value: loadTextContent('../scripts/uploads/windows/Initialize-WindowsSoftware.ps1')
-      // }
     ]
     // Linux Example
     imageTemplateImageSource: {
@@ -75,25 +71,25 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       version: 'latest'
       // Custom image example
       // type: 'SharedImageVersion'
-      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<computeGalleryName>/images/sid-linux/versions/0.24470.675'
+      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<computeGalleryName>/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
     }
     imageTemplateCustomizationSteps: [
       {
         type: 'Shell'
         name: 'PowerShell installation'
-        scriptUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Install-LinuxPowerShell.sh'
+        scriptUri: 'https://${assetsStorageAccountName}.blob.${az.environment().suffixes.storage}/${assetsStorageAccountContainerName}/${installPwshScriptName}'
       }
       {
         type: 'File'
-        name: 'Initialize-LinuxSoftware'
-        sourceUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-LinuxSoftware.ps1'
-        destination: 'Initialize-LinuxSoftware.ps1'
+        name: 'Download ${initializeSoftwareScriptName}'
+        sourceUri: 'https://${assetsStorageAccountName}.blob.${az.environment().suffixes.storage}/${assetsStorageAccountContainerName}/${initializeSoftwareScriptName}'
+        destination: initializeSoftwareScriptName
       }
       {
         type: 'Shell'
         name: 'Software installation'
         inline: [
-          'pwsh \'Initialize-LinuxSoftware.ps1\''
+          'pwsh \'${initializeSoftwareScriptName}\''
         ]
       }
     ]
@@ -101,7 +97,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     // Windows Example
     // computeGalleryImageDefinitions: [
     //     {
-    //         name: 'sid-windows'
+    //         name: computeGalleryImageDefinitionName
     //         osType: 'Windows'
     //         identifier: {
     //           publisher: 'devops'
@@ -109,43 +105,46 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     //           sku: 'devops_windows_az'
     //         }
     //         osState: 'Generalized'
+    //         hyperVGeneration: 'V2'
     //     }
     // ]
-    // imageTemplateComputeGalleryImageDefinitionName: 'sid-windows'
+    // storageAccountFilesToUpload: [
+    //   {
+    //     name: installPwshScriptName
+    //     value: loadTextContent('../scripts/uploads/windows/${installPwshScriptName}')
+    //   }
+    //   {
+    //     name: initializeSoftwareScriptName
+    //     value: loadTextContent('../scripts/uploads/windows/${initializeSoftwareScriptName}')
+    //   }
+    // ]
+    // imageTemplateComputeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     // imageTemplateImageSource: {
-    //     type: 'PlatformImage'
-    //     publisher: 'MicrosoftWindowsDesktop'
-    //     offer: 'Windows-10'
-    //     sku: '19h2-evd'
-    //     version: 'latest'
+    //   type: 'PlatformImage'
+    //   publisher: 'MicrosoftWindowsDesktop'
+    //   offer: 'Windows-11'
+    //   sku: 'win11-24h2-avd'
+    //   version: 'latest'
     // }
     // imageTemplateCustomizationSteps: [
-    //     {
-    //         type: 'PowerShell'
-    //         name: 'PowerShell installation'
-    //         inline: [
-    //             'Write-Output "Download"'
-    //             'wget \'https://<assetsStorageAccountName>.blob.${environment().suffixes.storage}/aibscripts/Install-WindowsPowerShell.ps1?\' -O \'Install-WindowsPowerShell.ps1\''
-    //             'Write-Output "Invocation"'
-    //             '. \'Install-WindowsPowerShell.ps1\''
-    //         ]
-    //         runElevated: true
-    //     }
-    //     {
-    //         type: 'File'
-    //         name: 'Initialize-WindowsSoftware'
-    //         sourceUri: 'https://<assetsStorageAccountName>.blob.${az.environment().suffixes.storage}/aibscripts/Initialize-WindowsSoftware.ps1'
-    //         destination: 'Initialize-WindowsSoftware.ps1'
-    //     }
-    //     {
-    //         type: 'PowerShell'
-    //         name: 'Software installation'
-    //         inline: [
-    //             'wget \'https://<assetsStorageAccountName>.blob.${environment().suffixes.storage}/aibscripts/Initialize-WindowsSoftware.ps1?\' -O \'Initialize-WindowsSoftware.ps1\''
-    //             'pwsh \'Initialize-WindowsSoftware.ps1\''
-    //         ]
-    //         runElevated: true
-    //     }
+    // {
+    //   type: 'PowerShell'
+    //   name: 'PowerShell Core installation'
+    //   scriptUri: 'https://${assetsStorageAccountName}.blob.${environment().suffixes.storage}/${assetsStorageAccountContainerName}/${installPwshScriptName}'
+    // }
+    // {
+    //   type: 'File'
+    //   name: 'Download ${initializeSoftwareScriptName}'
+    //   sourceUri: 'https://${assetsStorageAccountName}.blob.${environment().suffixes.storage}/${assetsStorageAccountContainerName}/${initializeSoftwareScriptName}'
+    //   destination: initializeSoftwareScriptName
+    // }
+    // {
+    //   type: 'PowerShell'
+    //   name: 'Software installation'
+    //   inline: [
+    //     'pwsh \'${initializeSoftwareScriptName}\''
+    //   ]
+    // }
     // ]
   }
 }
