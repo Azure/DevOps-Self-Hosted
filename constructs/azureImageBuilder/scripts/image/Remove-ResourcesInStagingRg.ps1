@@ -44,6 +44,10 @@ function Remove-ResourcesInStagingRg {
         }
         $imageTemplateResourceGroupName = Get-TemplateParameterValue @templateParamInputObject
 
+        if ([String]::IsNullOrEmpty($imageTemplateResourceGroupName)) {
+            Write-Verbose 'No Image Template Resource Group defined. Skipping cleanup.'
+            return
+        }
 
         if (-not (Get-AzResourceGroup $imageTemplateResourceGroupName -ErrorAction SilentlyContinue)) {
             Write-Verbose ('Resource Group [{0}] does not exist. Skipping cleanup.' -f $imageTemplateResourceGroupName) -Verbose
