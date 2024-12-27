@@ -22,7 +22,7 @@ param waitForImageBuild bool = true
 //   Template Deployment   //
 /////////////////////////////
 var computeGalleryImageDefinitionName = 'sid-linux'
-var assetsStorageAccountName = '<assetsStorageAccountName>'
+var assetsStorageAccountName = 'alsehrst'
 var assetsStorageAccountContainerName = 'aibscripts'
 var installPwshScriptName = 'Install-LinuxPowerShell.sh'
 var initializeSoftwareScriptName = 'Initialize-LinuxSoftware.ps1'
@@ -32,7 +32,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
-    computeGalleryName: '<computeGalleryName>'
+    computeGalleryName: 'alsehrcg'
     computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     waitForImageBuild: waitForImageBuild
     computeGalleryImageDefinitions: [
@@ -71,7 +71,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       version: 'latest'
       // Custom image example
       // type: 'SharedImageVersion'
-      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<computeGalleryName>/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
+      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/alsehrcg/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
     }
     imageTemplateCustomizationSteps: [
       {

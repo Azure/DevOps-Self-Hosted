@@ -22,7 +22,7 @@ param waitForImageBuild bool = true
 //   Template Deployment   //
 /////////////////////////////
 var computeGalleryImageDefinitionName = 'sid-windows'
-var assetsStorageAccountName = '<assetsStorageAccountName>'
+var assetsStorageAccountName = 'alsehrst'
 var assetsStorageAccountContainerName = 'aibscripts'
 var installPwshScriptName = 'Install-WindowsPowerShell.ps1'
 var initializeSoftwareScriptName = 'Initialize-WindowsSoftware.ps1'
@@ -32,7 +32,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
-    computeGalleryName: '<computeGalleryName>'
+    computeGalleryName: 'alsehrcg'
     computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     waitForImageBuild: waitForImageBuild
 
