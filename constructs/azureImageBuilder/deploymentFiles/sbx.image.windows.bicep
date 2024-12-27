@@ -39,7 +39,6 @@ module imageDeployment '../templates/image.deploy.bicep' = {
     assetsStorageAccountName: assetsStorageAccountName
     assetsStorageAccountContainerName: assetsStorageAccountContainerName
 
-    // Windows Example
     computeGalleryImageDefinitions: [
       {
         name: computeGalleryImageDefinitionName
@@ -70,6 +69,8 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       sku: 'win11-24h2-avd'
       version: 'latest'
     }
+
+    imageTemplateResourceGroupName: ''
     imageTemplateCustomizationSteps: [
       {
         type: 'PowerShell'
