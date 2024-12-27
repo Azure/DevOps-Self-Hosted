@@ -65,7 +65,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ImageTemplate.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.${{ parameters.osType }}.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -91,7 +91,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-DeploymentScript.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.${{ parameters.osType }}.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
@@ -117,7 +117,7 @@ jobs:
                   .  (Join-Path '$(System.DefaultWorkingDirectory)' '$(orchestrationFunctionsPath)' 'image' 'Remove-ResourcesInStagingRg.ps1')
 
                   $functionInput = @{
-                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    TemplateFilePath = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.${{ parameters.osType }}.bicep'
                   }
 
                   Write-Verbose "Invoke task with" -Verbose
