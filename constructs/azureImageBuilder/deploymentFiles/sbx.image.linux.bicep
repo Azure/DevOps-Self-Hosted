@@ -93,58 +93,5 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         ]
       }
     ]
-
-    // Windows Example
-    // computeGalleryImageDefinitions: [
-    //     {
-    //         name: computeGalleryImageDefinitionName
-    //         osType: 'Windows'
-    //         identifier: {
-    //           publisher: 'devops'
-    //           offer: 'devops_windows'
-    //           sku: 'devops_windows_az'
-    //         }
-    //         osState: 'Generalized'
-    //         hyperVGeneration: 'V2'
-    //     }
-    // ]
-    // storageAccountFilesToUpload: [
-    //   {
-    //     name: installPwshScriptName
-    //     value: loadTextContent('../scripts/uploads/windows/${installPwshScriptName}')
-    //   }
-    //   {
-    //     name: initializeSoftwareScriptName
-    //     value: loadTextContent('../scripts/uploads/windows/${initializeSoftwareScriptName}')
-    //   }
-    // ]
-    // imageTemplateComputeGalleryImageDefinitionName: computeGalleryImageDefinitionName
-    // imageTemplateImageSource: {
-    //   type: 'PlatformImage'
-    //   publisher: 'MicrosoftWindowsDesktop'
-    //   offer: 'Windows-11'
-    //   sku: 'win11-24h2-avd'
-    //   version: 'latest'
-    // }
-    // imageTemplateCustomizationSteps: [
-    // {
-    //   type: 'PowerShell'
-    //   name: 'PowerShell Core installation'
-    //   scriptUri: 'https://${assetsStorageAccountName}.blob.${environment().suffixes.storage}/${assetsStorageAccountContainerName}/${installPwshScriptName}'
-    // }
-    // {
-    //   type: 'File'
-    //   name: 'Download ${initializeSoftwareScriptName}'
-    //   sourceUri: 'https://${assetsStorageAccountName}.blob.${environment().suffixes.storage}/${assetsStorageAccountContainerName}/${initializeSoftwareScriptName}'
-    //   destination: initializeSoftwareScriptName
-    // }
-    // {
-    //   type: 'PowerShell'
-    //   name: 'Software installation'
-    //   inline: [
-    //     'pwsh \'${initializeSoftwareScriptName}\''
-    //   ]
-    // }
-    // ]
   }
 }

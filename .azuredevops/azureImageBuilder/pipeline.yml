@@ -19,6 +19,13 @@ parameters:
       - Only base
       - Only assets & image
       - Only image
+  - name: osType
+    displayName: OS to create the image for
+    type: string
+    default: Linux
+    values:
+      - Linux
+      - Windows
   - name: waitForImageBuild
     displayName: Wait for image build
     type: boolean
@@ -41,6 +48,7 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'sbx'
+          osType: '${{ lower(parameters.osType) }}'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
           waitForImageBuild: '${{ parameters.waitForImageBuild }}'
           removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
@@ -57,6 +65,7 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'dev'
+          osType: '${{ lower(parameters.osType) }}'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
           waitForImageBuild: '${{ parameters.waitForImageBuild }}'
           removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'
@@ -74,6 +83,7 @@ stages:
       - template: .templates/pipeline.jobs.yml
         parameters:
           environment: 'prd'
+          osType: '${{ lower(parameters.osType) }}'
           deploymentsToPerform: '${{ parameters.deploymentsToPerform }}'
           waitForImageBuild: '${{ parameters.waitForImageBuild }}'
           removeImageTemplateResources: '${{ parameters.removeImageTemplateResources }}'

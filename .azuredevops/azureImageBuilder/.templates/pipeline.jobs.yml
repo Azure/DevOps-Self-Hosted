@@ -3,6 +3,8 @@ parameters:
     default:
   - name: deploymentsToPerform
     default:
+  - name: osType
+    default:
   - name: waitForImageBuild
     default:
   - name: removeImageTemplateResources
@@ -186,7 +188,7 @@ jobs:
                   # INVOKE DEPLOYMENT #
                   # ----------------- #
                   $functionInput = @{
-                    TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+                    TemplateFilePath           = Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.${{ parameters.osType }}.bicep'
                     DeploymentMetadataLocation = '$(deploymentMetadataLocation)'
                     SubscriptionId             = (Get-AzContext).Subscription.Id
                     RepoRoot                   = '$(System.DefaultWorkingDirectory)'
