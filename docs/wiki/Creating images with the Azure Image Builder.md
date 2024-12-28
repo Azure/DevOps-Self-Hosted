@@ -84,8 +84,8 @@ To prepare the construct for usage you have to perform two fundamental steps:
 <summary>1. Configure the deployment parameters</summary>
 
 For this step you have to update these files to your needs:
-- `.azuredevops\azureImageBuilder\variables.yml`
-- `constructs\azureImageBuilder\deploymentFiles\<env>.image.<osType>.bicep`
+- `.azuredevops/azureImageBuilder/variables.yml`
+- `constructs/azureImageBuilder/deploymentFiles/<env>.image.<osType>.bicep`
 
 ### Variables
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
@@ -129,7 +129,7 @@ For reference, in the provided Linux example we're looking at the following size
 
 #### Special case: Resource **Image Template**
 
-The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\uploads` folder.
+The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs/azureImageBuilder/scripts/uploads` folder.
 
 When you eventually trigger the pipeline, it will upload any script in the `uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter/deployment file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
@@ -219,7 +219,7 @@ To do so, you have to perform the following steps:
 
 ## Deployment
 
-The creation of the image alongside its resources is handled by the `.azuredevops\azureImageBuilder\pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment and optionally triggers the image creation right after.
+The creation of the image alongside its resources is handled by the `.azuredevops/azureImageBuilder/pipeline.yml` pipeline. Given the proper configuration, it creates all required resources in the designated environment and optionally triggers the image creation right after.
 
   <img src="./media/image/imagetrigger.PNG" alt="Run workflow" height="400">
 
@@ -230,7 +230,7 @@ So let's take a look at the different configuration options when running the pip
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
 | `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only base` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.<osType>.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only base`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only assets & image`**: Only uploads the latest installation files from the `uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
 | `OS to create image for` | Enables you to select which OS to create the image for. Based on the selection, a different parameter/deployment file with set name is used. | Select OS you want to create the image for | <ul><li>**`Linux`**: Will select a parameter/deployment file that follows the schema `<env>.image.linux.bicep`</li><li>**`Windows`**: `<env>.image.windows.bicep`</li></ul> |
-| `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs\azureImageBuilder\scripts\image\Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
+| `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs/azureImageBuilder/scripts/image/Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
 | `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter/deployment file - as long es their built is not in state `running`.  | De-select | |
 
 ### First deployment
@@ -239,8 +239,8 @@ When triggering the pipeline for the first time for any environment, make sure y
 The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter/deployment file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `azureImageBuilder` construct:
 
-- Linux:    `constructs\azureImageBuilder\scripts\uploads\linux`
-- Windows:  `constructs\azureImageBuilder\scripts\uploads\windows`
+- Linux:    `constructs/azureImageBuilder/scripts/uploads/linux`
+- Windows:  `constructs/azureImageBuilder/scripts/uploads/windows`
 
 One of the main tasks performed by these scripts are the installation of the baseline modules and software we want to have installed on the image. Prime candidates are for example the Az PowerShell modules, Bicep CLI and Terraform CLI.
 
@@ -291,7 +291,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
 
 # Out of the box installed components
 
-Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs\azureImageBuilder\scripts\uploads` folder:
+Following you can find an overview of the installed elements currently implemented in the scripts of the `constructs/azureImageBuilder/scripts/uploads` folder:
 
 | OS |   |   | Windows | Linux |
 | -  | - | - | -       | -     |

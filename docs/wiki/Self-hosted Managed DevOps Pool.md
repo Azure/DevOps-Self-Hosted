@@ -90,8 +90,8 @@ To prepare the construct for deployment you have to perform two fundamental step
 
 For this step you have to update these files to your needs:
 
-- `.azuredevops\managedDevOpsPool\variables.yml`
-- `constructs\managedDevOpsPool\deploymentFiles\pool.bicep`
+- `.azuredevops/managedDevOpsPool/variables.yml`
+- `constructs/managedDevOpsPool/deploymentFiles/pool.bicep`
 
 ### Variables
 
@@ -225,7 +225,7 @@ To do so, you have to perform the following steps:
 
 ## Deployment
 
-The creation of the Managed DevOps Pool alongside its resources is handled by the `.azuredevops\managedDevOpsPool\pipeline.yml` pipeline. Given a proper configuration, it creates all required resources in the designated environment, including the agent pool's registration in Azure DevOps.
+The creation of the Managed DevOps Pool alongside its resources is handled by the `.azuredevops/managedDevOpsPool/pipeline.yml` pipeline. Given a proper configuration, it creates all required resources in the designated environment, including the agent pool's registration in Azure DevOps.
 
 Also, when triggering the pipeline you have several configuration options to chose from:
 
