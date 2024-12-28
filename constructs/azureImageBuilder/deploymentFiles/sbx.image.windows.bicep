@@ -68,6 +68,9 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       offer: 'Windows-11'
       sku: 'win11-24h2-avd'
       version: 'latest'
+      // Custom image example
+      // type: 'SharedImageVersion'
+      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/alsehrcg/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
     }
 
     imageTemplateResourceGroupName: '' // Setting to empty as a custom staging resource group currently fails the creation of a windows image for an unknown reason
