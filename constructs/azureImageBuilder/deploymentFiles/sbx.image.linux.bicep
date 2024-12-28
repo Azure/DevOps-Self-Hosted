@@ -62,7 +62,6 @@ module imageDeployment '../templates/image.deploy.bicep' = {
         value: loadTextContent('../scripts/uploads/linux/${initializeSoftwareScriptName}')
       }
     ]
-    // Linux Example
     imageTemplateImageSource: {
       type: 'PlatformImage'
       publisher: 'canonical'
