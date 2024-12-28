@@ -634,6 +634,13 @@ LogInfo('Install azure cli start')
 $null = choco install azure-cli -y -v
 LogInfo('Install azure cli end')
 
+###########################
+##   Install BICEP CLI   ##
+###########################
+LogInfo('Install BICEP start')
+choco install bicep
+LogInfo('Install BICEP end')
+
 ###############################
 ##   Install Extensions CLI   #
 ###############################
