@@ -15,7 +15,7 @@ module managedDevOpsPoolDeployment '../templates/pool.deploy.bicep' = {
   params: {
     resourceLocation: resourceLocation
     computeGalleryName: 'alsehrcg'
-    computeGalleryImageDefinitionName: 'sid-linux'
+    computeGalleryImageDefinitionName: 'sid-windows'
     devCenterName: 'my-center'
     devCenterProjectName: 'my-project'
     organizationName: 'asehr'
