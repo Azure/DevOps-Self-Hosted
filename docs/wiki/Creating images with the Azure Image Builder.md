@@ -48,7 +48,7 @@ The image creation uses several components:
 
 > _**NOTE:**_ The construct was build with multiple environments and staging in mind. To this end, pipeline variable files contain one variable per suggested environment (for example `vmImage_sbx` & `vmImage_dev`) which is automatically referenced by the corresponding stage. For details on how to work with and configure these variables, please refer to this [section](./Staging).
 >
-> For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
+> For the rest of the documentation we will ignore these environments and just refer to the simple variable or parameter/deployment file to avoid confusion around which file we refer to. All concepts apply to all files, no matter the environment/stage.
 
 ## File structure & flow
 
@@ -70,7 +70,7 @@ This section gives you an overview of the solution's structure, that is, how its
 > **Note:** All files are written in a way that should make modifications easy. However, to help you get started, please take not of the following recommendations:
 > - If you want to add additional logic to your pipeline, make sure to modify the `pipeline.jobs.yml` template to ensure that the added / modified steps are applied equally across all stages.
 > - If you want to add additional resources to your deployment, make sure to modify the `image.deploy.bicep` file to ensure that the added / modified resources are applied to all environments equally. If you further want to ensure your template remains flexible, you can add additional parameters you can then reference from the `<env>.image.bicep` file.
-> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter for your new property to the module, but also give it a value by providing it in the `image.deploy.bicep` file.
+> - If you want to modify any of the existing module templates and discover a property you want to use is missing, you can simply add it to the corresponding module. However, to use it, make sure to not only add a parameter/deployment for your new property to the module, but also give it a value by providing it in the `image.deploy.bicep` file.
 
 # Process
 
@@ -85,23 +85,23 @@ To prepare the construct for usage you have to perform two fundamental steps:
 
 For this step you have to update these files to your needs:
 - `.azuredevops\azureImageBuilder\variables.yml`
-- `constructs\azureImageBuilder\deploymentFiles\<env>.image.bicep`
+- `constructs\azureImageBuilder\deploymentFiles\<env>.image.<osType>.bicep`
 
 ### Variables
 The first file, `variables.yml`, is a pipeline variable file. You should update at least the values:
 - `vmImage`: Set this to for example `ubuntu-latest` to leverage Microsoft-hosted agents. Leave it empty (`''`) if you use self-hosted agents. Do not remove it.
 - `poolName`: Set this to for example `myHostPool` to leverage your self-hosted agent pool. Leave it empty (`''`) if you use Microsoft-hosted agents. Do not remove it.
 - `serviceConnection`: This refers to your Azure DevOps service connection you use for your deployments. It should point into the subscription you want to deploy into.
-- `deploymentMetadataLocation`: The location to store deployment metadata in. The location of the resources it specified directly in the deployment/parameter file.
+- `deploymentMetadataLocation`: The location to store deployment metadata in. The location of the resources it specified directly in the deployment/parameter/deployment file.
 
 ### Parameters
-Next, we have one deployment file, `<env>.image.bicep` that hosts to the two phases in the deployment: Deploy all infrastructure components & build the image.
+Next, we have one deployment file per OS, `<env>.image.<osType>.bicep` which contain the configuration for the infrastructure & image creation deployment.
 
-The file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions: Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
+Each file comes with out-of-the box parameters that you can use aside from a few noteworthy exceptions: Update any name of a resource that is deployed and must be globally unique (for example storage accounts).
 
-> **Note:** To keep the parameter files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter file to the linked template.
+> **Note:** To keep the parameter/deployment files as simple as possible, all values that don't necessarily need you attention are hardcoded as default values in the corresponding template files. To get an overview about these 'defaults', you can simply navigate from the parameter/deployment file to the linked template.
 
-The parameter files are created with a Linux-Image in mind. However, they also contain examples on how the same implementation would look like for Windows images. Examples are always commented and can be used to replace the currently not commented values.
+The parameter/deployment files are created with a Linux-Image in mind. However, they also contain examples on how the same implementation would look like for Windows images. Examples are always commented and can be used to replace the currently not commented values.
 
 As the deployments leverage [`AVM`](https://aka.ms/avm) modules you can find a full list of all supported parameters per module in that [repository's](https://www.github.com/Azure/bicep-registry-modules) modules. A valid example may be that you want to deploy the Image Template into a specific subnet for networking access. This and several other parameters are available and documented in the module's `readme.md`.
 
@@ -131,7 +131,7 @@ For reference, in the provided Linux example we're looking at the following size
 
 The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs\azureImageBuilder\scripts\uploads` folder.
 
-When you eventually trigger the pipeline, it will upload any script in the `uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter file's `customizationSteps` parameter. For Linux we use for example the following two steps:
+When you eventually trigger the pipeline, it will upload any script in the `uploads` folder to a dedicated storage account for the image building process using a deployment script and then execute it as per the configured steps in the Image Template's parameter/deployment file's `customizationSteps` parameter. For Linux we use for example the following two steps:
 
 ```Bicep
 imageTemplateCustomizationSteps: [
@@ -153,6 +153,35 @@ imageTemplateCustomizationSteps: [
 ```
 
 By default, it first installs PowerShell on the target machine and then continues by executing the installation script. Feel free to modify the existing script, or add new ones with new customization steps as you see fit. You can find a full list of all available steps [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-json#properties-customize).
+
+> **NOTE:** If you don't want to build images for more than one OS you can remove the option from the pipelines by
+> 1. Removing the corresponding runtime parameter/deployment from the `.azuredevops/azureImageBuilder/pipeline.yml` pipeline file
+>   ```yaml
+>   - name: osType
+>     displayName: OS to create the image for
+>     type: string
+>     default: Linux
+>     values:
+>       - Linux
+>       - Windows
+>   ```
+> 1. Removing each pass thru of the `osType` runtime parameter to the inner `pipeline.jobs.yml` pipeline file from the `.azuredevops/azureImageBuilder/pipeline.yml` pipeline file
+>   ```yaml
+>   osType: '${{ lower(parameters.osType) }}'`
+>   ```
+> 1. Removing the corresponding template parameter/deployment from the inner `.azuredevops/azureImageBuilder/.templates/pipeline.jobs.yml` pipeline file
+>   ```yaml
+>   - name: osType
+>     default:
+>   ```
+> 1. Removing each reference of the `osType` parameter/deployment from the code in the inner `.azuredevops/azureImageBuilder/.templates/pipeline.jobs.yml` pipeline file
+>   ```yaml
+>   # Change from
+>   Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.${{ parameters.  osType }}.bicep'
+>   # to
+>   Join-Path '$(deploymentFilesPath)' '${{ parameters.environment }}.image.bicep'
+>   ```
+> 1. Adjust your parameter/deployment files in `constructs/azureImageBuilder/deploymentFiles` to only contain names without the OS type embedded. For example, change `sbx.image.linux.bicep` to `sbx.image.bicep`
 
 </details>
 
@@ -199,14 +228,15 @@ So let's take a look at the different configuration options when running the pip
 | Runtime Parameter | Description | On first deployment | Additional notes |
 | - | - | - | - |
 | `Environment to start from` | The environment you want to start to deploy into as described [here](./Staging#3-run-the-pipeline)  | Set to `SBX` | |
-| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only base` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only base`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only assets & image`**: Only uploads the latest installation files from the `uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
+| `Scope of deployment` | Select whether you want to deploy all resources, all resources without triggering the image build, or only the image build | Set to deploy `All` or `Only base` resources | Overall you have the following options: <p> <li>**`All`**: Deploys all resources end-to-end including an image build</li><li>**`Only removal`**: Only removes previous image templates (and their AIB resource groups) that match the provided Image Template name and are not in state `running`. Further, terminated deployment scripts who's name starts with the `defaultPrefix` specified in the `<env>.image.<osType>.bicep` file are removed. Is only executed if the `Pre-remove Image Template Resource Group` checkbox is selected too.</li><li>**`Only base`**: Deploys everything, but the image template. As such, no image is built</li><li>**`Only assets & image`**: Only uploads the latest installation files from the `uploads` folder and trigger an image build</li><li>**`Only image`**: Only trigger an image build</li> |
+| `OS to create image for` | Enables you to select which OS to create the image for. Based on the selection, a different parameter/deployment file with set name is used. | Select OS you want to create the image for | <ul><li>**`Linux`**: Will select a parameter/deployment file that follows the schema `<env>.image.linux.bicep`</li><li>**`Windows`**: `<env>.image.windows.bicep`</li></ul> |
 | `Wait for image build` |  Specify whether to wait for the image build process during the pipeline run or not. The process itself is triggered asynchronously. | De-Select |  You can use the 'Wait-ForImageBuild' script to check the status yourself (located at: `constructs\azureImageBuilder\scripts\image\Wait-ForImageBuild.ps1`). <p> To execute it you will need the image template name (output value of the image template deployment) and the resource group the image template was deployed into. Is only considered, if the `Scope of the deployment` includes an image build. |
-| `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter file - as long es their built is not in state `running`.  | De-select | |
+| `Pre-remove Image Template Resource Group` | Specify whether to remove previous image resources. This includes all Image Templates that match the naming schema defined in the parameter/deployment file - as long es their built is not in state `running`.  | De-select | |
 
 ### First deployment
 When triggering the pipeline for the first time for any environment, make sure you either select `All` or `Only base` for the `Scope of the deployment`. In either case the pipeline will deploy all resources and scripts you will subsequently need to create the images. For any subsequent run, you can go with any option you need.
 
-The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
+The steps the _Azure Image Builder_ performs on the image are defined by elements configured in the `customizationSteps` parameter of the image template parameter/deployment file. In our setup we reference one or multiple custom scripts that are uploaded by the template to a storage account ahead of the image deployment.
 The scripts are different for the type of OS and hence are also stored in two different folders in the `azureImageBuilder` construct:
 
 - Linux:    `constructs\azureImageBuilder\scripts\uploads\linux`
@@ -235,7 +265,7 @@ Usually, when you will operate the pipeline you would want to either run in scop
 <details>
 <summary>Stacked images</summary>
 
-  Any time you run an image built you first have to decide whether you want to build an image from the ground up (using e.g. a marketplace image as the basis) or build on an existing custom image. In either case you have to configure the image template parameter file in question with regards to the `imageSource` parameter.
+  Any time you run an image built you first have to decide whether you want to build an image from the ground up (using e.g. a marketplace image as the basis) or build on an existing custom image. In either case you have to configure the image template parameter/deployment file in question with regards to the `imageSource` parameter.
   To reference a marketplace image use the syntax:
   ```Bicep
   {
