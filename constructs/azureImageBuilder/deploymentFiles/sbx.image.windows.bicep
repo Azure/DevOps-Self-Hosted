@@ -70,7 +70,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       version: 'latest'
     }
 
-    imageTemplateResourceGroupName: ''
+    imageTemplateResourceGroupName: '' // Setting to empty as a custom staging resource group currently fails the creation of a windows image for an unknown reason
     imageTemplateCustomizationSteps: [
       {
         type: 'PowerShell'
