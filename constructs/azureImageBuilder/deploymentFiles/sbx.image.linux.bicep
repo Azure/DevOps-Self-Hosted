@@ -18,15 +18,18 @@ param resourceLocation string = 'NorthEurope'
 @description('Optional. A parameter to control if the deployment should wait for the image build to complete.')
 param waitForImageBuild bool = true
 
-/////////////////////////////
-//   Template Deployment   //
-/////////////////////////////
+///////////////////////////////////////////////
+//   Multi-referenced deployment variables   //
+///////////////////////////////////////////////
 var computeGalleryImageDefinitionName = 'sid-linux'
 var assetsStorageAccountName = '<assetsStorageAccountName>'
 var assetsStorageAccountContainerName = 'aibscripts'
 var installPwshScriptName = 'Install-LinuxPowerShell.sh'
 var initializeSoftwareScriptName = 'Initialize-LinuxSoftware.ps1'
 
+/////////////////////////////
+//   Template deployment   //
+/////////////////////////////
 module imageDeployment '../templates/image.deploy.bicep' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-image-sbx'
   params: {
