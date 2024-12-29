@@ -106,7 +106,7 @@ param deploymentsToPerform string = 'Only assets & image'
 // Deployments //
 // =========== //
 
-module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-builder:0.1.1' = {
+module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-builder:0.1.2' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-image-construct'
   params: {
     deploymentsToPerform: deploymentsToPerform
