@@ -138,13 +138,13 @@ imageTemplateCustomizationSteps: [
   {
       type: 'Shell'
       name: 'PowerShell installation'
-      scriptUri: 'https://alsehrst.blob.core.windows.net/aibscripts/Install-LinuxPowerShell.sh'
+      scriptUri: 'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Install-LinuxPowerShell.sh'
   }
   {
       type: 'Shell'
       name: 'Prepare software installation'
       inline: [
-          'wget \'https://alsehrst.blob.core.windows.net/aibscripts/Initialize-LinuxSoftware.ps1\' -O \'Initialize-LinuxSoftware.ps1\''
+          'wget \'https://<assetsStorageAccountName>.blob.core.windows.net/aibscripts/Initialize-LinuxSoftware.ps1\' -O \'Initialize-LinuxSoftware.ps1\''
           'sed -i \'s/\r$//' 'Initialize-LinuxSoftware.ps1\''
           'pwsh \'Initialize-LinuxSoftware.ps1\''
       ]
