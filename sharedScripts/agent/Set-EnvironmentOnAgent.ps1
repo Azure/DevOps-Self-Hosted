@@ -159,19 +159,19 @@ function Set-EnvironmentOnAgent {
     Write-Verbose 'Bicep CLI version:' -Verbose
     bicep --version
 
-    Write-Verbose ('Install bicep start') -Verbose
-    # Fetch the latest Bicep CLI binary
-    curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
+    # Write-Verbose ('Install bicep start') -Verbose
+    # # Fetch the latest Bicep CLI binary
+    # curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
 
-    # Mark it as executable
-    chmod +x ./bicep
+    # # Mark it as executable
+    # chmod +x ./bicep
 
-    # Add bicep to your PATH (requires admin)
-    sudo mv ./bicep /usr/local/bin/bicep
-    Write-Verbose ('Install bicep end') -Verbose
+    # # Add bicep to your PATH (requires admin)
+    # sudo mv ./bicep /usr/local/bin/bicep
+    # Write-Verbose ('Install bicep end') -Verbose
 
-    Write-Verbose 'Bicep CLI version:' -Verbose
-    bicep --version
+    # Write-Verbose 'Bicep CLI version:' -Verbose
+    # bicep --version
 
     ###############################
     ##   Install Extensions CLI   #
