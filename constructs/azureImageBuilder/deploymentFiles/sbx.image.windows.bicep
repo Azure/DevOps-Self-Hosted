@@ -22,7 +22,7 @@ param waitForImageBuild bool = true
 //   Multi-referenced deployment variables   //
 ///////////////////////////////////////////////
 var computeGalleryImageDefinitionName = 'sid-windows'
-var assetsStorageAccountName = 'stalsehraib'
+var assetsStorageAccountName = '<assetsStorageAccountName>'
 var assetsStorageAccountContainerName = 'aibscripts'
 var installPwshScriptName = 'Install-WindowsPowerShell.ps1'
 var initializeSoftwareScriptName = 'Initialize-WindowsSoftware.ps1'
@@ -35,7 +35,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
   params: {
     resourceLocation: resourceLocation
     deploymentsToPerform: deploymentsToPerform
-    computeGalleryName: 'aibgallery'
+    computeGalleryName: '<computeGalleryName>'
     computeGalleryImageDefinitionName: computeGalleryImageDefinitionName
     waitForImageBuild: waitForImageBuild
 
@@ -73,7 +73,7 @@ module imageDeployment '../templates/image.deploy.bicep' = {
       version: 'latest'
       // Custom image example
       // type: 'SharedImageVersion'
-      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/aibgallery/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
+      // imageVersionID: '${subscription().id}/resourceGroups/myRg/providers/Microsoft.Compute/galleries/<computeGalleryName>/images/${computeGalleryImageDefinitionName}/versions/0.24470.675'
     }
 
     imageTemplateResourceGroupName: '' // Setting to empty as a custom staging resource group currently fails the creation of a windows image for an unknown reason
