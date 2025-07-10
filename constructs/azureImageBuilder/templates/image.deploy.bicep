@@ -22,8 +22,9 @@ param imageManagedIdentityName string = 'msi-aib'
 @description('Required. The name of the Azure Compute Gallery.')
 param computeGalleryName string
 
+import { imageType } from 'br/public:avm/res/compute/gallery:0.9.2'
 @description('Required. The Image Definitions in the Azure Compute Gallery.')
-param computeGalleryImageDefinitions array
+param computeGalleryImageDefinitions imageType[]
 
 // Storage Account Parameters
 @description('Required. The name of the storage account.')
@@ -43,16 +44,22 @@ param virtualNetworkName string = 'vnet-it'
 param virtualNetworkAddressPrefix string = '10.0.0.0/16'
 
 @description('Optional. The name of the Image Template Virtual Network Subnet to create.')
-param imageSubnetName string = 'subnet-it'
+param imageContainerInstanceSubnetName string = 'subnet-ci'
 
 @description('Optional. The address space of the Virtual Network Subnet.')
 param virtualNetworkSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 0)
 
 @description('Optional. The name of the Image Template Virtual Network Subnet to create.')
+param imageSubnetName string = 'subnet-it'
+
+@description('Optional. The address space of the Virtual Network Subnet.')
+param imageContainerInstanceSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 1)
+
+@description('Optional. The name of the Image Template Virtual Network Subnet to create.')
 param deploymentScriptSubnetName string = 'subnet-ds'
 
 @description('Optional. The address space of the Virtual Network Subnet used by the deployment script.')
-param virtualNetworkDeploymentScriptSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 1)
+param virtualNetworkDeploymentScriptSubnetAddressPrefix string = cidrSubnet(virtualNetworkAddressPrefix, 24, 2)
 
 // Deployment Script Parameters
 @description('Optional. The name of the Deployment Script to trigger the Image Template baking.')
@@ -69,10 +76,10 @@ param imageTemplateDeploymentScriptName string = 'ds-triggerBuild-imageTemplate'
 param imageTemplateName string = 'it-aib'
 
 @description('Required. The image source to use for the Image Template.')
-param imageTemplateImageSource object
+param imageTemplateImageSource resourceInput<'Microsoft.VirtualMachineImages/imageTemplates@2024-02-01'>.properties.source
 
 @description('Required. The customization steps to use for the Image Template.')
-param imageTemplateCustomizationSteps array
+param imageTemplateCustomizationSteps resourceInput<'Microsoft.VirtualMachineImages/imageTemplates@2024-02-01'>.properties.customize?
 
 @description('Required. The name of Image Definition of the Azure Compute Gallery to host the new image version.')
 param computeGalleryImageDefinitionName string
@@ -106,7 +113,7 @@ param deploymentsToPerform string = 'Only assets & image'
 // Deployments //
 // =========== //
 
-module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-builder:0.1.2' = {
+module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-builder:0.2.0' = {
   name: '${uniqueString(deployment().name, resourceLocation)}-image-construct'
   params: {
     deploymentsToPerform: deploymentsToPerform
@@ -134,11 +141,13 @@ module imageConstruct 'br/public:avm/ptn/virtual-machine-images/azure-image-buil
     storageDeploymentScriptName: storageDeploymentScriptName
 
     virtualNetworkAddressPrefix: virtualNetworkAddressPrefix
+    virtualNetworkSubnetAddressPrefix: virtualNetworkSubnetAddressPrefix
+    imagecontainerInstanceSubnetAddressPrefix: imageContainerInstanceSubnetAddressPrefix
     virtualNetworkDeploymentScriptSubnetAddressPrefix: virtualNetworkDeploymentScriptSubnetAddressPrefix
     virtualNetworkName: virtualNetworkName
     imageSubnetName: imageSubnetName
+    imageContainerInstanceSubnetName: imageContainerInstanceSubnetName
     deploymentScriptSubnetName: deploymentScriptSubnetName
-    virtualNetworkSubnetAddressPrefix: virtualNetworkSubnetAddressPrefix
 
     waitDeploymentScriptName: waitDeploymentScriptName
     waitForImageBuild: waitForImageBuild
