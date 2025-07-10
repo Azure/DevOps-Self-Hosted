@@ -26,7 +26,7 @@ Installes pester and saves it to C:\Modules
 function Install-CustomModule {
 
     [CmdletBinding(SupportsShouldProcess)]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
         [Hashtable] $Module,
 
@@ -158,8 +158,8 @@ function Set-EnvironmentOnAgent {
 
     Write-Verbose 'Bicep CLI version:' -Verbose
     bicep --version
-    <#
-    Write-Verbose ("Install bicep start") -Verbose
+
+    Write-Verbose ('Install bicep start') -Verbose
     # Fetch the latest Bicep CLI binary
     curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
 
@@ -168,8 +168,10 @@ function Set-EnvironmentOnAgent {
 
     # Add bicep to your PATH (requires admin)
     sudo mv ./bicep /usr/local/bin/bicep
-    Write-Verbose ("Install bicep end") -Verbose
-    #>
+    Write-Verbose ('Install bicep end') -Verbose
+
+    Write-Verbose 'Bicep CLI version:' -Verbose
+    bicep --version
 
     ###############################
     ##   Install Extensions CLI   #
@@ -238,7 +240,7 @@ function Set-EnvironmentOnAgent {
 
     Write-Verbose ('Install-CustomModule start') -Verbose
     $count = 1
-    Foreach ($Module in $Modules) {
+    foreach ($Module in $Modules) {
         Write-Verbose ('=====================') -Verbose
         Write-Verbose ('HANDLING MODULE [{0}/{1}] [{2}] ' -f $count, $Modules.Count, $Module.Name) -Verbose
         Write-Verbose ('=====================') -Verbose
