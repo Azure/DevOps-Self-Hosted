@@ -127,6 +127,8 @@ For reference, in the provided Linux example we're looking at the following size
 - `Install-LinuxPowerShell.sh`: 1.272 characters
 - Total size of compiled `sbx.image.bicep` template: 1.15 mb
 
+> **NOTE:** The file you're uploading should not contain emojis (🍔) as they may cause problems when loaded into the environment of the uploading deployment script.
+
 #### Special case: Resource **Image Template**
 
 The image template ultimately decides what happens during the image built. In this construct, it works in combination with the scripts provided in the `constructs/azureImageBuilder/scripts/uploads` folder.
